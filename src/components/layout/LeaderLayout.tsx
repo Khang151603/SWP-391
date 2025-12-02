@@ -1,0 +1,112 @@
+import { type ReactNode } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+
+type LeaderLayoutProps = {
+  title?: string;
+  subtitle?: string;
+  children: ReactNode;
+};
+
+const leaderMenu = [
+  { label: 'Dashboard', path: '/leader', badge: 'Live' },
+  { label: 'Thông tin CLB', path: '/leader/club-info' },
+  { label: 'Thành viên & Đơn', path: '/leader/members' },
+  { label: 'Hoạt động & Sự kiện', path: '/leader/activities' },
+  { label: 'Tài chính', path: '/leader/finance' },
+  { label: 'Báo cáo & Xuất dữ liệu', path: '/leader/reports' },
+];
+
+function LeaderLayout({
+  title = 'Không gian điều hành CLB',
+  subtitle = 'Theo dõi hoạt động, thành viên và tài chính trong một màn hình',
+  children,
+}: LeaderLayoutProps) {
+  const location = useLocation();
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="grid min-h-screen lg:grid-cols-[280px_1fr]">
+        <aside className="border-b border-white/5 bg-slate-950/90 px-6 py-8 backdrop-blur lg:border-b-0 lg:border-r">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="rounded-2xl bg-gradient-to-br from-fuchsia-500 to-orange-400 p-3 text-xl font-bold text-white">
+              CL
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-400">Leader Control</p>
+              <p className="text-lg font-semibold text-white">ClubOS 2025</p>
+            </div>
+          </Link>
+
+          <nav className="mt-10 space-y-2 text-sm">
+            {leaderMenu.map((item) => {
+              const isBasePath = item.path === '/leader';
+              const isActive = isBasePath
+                ? location.pathname === item.path
+                : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`flex items-center justify-between rounded-2xl px-4 py-3 transition ${
+                    isActive
+                      ? 'bg-gradient-to-r from-fuchsia-600/80 to-orange-500/70 text-white shadow-lg shadow-orange-500/20'
+                      : 'text-slate-300 hover:bg-white/5'
+                  }`}
+                >
+                  <span>{item.label}</span>
+                  {item.badge && <span className="text-xs font-semibold text-amber-200">{item.badge}</span>}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+            <p className="font-semibold text-white">Nhắc việc hôm nay</p>
+            <ul className="mt-3 space-y-2 text-xs leading-relaxed">
+              <li>- Duyệt 3 đơn đăng ký mới</li>
+              <li>- Gửi thông báo dự án Green Campus</li>
+              <li>- Kiểm tra thu phí hoạt động Media Cup</li>
+            </ul>
+          </div>
+        </aside>
+
+        <div className="relative isolate overflow-hidden border-t border-white/5 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900/70">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(236,72,153,0.15),transparent_55%)]" />
+          <div className="relative h-full w-full">
+            <header className="flex flex-col gap-4 border-b border-white/5 px-6 py-6 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-orange-200">Leader Workspace</p>
+                <h1 className="mt-1 text-3xl font-semibold text-white">{title}</h1>
+                <p className="text-sm text-slate-300">{subtitle}</p>
+              </div>
+              <div className="flex flex-col gap-3 text-sm text-slate-300 md:flex-row md:items-center">
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm thành viên, hoạt động, báo cáo..."
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-orange-300 focus:outline-none md:w-80"
+                />
+                <div className="flex gap-2">
+                  <button className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
+                    Gửi thông báo
+                  </button>
+                  <button className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/90">
+                    Tạo hoạt động
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            <main className="px-4 py-6 md:px-6 lg:py-8">
+              <div className="mx-auto max-w-6xl">{children}</div>
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default LeaderLayout;
+
+
