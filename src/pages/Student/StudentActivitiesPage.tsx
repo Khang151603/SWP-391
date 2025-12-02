@@ -129,65 +129,6 @@ function StudentActivitiesPage() {
   return (
     <StudentLayout title="Hoạt động" subtitle="Khám phá và đăng ký tham gia các hoạt động">
       <div className="space-y-6">
-        {/* Header Stats */}
-        <div className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-2xl bg-gradient-to-br from-violet-600/20 to-violet-600/5 p-5 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-violet-500/20 p-3">
-                <svg className="h-6 w-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Tổng hoạt động</p>
-                <p className="text-2xl font-bold text-white">{activities.length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-gradient-to-br from-emerald-600/20 to-emerald-600/5 p-5 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-emerald-500/20 p-3">
-                <svg className="h-6 w-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Đang mở</p>
-                <p className="text-2xl font-bold text-white">{activities.filter(a => a.status === 'open').length}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-gradient-to-br from-fuchsia-600/20 to-fuchsia-600/5 p-5 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-fuchsia-500/20 p-3">
-                <svg className="h-6 w-6 text-fuchsia-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Đã đăng ký</p>
-                <p className="text-2xl font-bold text-white">3</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl bg-gradient-to-br from-amber-600/20 to-amber-600/5 p-5 backdrop-blur-sm">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-amber-500/20 p-3">
-                <svg className="h-6 w-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-slate-400">Miễn phí</p>
-                <p className="text-2xl font-bold text-white">{activities.filter(a => a.fee === 0).length}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Search & Filter */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">

@@ -14,6 +14,7 @@ import StudentMyActivitiesPage from '../pages/Student/StudentMyActivitiesPage';
 import StudentClubsPage from '../pages/Student/StudentClubsPage';
 import StudentDashboardPage from '../pages/Student/StudentDashboardPage';
 import StudentExplorePage from '../pages/Student/StudentExplorePage';
+import StudentExploreDetailPage from '../pages/Student/StudentExploreDetailPage';
 import StudentFeesPage from '../pages/Student/StudentFeesPage';
 
 function AppRoutes() {
@@ -26,6 +27,7 @@ function AppRoutes() {
         <Route path="/student" element={<StudentDashboardPage />} />
         <Route path="/student/clubs" element={<StudentClubsPage />} />
         <Route path="/student/explore" element={<StudentExplorePage />} />
+        <Route path="/student/explore/:clubId" element={<StudentExploreDetailPage />} />
         <Route path="/student/activities" element={<StudentActivitiesPage />} />
         <Route path="/student/my-activities" element={<StudentMyActivitiesPage />} />
         <Route path="/student/fees" element={<StudentFeesPage />} />

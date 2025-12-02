@@ -1,5 +1,5 @@
 import LeaderLayout from '../../components/layout/LeaderLayout';
-import { activityPipeline, clubMetrics, financeOverview, pendingApplications } from './leaderData';
+import {clubMetrics, financeOverview, pendingApplications } from './leaderData';
 
 function ClubLeaderDashboardPage() {
   return (
@@ -78,34 +78,6 @@ function ClubLeaderDashboardPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
-
-        <section className="rounded-2xl border border-white/5 bg-slate-950/70 p-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-white">Hoạt động trong pipeline</h3>
-              <p className="text-sm text-slate-400">Theo dõi tiến độ, ngân sách và tình trạng thu phí</p>
-            </div>
-            <button className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white hover:bg-white/10">
-              Xuất timeline
-            </button>
-          </div>
-          <div className="mt-4 grid gap-4 lg:grid-cols-3">
-            {activityPipeline.map((activity) => (
-              <div key={activity.title} className="rounded-2xl border border-white/5 bg-white/5 p-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-white">{activity.title}</p>
-                  <span className="text-xs text-slate-400">{activity.status}</span>
-                </div>
-                <p className="mt-2 text-sm text-slate-300">{activity.schedule}</p>
-                <p className="text-sm text-slate-400">{activity.location}</p>
-                <div className="mt-3 rounded-xl border border-white/10 bg-slate-950/60 p-3 text-sm">
-                  <p>Ngân sách: {activity.budget}</p>
-                  <p>Thu phí: {activity.fee}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </section>
       </div>

@@ -60,15 +60,6 @@ function LeaderLayout({
               );
             })}
           </nav>
-
-          <div className="mt-10 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-            <p className="font-semibold text-white">Nhắc việc hôm nay</p>
-            <ul className="mt-3 space-y-2 text-xs leading-relaxed">
-              <li>- Duyệt 3 đơn đăng ký mới</li>
-              <li>- Gửi thông báo dự án Green Campus</li>
-              <li>- Kiểm tra thu phí hoạt động Media Cup</li>
-            </ul>
-          </div>
         </aside>
 
         <div className="relative isolate overflow-hidden border-t border-white/5 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900/70">

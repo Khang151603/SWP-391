@@ -13,6 +13,7 @@ const menuItems = [
   { label: 'Khám phá CLB', path: '/student/explore' },
   { label: 'Hoạt động', path: '/student/activities' },
   { label: 'Hoạt động của tôi', path: '/student/my-activities' },
+  { label: 'Đơn gửi Leader', path: '/student/leader-requests' },
   { label: 'Tài chính', path: '/student/fees' },
 ];
 

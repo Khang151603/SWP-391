@@ -176,27 +176,6 @@ function ClubDetailPage() {
                 ))}
               </div>
             </div>
-
-            {/* Recruitment Notice */}
-            <div className="rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 p-6 backdrop-blur-sm">
-              <div className="mb-3 flex items-center gap-2">
-                <div className="rounded-lg bg-violet-500/20 p-2">
-                  <svg className="h-5 w-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <h3 className="font-semibold text-white">Thông báo tuyển thành viên</h3>
-              </div>
-              <p className="mb-2 text-sm text-slate-300">
-                Tuyển thành viên đợt Spring 2025 mở từ <strong className="text-white">05/12 đến 20/12</strong>.
-              </p>
-              <p className="text-xs text-slate-400">
-                Ưu tiên sinh viên có kinh nghiệm nội dung hoặc media.
-              </p>
-              <button className="mt-4 w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:shadow-violet-500/50">
-                Đăng ký tham gia
-              </button>
-            </div>
           </div>
         </div>
       </div>
