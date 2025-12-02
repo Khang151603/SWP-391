@@ -103,6 +103,14 @@ const allClubs = [
   },
 ];
 
+const availabilityOptions = [
+  { id: 'weekday-evening', label: 'Tối trong tuần', subtext: '18:00 - 21:00' },
+  { id: 'weekday-morning', label: 'Sáng trong tuần', subtext: '07:30 - 11:00' },
+  { id: 'weekend', label: 'Cuối tuần', subtext: 'Thứ 7 - Chủ nhật' },
+  { id: 'hybrid', label: 'Hybrid', subtext: 'Online + Offline' },
+  { id: 'remote', label: 'Online', subtext: 'Qua Teams/Zoom' },
+];
+
 function StudentExplorePage() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -124,6 +132,20 @@ function StudentExplorePage() {
     availability: [] as string[],
     agreedToTerms: false,
   });
+
+  const requiredFieldKeys: Array<keyof typeof formData> = ['fullName', 'studentId', 'email', 'phone', 'major', 'motivation'];
+  const filledRequiredFields = requiredFieldKeys.filter((key) => {
+    const value = formData[key];
+    return typeof value === 'string' && value.trim() !== '';
+  }).length;
+  const completionPercentage = Math.min(
+    100,
+    Math.round(
+      ((filledRequiredFields + (formData.availability.length ? 1 : 0) + (formData.agreedToTerms ? 1 : 0)) /
+        (requiredFieldKeys.length + 2)) *
+        100,
+    ),
+  );
 
   const filteredClubs = allClubs.filter((club) => {
     const matchesCategory = activeCategory === 'all' || club.category === activeCategory;
@@ -153,6 +175,16 @@ function StudentExplorePage() {
 
   const handleFormChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const toggleAvailability = (slotId: string) => {
+    setFormData(prev => {
+      const isSelected = prev.availability.includes(slotId);
+      return {
+        ...prev,
+        availability: isSelected ? prev.availability.filter(id => id !== slotId) : [...prev.availability, slotId],
+      };
+    });
   };
 
   const isFormValid = () => {
@@ -552,260 +584,323 @@ function StudentExplorePage() {
       {/* Registration Dialog */}
       <Dialog open={selectedClub !== null} onOpenChange={(open) => !open && setSelectedClub(null)}>
         {selectedClub && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedClub(null)} />
-            
-            <div className="relative z-10 w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
-              {!registrationSuccess ? (
-                <>
-                  <div className="mb-6 flex items-start justify-between sticky top-0 bg-slate-900 pb-4 border-b border-white/10">
-                    <div>
-                      <h3 className="text-2xl font-bold text-white">Đăng ký tham gia CLB</h3>
-                      <p className="mt-1 text-sm text-slate-400">Vui lòng điền đầy đủ thông tin để hoàn tất đăng ký</p>
-                    </div>
-                    <button
-                      onClick={() => setSelectedClub(null)}
-                      className="rounded-lg p-1 text-slate-400 transition hover:bg-white/10 hover:text-white"
-                    >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-8">
+            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedClub(null)} />
+            <div className="relative z-10 w-full max-w-5xl">
+              <div className="relative max-h-[90vh] overflow-hidden rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl">
+                <button
+                  onClick={() => setSelectedClub(null)}
+                  className="absolute right-4 top-4 z-20 rounded-full border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10 hover:text-white"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
 
-                  {/* Club Info Summary */}
-                  <div className="mb-6 rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 to-fuchsia-500/10 p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30">
-                        {selectedClub.category === 'tech' && (
-                          <svg className="h-6 w-6 text-violet-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                          </svg>
-                        )}
-                        {selectedClub.category === 'language' && (
-                          <svg className="h-6 w-6 text-fuchsia-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                          </svg>
-                        )}
-                        {selectedClub.category === 'creative' && (
-                          <svg className="h-6 w-6 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                          </svg>
-                        )}
-                        {selectedClub.category === 'sport' && (
-                          <svg className="h-6 w-6 text-orange-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        )}
+                {!registrationSuccess ? (
+                  <div className="grid h-full max-h-[90vh] grid-cols-1 overflow-hidden lg:grid-cols-[1.1fr_1.9fr]">
+                    <aside className="flex flex-col gap-6 overflow-y-auto border-b border-white/5 bg-gradient-to-b from-violet-900/70 via-fuchsia-900/40 to-slate-950/80 px-6 py-8 text-white lg:border-b-0 lg:border-r">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.35em] text-white/70">CLB bạn chọn</p>
+                        <h3 className="mt-2 text-2xl font-bold">{selectedClub.name}</h3>
+                        <p className="mt-2 text-sm text-white/70">{selectedClub.description}</p>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-white">{selectedClub.name}</h4>
-                        <p className="mt-1 text-sm text-slate-400 line-clamp-2">{selectedClub.description}</p>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          <span className="text-xs text-violet-300">👥 {selectedClub.members} thành viên</span>
-                          <span className="text-xs text-slate-400">•</span>
-                          <span className="text-xs text-emerald-300">
-                            {selectedClub.fee === 0 ? '🎁 Miễn phí' : `💰 ${selectedClub.fee.toLocaleString()}đ`}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Registration Form */}
-                  <div className="space-y-5">
-                    {/* Personal Information Section */}
-                    <div>
-                      <h5 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-                        <svg className="h-4 w-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        Thông tin cá nhân
-                      </h5>
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div>
-                          <label className="mb-1.5 block text-sm text-slate-300">
-                            Họ và tên <span className="text-red-400">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.fullName}
-                            onChange={(e) => handleFormChange('fullName', e.target.value)}
-                            placeholder="Nguyễn Văn A"
-                            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                          />
+                      <div className="rounded-2xl border border-white/15 bg-white/5 p-4 shadow-lg shadow-violet-500/10">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10">
+                            {selectedClub.category === 'tech' && (
+                              <svg className="h-6 w-6 text-violet-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                              </svg>
+                            )}
+                            {selectedClub.category === 'language' && (
+                              <svg className="h-6 w-6 text-fuchsia-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                              </svg>
+                            )}
+                            {selectedClub.category === 'creative' && (
+                              <svg className="h-6 w-6 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                              </svg>
+                            )}
+                            {selectedClub.category === 'sport' && (
+                              <svg className="h-6 w-6 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm text-white/70">Độ phủ cộng đồng</p>
+                            <p className="text-lg font-semibold">{selectedClub.members}+ thành viên</p>
+                          </div>
                         </div>
-                        <div>
-                          <label className="mb-1.5 block text-sm text-slate-300">
-                            Mã sinh viên <span className="text-red-400">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.studentId}
-                            onChange={(e) => handleFormChange('studentId', e.target.value)}
-                            placeholder="SE123456"
-                            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-sm text-slate-300">
-                            Email <span className="text-red-400">*</span>
-                          </label>
-                          <input
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => handleFormChange('email', e.target.value)}
-                            placeholder="nguyenvana@fpt.edu.vn"
-                            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-sm text-slate-300">
-                            Số điện thoại <span className="text-red-400">*</span>
-                          </label>
-                          <input
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => handleFormChange('phone', e.target.value)}
-                            placeholder="0912345678"
-                            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-sm text-slate-300">
-                            Chuyên ngành <span className="text-red-400">*</span>
-                          </label>
-                          <input
-                            type="text"
-                            value={formData.major}
-                            onChange={(e) => handleFormChange('major', e.target.value)}
-                            placeholder="Software Engineering"
-                            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                          />
-                        </div>
-                        <div>
-                          <label className="mb-1.5 block text-sm text-slate-300">
-                            Năm học <span className="text-red-400">*</span>
-                          </label>
-                          <select
-                            value={formData.year}
-                            onChange={(e) => handleFormChange('year', e.target.value)}
-                            className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                          >
-                            <option value="1">Năm 1</option>
-                            <option value="2">Năm 2</option>
-                            <option value="3">Năm 3</option>
-                            <option value="4">Năm 4</option>
-                          </select>
+                        <ul className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                          <li className="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <p className="text-xs text-white/60">Hoạt động/tuần</p>
+                            <p className="text-lg font-semibold text-white">{selectedClub.activities}</p>
+                          </li>
+                          <li className="rounded-xl border border-white/10 bg-white/5 p-3">
+                            <p className="text-xs text-white/60">Chi phí</p>
+                            <p className="text-lg font-semibold text-emerald-300">
+                              {selectedClub.fee === 0 ? 'Miễn phí' : `${selectedClub.fee.toLocaleString()}đ`}
+                            </p>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div className="space-y-3">
+                        <p className="text-xs uppercase tracking-[0.4em] text-white/60">Focus tags</p>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedClub.tags?.map(tag => (
+                            <span key={tag} className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80">
+                              #{tag}
+                            </span>
+                          ))}
                         </div>
                       </div>
-                    </div>
-                    {/* Motivation Section */}
-                    <div>
-                      <h5 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-                        <svg className="h-4 w-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                        </svg>
-                        Lý do tham gia <span className="text-red-400">*</span>
-                      </h5>
-                      <textarea
-                        value={formData.motivation}
-                        onChange={(e) => handleFormChange('motivation', e.target.value)}
-                        placeholder="Hãy chia sẻ lý do bạn muốn tham gia CLB này và bạn mong đợi điều gì..."
-                        rows={4}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                      />
-                    </div>
 
-                    {/* Experience Section */}
-                    <div>
-                      <h5 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-                        <svg className="h-4 w-4 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                        </svg>
-                        Kinh nghiệm liên quan (nếu có)
-                      </h5>
-                      <textarea
-                        value={formData.experience}
-                        onChange={(e) => handleFormChange('experience', e.target.value)}
-                        placeholder="Các dự án, hoạt động, kỹ năng liên quan đến CLB..."
-                        rows={3}
-                        className="w-full rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-white placeholder-slate-500 transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
-                      />
-                    </div>
+                      <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
+                        <div className="flex items-center justify-between text-sm text-white/70">
+                          <span>Tiến độ hồ sơ</span>
+                          <span className="font-semibold text-white">{completionPercentage}%</span>
+                        </div>
+                        <div className="mt-2 h-2 rounded-full bg-white/10">
+                          <div className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-violet-500 transition-all" style={{ width: `${completionPercentage}%` }} />
+                        </div>
+                        <p className="mt-2 text-xs text-white/60">Điền đầy đủ thông tin & chọn lịch tham gia để đạt 100%</p>
+                      </div>
 
-                    {/* Terms and Conditions */}
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <label className="flex cursor-pointer items-start gap-3">
-                        <input
-                          type="checkbox"
-                          checked={formData.agreedToTerms}
-                          onChange={(e) => handleFormChange('agreedToTerms', e.target.checked)}
-                          className="mt-0.5 h-5 w-5 rounded border-white/20 bg-white/10 text-violet-600 focus:ring-2 focus:ring-violet-500/20 focus:ring-offset-0"
-                        />
-                        <span className="text-sm text-slate-300">
-                          Tôi cam kết tham gia đầy đủ các hoạt động của CLB, tuân thủ nội quy và thanh toán phí tham gia (nếu có).
-                          <span className="text-red-400"> *</span>
-                        </span>
-                      </label>
-                    </div>
+                      <div className="rounded-2xl border border-amber-300/40 bg-amber-400/10 p-4 text-sm text-amber-100">
+                        <p className="font-semibold text-amber-200">Sự kiện sắp tới</p>
+                        <p className="mt-1 text-2xl font-bold text-white">{selectedClub.nextEvent ?? 'Sự kiện nội bộ tuần này'}</p>
+                        <p className="mt-2 text-xs text-amber-100/90">
+                          Đăng ký sớm để giữ chỗ và nhận thông báo chi tiết qua email.
+                        </p>
+                      </div>
+                    </aside>
+
+                    <section className="flex flex-col overflow-y-auto px-6 py-6">
+                      <header className="pb-5">
+                        <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Đơn đăng ký</span>
+                        <h3 className="mt-2 text-3xl font-semibold text-white">Tạo hồ sơ tham gia</h3>
+                        <p className="mt-2 text-sm text-slate-400">
+                          Thông tin càng chi tiết, Ban Quản Lý càng dễ kết nối bạn với nhóm phù hợp.
+                        </p>
+                      </header>
+
+                      <div className="space-y-6">
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                          <h5 className="flex items-center gap-2 text-sm font-semibold text-white">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">1</span>
+                            Thông tin cá nhân
+                          </h5>
+                          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Họ và tên *</label>
+                              <input
+                                type="text"
+                                value={formData.fullName}
+                                onChange={(e) => handleFormChange('fullName', e.target.value)}
+                                placeholder="Nguyễn Văn A"
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white placeholder-slate-500 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Mã sinh viên *</label>
+                              <input
+                                type="text"
+                                value={formData.studentId}
+                                onChange={(e) => handleFormChange('studentId', e.target.value)}
+                                placeholder="SE123456"
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white placeholder-slate-500 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Email *</label>
+                              <input
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => handleFormChange('email', e.target.value)}
+                                placeholder="nguyenvana@fpt.edu.vn"
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white placeholder-slate-500 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Số điện thoại *</label>
+                              <input
+                                type="tel"
+                                value={formData.phone}
+                                onChange={(e) => handleFormChange('phone', e.target.value)}
+                                placeholder="0912345678"
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white placeholder-slate-500 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Chuyên ngành *</label>
+                              <input
+                                type="text"
+                                value={formData.major}
+                                onChange={(e) => handleFormChange('major', e.target.value)}
+                                placeholder="Software Engineering"
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white placeholder-slate-500 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Năm học *</label>
+                              <select
+                                value={formData.year}
+                                onChange={(e) => handleFormChange('year', e.target.value)}
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              >
+                                <option value="1">Năm 1</option>
+                                <option value="2">Năm 2</option>
+                                <option value="3">Năm 3</option>
+                                <option value="4">Năm 4</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                          <h5 className="flex items-center gap-2 text-sm font-semibold text-white">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">2</span>
+                            Mục tiêu & kinh nghiệm
+                          </h5>
+                          <div className="mt-4 space-y-4">
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Lý do tham gia *</label>
+                              <textarea
+                                value={formData.motivation}
+                                onChange={(e) => handleFormChange('motivation', e.target.value)}
+                                rows={4}
+                                placeholder="Chia sẻ bạn mong muốn điều gì khi tham gia CLB..."
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white placeholder-slate-500 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-400">Kinh nghiệm liên quan</label>
+                              <textarea
+                                value={formData.experience}
+                                onChange={(e) => handleFormChange('experience', e.target.value)}
+                                rows={3}
+                                placeholder="Kể về kỹ năng, dự án, thành tựu liên quan..."
+                                className="w-full rounded-xl border border-white/10 bg-slate-900/40 px-4 py-3 text-white placeholder-slate-500 focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                          <h5 className="flex items-center gap-2 text-sm font-semibold text-white">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">3</span>
+                            Thời gian & cam kết
+                          </h5>
+                          <p className="mt-2 text-sm text-slate-400">Chọn khung thời gian bạn có thể tham gia hoạt động định kỳ.</p>
+
+                          <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                            {availabilityOptions.map(slot => {
+                              const isSelected = formData.availability.includes(slot.id);
+                              return (
+                                <button
+                                  key={slot.id}
+                                  type="button"
+                                  onClick={() => toggleAvailability(slot.id)}
+                                  aria-pressed={isSelected}
+                                  className={`rounded-2xl border px-4 py-3 text-left transition ${
+                                    isSelected
+                                      ? 'border-emerald-400/60 bg-emerald-400/15 text-white shadow-lg shadow-emerald-500/20'
+                                      : 'border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:bg-white/10'
+                                  }`}
+                                >
+                                  <p className="text-sm font-semibold">{slot.label}</p>
+                                  <p className="text-xs text-white/60">{slot.subtext}</p>
+                                </button>
+                              );
+                            })}
+                          </div>
+
+                          <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
+                            <label className="flex cursor-pointer items-start gap-3">
+                              <input
+                                type="checkbox"
+                                checked={formData.agreedToTerms}
+                                onChange={(e) => handleFormChange('agreedToTerms', e.target.checked)}
+                                className="mt-1 h-5 w-5 rounded border-white/20 bg-slate-900/40 text-violet-600 focus:ring-2 focus:ring-violet-500/20 focus:ring-offset-0"
+                              />
+                              <span className="text-sm text-slate-300">
+                                Tôi cam kết tham gia đầy đủ hoạt động, tuân thủ nội quy và hoàn tất phí nếu có. <span className="text-red-400">*</span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 space-y-4 rounded-2xl border border-blue-400/30 bg-blue-950/40 p-5 text-sm text-blue-100">
+                        <div className="flex items-center gap-3">
+                          <svg className="h-5 w-5 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <p>Ban Quản Lý sẽ phản hồi qua email trong 24-48 giờ. Bạn có thể theo dõi trạng thái tại trang “Đơn của tôi”.</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex flex-col gap-3 border-t border-white/5 pt-5 sm:flex-row">
+                        <button
+                          onClick={() => setSelectedClub(null)}
+                          className="w-full rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
+                        >
+                          Để sau
+                        </button>
+                        <button
+                          onClick={confirmRegistration}
+                          disabled={isRegistering || !isFormValid()}
+                          className="w-full rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:shadow-violet-500/60 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {isRegistering ? (
+                            <span className="flex items-center justify-center gap-2">
+                              <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                              </svg>
+                              Đang gửi
+                            </span>
+                          ) : (
+                            'Gửi đơn ngay'
+                          )}
+                        </button>
+                      </div>
+                    </section>
                   </div>
-
-                  {/* Info Note */}
-                  <div className="mt-6 rounded-xl bg-blue-500/10 border border-blue-500/20 p-4">
-                    <div className="flex gap-3">
-                      <svg className="h-5 w-5 flex-shrink-0 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <p className="text-sm text-blue-300">
-                        Sau khi đăng ký, Ban Quản Lý CLB sẽ xem xét đơn của bạn trong vòng 24-48 giờ. Bạn sẽ nhận được email thông báo kết quả.
+                ) : (
+                  <div className="flex flex-col items-center justify-center gap-6 px-8 py-16 text-center text-white">
+                    <div className="relative">
+                      <div className="h-24 w-24 rounded-full bg-emerald-400/20" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <svg className="h-12 w-12 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <p className="text-sm uppercase tracking-[0.5em] text-emerald-200">Hoàn tất</p>
+                      <h4 className="text-3xl font-bold">Đăng ký thành công!</h4>
+                      <p className="text-base text-slate-300">
+                        Cảm ơn bạn đã đăng ký tham gia <span className="text-violet-200">{selectedClub.name}</span>. Chúng tôi sẽ gửi phản hồi sớm nhất qua email.
                       </p>
                     </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="mt-6 flex gap-3">
                     <button
-                      onClick={() => setSelectedClub(null)}
-                      className="flex-1 rounded-xl border border-white/10 px-4 py-3 text-sm font-medium text-white transition hover:bg-white/5"
+                      onClick={() => {
+                        setSelectedClub(null);
+                        setRegistrationSuccess(false);
+                      }}
+                      className="rounded-2xl border border-white/20 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
                     >
-                      Hủy
-                    </button>
-                    <button
-                      onClick={confirmRegistration}
-                      disabled={isRegistering || !isFormValid()}
-                      className="flex-1 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:shadow-violet-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isRegistering ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Đang gửi...
-                        </span>
-                      ) : (
-                        'Xác nhận đăng ký'
-                      )}
+                      Đóng cửa sổ
                     </button>
                   </div>
-                </>
-              ) : (
-                <div className="py-12 text-center">
-                  <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/20 animate-pulse">
-                    <svg className="h-10 w-10 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                  <h4 className="mb-3 text-2xl font-bold text-white">Đăng ký thành công!</h4>
-                  <p className="mb-2 text-slate-300">
-                    Bạn đã gửi đơn đăng ký tham gia <span className="font-semibold text-violet-300">{selectedClub.name}</span>
-                  </p>
-                  <p className="text-sm text-slate-400">
-                    Chúng tôi sẽ xem xét đơn của bạn và gửi thông báo qua email trong thời gian sớm nhất.
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
