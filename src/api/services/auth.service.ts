@@ -15,10 +15,30 @@ export const authService = {
   /**
    * Register a new user
    */
-  async register(data: RegisterRequest): Promise<void> {
-    await httpClient.post<void>(AUTH_ENDPOINTS.REGISTER, data, {
-      skipAuth: true,
-    });
+  async register(data: RegisterRequest): Promise<AuthResponse> {
+    const response = await httpClient.post<AuthResponse>(
+      AUTH_ENDPOINTS.REGISTER, 
+      data, 
+      {
+        skipAuth: true,
+      }
+    );
+
+    // Save token, roles, and user info
+    if (response.token) {
+      tokenManager.setToken(response.token);
+      if (response.roles) {
+        tokenManager.setRoles(response.roles);
+      }
+      tokenManager.setUserInfo({
+        accountId: response.accountId,
+        username: response.username,
+        email: response.email,
+        fullName: response.fullName,
+      });
+    }
+
+    return response;
   },
 
   /**
@@ -31,12 +51,18 @@ export const authService = {
       { skipAuth: true }
     );
 
-    // Save token and roles
+    // Save token, roles, and user info
     if (response.token) {
       tokenManager.setToken(response.token);
       if (response.roles) {
         tokenManager.setRoles(response.roles);
       }
+      tokenManager.setUserInfo({
+        accountId: response.accountId,
+        username: response.username,
+        email: response.email,
+        fullName: response.fullName,
+      });
     }
 
     return response;
@@ -69,6 +95,12 @@ export const authService = {
       if (response.roles) {
         tokenManager.setRoles(response.roles);
       }
+      tokenManager.setUserInfo({
+        accountId: response.accountId,
+        username: response.username,
+        email: response.email,
+        fullName: response.fullName,
+      });
     }
 
     return response;
@@ -100,6 +132,34 @@ export const authService = {
    */
   getRoles(): string[] {
     return tokenManager.getRoles();
+  },
+
+  /**
+   * Get current user info
+   */
+  getUserInfo() {
+    return tokenManager.getUserInfo();
+  },
+
+  /**
+   * Get selected role
+   */
+  getSelectedRole(): string | null {
+    return tokenManager.getSelectedRole();
+  },
+
+  /**
+   * Set selected role
+   */
+  setSelectedRole(role: string): void {
+    tokenManager.setSelectedRole(role);
+  },
+
+  /**
+   * Check if user has multiple roles
+   */
+  hasMultipleRoles(): boolean {
+    return tokenManager.hasMultipleRoles();
   },
 };
 

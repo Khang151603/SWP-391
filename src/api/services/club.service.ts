@@ -5,6 +5,7 @@ import type {
   CreateClubRequest,
   UpdateClubRequest,
   ClubMember,
+  CreateLeaderRequest,
 } from '../types/club.types';
 
 /**
@@ -58,6 +59,13 @@ export const clubService = {
    */
   async joinRequest(id: number | string, message?: string): Promise<void> {
     return httpClient.post<void>(CLUB_ENDPOINTS.JOIN_REQUEST(id), { message });
+  },
+
+  /**
+   * Request to become club leader
+   */
+  async createLeaderRequest(data: CreateLeaderRequest): Promise<string> {
+    return httpClient.post<string>(CLUB_ENDPOINTS.LEADER_REQUEST, data);
   },
 };
 

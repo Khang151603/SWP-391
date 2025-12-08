@@ -1,16 +1,32 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from '../components/layout/AuthLayout';
 import { authService } from '../api';
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Lấy thông báo từ navigation state
+  useEffect(() => {
+    const state = location.state as { message?: string; username?: string } | null;
+    if (state?.message) {
+      setSuccessMessage(state.message);
+      // Pre-fill username nếu có
+      if (state.username) {
+        setFormData(prev => ({ ...prev, username: state.username }));
+      }
+      // Clear state để tránh hiển thị lại khi refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -27,13 +43,25 @@ function LoginPage() {
     try {
       const response = await authService.login(formData);
       
-      // Redirect based on role
-      if (response.roles.includes('student')) {
-        navigate('/student');
-      } else if (response.roles.includes('leader')) {
-        navigate('/leader');
+      // Nếu có nhiều role, chuyển đến trang chọn role
+      if (response.roles.length > 1) {
+        navigate('/select-role');
       } else {
-        navigate('/');
+        // Nếu chỉ có 1 role, tự động chọn và chuyển hướng
+        const role = response.roles[0];
+        const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
+        
+        // Lưu role gốc từ API
+        authService.setSelectedRole(role);
+        
+        // Chuyển hướng dựa trên role đã chuẩn hóa
+        if (normalizedRole === 'student') {
+          navigate('/student');
+        } else if (normalizedRole === 'clubleader') {
+          navigate('/leader');
+        } else {
+          navigate('/');
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
@@ -45,6 +73,12 @@ function LoginPage() {
   return (
     <AuthLayout title="Đăng nhập">
       <form className="space-y-5" onSubmit={handleSubmit}>
+        {successMessage && (
+          <div className="rounded-2xl border border-green-500/20 bg-green-500/10 px-4 py-3 text-sm text-green-400">
+            {successMessage}
+          </div>
+        )}
+        
         {error && (
           <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             {error}

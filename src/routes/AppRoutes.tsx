@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from '../pages/HomePage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
+import RoleSelectionPage from '../pages/RoleSelectionPage';
+import ProtectedRoute from '../components/ProtectedRoute';
 import ClubLeaderActivitiesPage from '../pages/ClubLeader/ClubLeaderActivitiesPage';
 import ClubLeaderDashboardPage from '../pages/ClubLeader/ClubLeaderDashboardPage';
 import ClubLeaderFinancePage from '../pages/ClubLeader/ClubLeaderFinancePage';
@@ -22,24 +24,144 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/student" element={<StudentDashboardPage />} />
-        <Route path="/student/clubs" element={<StudentClubsPage />} />
-        <Route path="/student/explore" element={<StudentExplorePage />} />
-        <Route path="/student/explore/:clubId" element={<StudentExploreDetailPage />} />
-        <Route path="/student/activities" element={<StudentActivitiesPage />} />
-        <Route path="/student/my-activities" element={<StudentMyActivitiesPage />} />
-        <Route path="/student/fees" element={<StudentFeesPage />} />
-        <Route path="/student/become-leader" element={<StudentBecomeLeaderPage />} />
-        <Route path="/student/clubs/:clubId" element={<ClubDetailPage />} />
-        <Route path="/leader" element={<ClubLeaderDashboardPage />} />
-        <Route path="/leader/club-info" element={<ClubLeaderInfoPage />} />
-        <Route path="/leader/members" element={<ClubLeaderMembersPage />} />
-        <Route path="/leader/activities" element={<ClubLeaderActivitiesPage />} />
-        <Route path="/leader/finance" element={<ClubLeaderFinancePage />} />
-        <Route path="/leader/reports" element={<ClubLeaderReportsPage />} />
+        
+        {/* Role Selection Route */}
+        <Route 
+          path="/select-role" 
+          element={
+            <ProtectedRoute>
+              <RoleSelectionPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Student Routes - Protected */}
+        <Route 
+          path="/student" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentDashboardPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/clubs" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentClubsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/explore" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentExplorePage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/explore/:clubId" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentExploreDetailPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/activities" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentActivitiesPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/my-activities" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentMyActivitiesPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/fees" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentFeesPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/become-leader" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentBecomeLeaderPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/clubs/:clubId" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <ClubDetailPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Club Leader Routes - Protected */}
+        <Route 
+          path="/leader" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderDashboardPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/club-info" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderInfoPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/members" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderMembersPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/activities" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderActivitiesPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/finance" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderFinancePage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/reports" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderReportsPage />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </BrowserRouter>
   );

@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAppContext } from '../../context/AppContext';
 
 type StudentLayoutProps = {
   title?: string;
@@ -29,11 +30,18 @@ function StudentLayout({
   children,
 }: StudentLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout, user } = useAppContext();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
     <div className="min-h-screen bg-slate-950/95 text-slate-100">
       <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
-        <aside className="border-b border-slate-900/40 bg-slate-950/80 px-6 py-6 backdrop-blur lg:border-b-0 lg:border-r">
+        <aside className="flex flex-col border-b border-slate-900/40 bg-slate-950/80 px-6 py-6 backdrop-blur lg:border-b-0 lg:border-r">
           <Link to="/" className="flex items-center gap-3">
             <div className="rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 p-3 text-xl font-bold text-white">
               SC
@@ -69,6 +77,26 @@ function StudentLayout({
               );
             })}
           </nav>
+          
+          {/* User Info & Logout */}
+          <div className="mt-auto border-t border-slate-900/40 pt-6">
+            {user && (
+              <div className="mb-4 rounded-xl bg-white/5 px-4 py-3">
+                <p className="text-xs text-slate-400">Đăng nhập bởi</p>
+                <p className="mt-1 text-sm font-semibold text-white">{user.fullName}</p>
+                <p className="mt-0.5 text-xs text-slate-400">{user.email}</p>
+              </div>
+            )}
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm font-semibold text-red-300 transition hover:bg-red-500/20 hover:border-red-500/50"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              <span>Đăng xuất</span>
+            </button>
+          </div>
         </aside>
 
         <div className="relative isolate overflow-hidden border-t border-slate-900/40 bg-gradient-to-br from-slate-950 via-slate-950 to-slate-900/60">

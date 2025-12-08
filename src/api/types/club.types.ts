@@ -37,3 +37,7 @@ export interface ClubMember {
   };
 }
 
+export interface CreateLeaderRequest {
+  reason: string;
+}
+

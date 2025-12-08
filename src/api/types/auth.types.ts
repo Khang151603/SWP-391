@@ -13,17 +13,24 @@ export interface LoginRequest {
 
 export interface AuthResponse {
   token: string;
+  accountId: number;
+  username: string;
+  email: string;
+  fullName: string;
   roles: string[];
-  user?: {
-    id: number;
-    username: string;
-    email: string;
-    fullName: string;
-  };
 }
 
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface UserInfo {
+  accountId: number;
+  username: string;
+  email: string;
+  fullName: string;
+  roles: string[];
+  selectedRole?: string;
 }
 

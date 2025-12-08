@@ -1,5 +1,5 @@
 // API Base URL
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5201';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:7124';
 
 // Auth Endpoints
 export const AUTH_ENDPOINTS = {
@@ -19,6 +19,7 @@ export const CLUB_ENDPOINTS = {
   DELETE: (id: number | string) => `/api/Club/${id}`,
   GET_MEMBERS: (id: number | string) => `/api/Club/${id}/members`,
   JOIN_REQUEST: (id: number | string) => `/api/Club/${id}/join`,
+  LEADER_REQUEST: '/api/club-leader-requests',
 } as const;
 
 // Activities Endpoints

@@ -1,6 +1,8 @@
 // Token Management Utilities
 const TOKEN_KEY = 'token';
 const ROLES_KEY = 'roles';
+const USER_INFO_KEY = 'userInfo';
+const SELECTED_ROLE_KEY = 'selectedRole';
 
 export const tokenManager = {
   getToken(): string | null {
@@ -34,13 +36,60 @@ export const tokenManager = {
     localStorage.removeItem(ROLES_KEY);
   },
 
+  getUserInfo(): {
+    accountId: number;
+    username: string;
+    email: string;
+    fullName: string;
+  } | null {
+    if (typeof window === 'undefined') return null;
+    const userInfo = localStorage.getItem(USER_INFO_KEY);
+    return userInfo ? JSON.parse(userInfo) : null;
+  },
+
+  setUserInfo(userInfo: {
+    accountId: number;
+    username: string;
+    email: string;
+    fullName: string;
+  }): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
+  },
+
+  removeUserInfo(): void {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(USER_INFO_KEY);
+  },
+
+  getSelectedRole(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(SELECTED_ROLE_KEY);
+  },
+
+  setSelectedRole(role: string): void {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(SELECTED_ROLE_KEY, role);
+  },
+
+  removeSelectedRole(): void {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(SELECTED_ROLE_KEY);
+  },
+
   clear(): void {
     this.removeToken();
     this.removeRoles();
+    this.removeUserInfo();
+    this.removeSelectedRole();
   },
 
   isAuthenticated(): boolean {
     return !!this.getToken();
+  },
+
+  hasMultipleRoles(): boolean {
+    return this.getRoles().length > 1;
   },
 };
 

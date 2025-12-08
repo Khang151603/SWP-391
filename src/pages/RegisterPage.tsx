@@ -28,9 +28,16 @@ function RegisterPage() {
 
     try {
       await authService.register(formData);
-      // Redirect to login page after successful registration
+      
+      // Xóa token vì chưa muốn auto-login
+      authService.logout();
+      
+      // Chuyển về trang login với thông báo thành công
       navigate('/login', { 
-        state: { message: 'Đăng ký thành công! Vui lòng đăng nhập.' } 
+        state: { 
+          message: 'Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.',
+          username: formData.username 
+        } 
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Đăng ký thất bại. Vui lòng thử lại.');
