@@ -77,14 +77,7 @@ function LeaderLayout({
                   placeholder="Tìm kiếm thành viên, hoạt động, báo cáo..."
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-orange-300 focus:outline-none md:w-80"
                 />
-                <div className="flex gap-2">
-                  <button className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
-                    Gửi thông báo
-                  </button>
-                  <button className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/90">
-                    Tạo hoạt động
-                  </button>
-                </div>
+
               </div>
             </header>
 

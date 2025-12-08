@@ -540,18 +540,6 @@ function StudentExplorePage() {
                           </li>
                         </ul>
                       </div>
-
-                      <div className="space-y-3">
-                        <p className="text-xs uppercase tracking-[0.4em] text-white/60">Focus tags</p>
-                        <div className="flex flex-wrap gap-2">
-                          {selectedClub.tags?.map(tag => (
-                            <span key={tag} className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-white/80">
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-
                       <div className="rounded-2xl border border-white/15 bg-white/5 p-4">
                         <div className="flex items-center justify-between text-sm text-white/70">
                           <span>Tiến độ hồ sơ</span>
@@ -572,8 +560,8 @@ function StudentExplorePage() {
                       </div>
                     </aside>
 
-                    <section className="flex flex-col overflow-y-auto px-6 py-6">
-                      <header className="pb-5">
+                    <section className="flex h-full max-h-[90vh] flex-col overflow-hidden px-6 py-6">
+                      <header className="flex-shrink-0 pb-5">
                         <span className="text-xs uppercase tracking-[0.4em] text-slate-400">Đơn đăng ký</span>
                         <h3 className="mt-2 text-3xl font-semibold text-white">Tạo hồ sơ tham gia</h3>
                         <p className="mt-2 text-sm text-slate-400">
@@ -581,7 +569,7 @@ function StudentExplorePage() {
                         </p>
                       </header>
 
-                      <div className="space-y-6">
+                      <div className="min-h-0 flex-1 overflow-y-auto space-y-6 pr-2">
                         <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
                           <h5 className="flex items-center gap-2 text-sm font-semibold text-white">
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">1</span>
@@ -726,30 +714,34 @@ function StudentExplorePage() {
                             </label>
                           </div>
                         </div>
+
+                        <div className="mt-6 space-y-2 rounded-2xl border border-blue-400/30 bg-blue-950/40 p-5 text-sm text-blue-100">
+                          <p className="font-semibold">Lưu ý</p>
+                          <p>
+                            Ban Quản Lý sẽ phản hồi qua email trong 24-48 giờ. Bạn có thể theo dõi trạng thái tại trang
+                            "Đơn của tôi".
+                          </p>
+                        </div>
                       </div>
 
-                      <div className="mt-6 space-y-2 rounded-2xl border border-blue-400/30 bg-blue-950/40 p-5 text-sm text-blue-100">
-                        <p className="font-semibold">Lưu ý</p>
-                        <p>
-                          Ban Quản Lý sẽ phản hồi qua email trong 24-48 giờ. Bạn có thể theo dõi trạng thái tại trang
-                          “Đơn của tôi”.
-                        </p>
-                      </div>
-
-                      <div className="mt-6 flex flex-col gap-3 border-t border-white/5 pt-5 sm:flex-row">
+                      {/* Nút hành động - luôn hiển thị ở cuối */}
+                      <div className="mt-6 flex flex-shrink-0 flex-col gap-3 border-t border-white/5 bg-slate-950/90 pt-5 pb-2 sm:flex-row" style={{ zIndex: 10 }}>
                         <button
+                          type="button"
                           onClick={() => setSelectedClub(null)}
                           className="w-full rounded-2xl border border-white/15 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
                         >
                           Để sau
                         </button>
                         <button
+                          type="button"
                           onClick={confirmRegistration}
                           disabled={isRegistering || !isFormValid()}
-                          className="w-full rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:shadow-violet-500/60 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="w-full rounded-2xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:shadow-violet-500/60 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-violet-500/30"
                         >
                           {isRegistering ? (
-                            <span className="flex items-center justify-center gap-2 animate-pulse">
+                            <span className="flex items-center justify-center gap-2">
+                              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
                               Đang gửi...
                             </span>
                           ) : (

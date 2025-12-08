@@ -76,17 +76,9 @@ function StudentLayout({
               <div className="flex flex-col gap-3 text-sm text-slate-300 md:flex-row md:items-center">
                 <input
                   type="text"
-                  placeholder="Tìm kiếm hoạt động, CLB, tài liệu..."
+                  placeholder="Tìm kiếm hoạt động, CLB"
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-300 focus:outline-none md:w-72"
                 />
-                <div className="flex gap-2">
-                  <button className="rounded-2xl border border-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/10">
-                    Đăng ký hoạt động
-                  </button>
-                  <button className="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 hover:bg-white/90">
-                    Tạo báo cáo
-                  </button>
-                </div>
               </div>
             </header>
             <main className="px-4 py-6 md:px-6 lg:py-8">

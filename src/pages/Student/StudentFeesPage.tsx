@@ -8,36 +8,6 @@ function StudentFeesPage() {
       subtitle="Theo dõi chi tiết các khoản thu chi, hoàn ứng và đóng hội phí của bạn trong CLB"
     >
       <div className="space-y-6">
-        {/* Summary / filter bar */}
-        <section className="rounded-3xl border border-white/10 bg-slate-950/70 p-4 md:p-5">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex flex-wrap gap-3">
-              <div className="rounded-2xl bg-white/5 px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Số dư hiện tại</p>
-                <p className="mt-1 text-base font-semibold text-white">{feeSummary.currentBalance}</p>
-              </div>
-              <div className="rounded-2xl bg-white/5 px-4 py-3">
-                <p className="text-xs uppercase tracking-wide text-slate-400">Khoản cần đóng</p>
-                <p className="mt-1 text-base font-semibold text-amber-200">
-                  {feeSummary.pendingAmount || '0đ'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="text-xs text-slate-400">Xem theo</label>
-              <select className="rounded-xl border border-white/10 bg-slate-900/80 px-3 py-2 text-xs text-slate-100 outline-none focus:border-fuchsia-400 focus:ring-1 focus:ring-fuchsia-500/70">
-                <option>Tất cả giao dịch</option>
-                <option>Chỉ khoản phải trả</option>
-                <option>Chỉ khoản hoàn ứng</option>
-              </select>
-              <button className="rounded-xl border border-white/10 px-3 py-2 text-xs text-slate-100 hover:border-fuchsia-400 hover:text-white">
-                Xuất báo cáo
-              </button>
-            </div>
-          </div>
-        </section>
-
         {/* History list */}
         <section className="rounded-3xl border border-white/10 bg-slate-950/70 p-4 md:p-6">
           <div className="flex items-center justify-between gap-2">

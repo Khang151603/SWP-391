@@ -338,10 +338,6 @@ function StudentMyActivitiesPage() {
 
                   {/* Progress */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-slate-400">Tiến độ chuẩn bị</span>
-                      <span className="font-semibold text-white">{activity.progress}%</span>
-                    </div>
                     <div className="h-2 overflow-hidden rounded-full bg-white/10">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 transition-all duration-500"
@@ -357,35 +353,6 @@ function StudentMyActivitiesPage() {
                 {/* Right: Actions & Checklist */}
                 <div className="flex flex-col gap-4 lg:w-80">
                   {/* Checklist Preview */}
-                  <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                    <div className="mb-3 flex items-center justify-between">
-                      <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Checklist</span>
-                      <span className="text-xs font-semibold text-emerald-400">
-                        {activity.completedTasks}/{activity.tasks}
-                      </span>
-                    </div>
-                    <div className="space-y-2">
-                      {activity.checklist.slice(0, 3).map((item, idx) => (
-                        <div key={idx} className="flex items-start gap-2">
-                          <div
-                            className={`mt-0.5 h-4 w-4 flex-shrink-0 rounded ${
-                              idx < activity.completedTasks ? 'bg-emerald-500' : 'border-2 border-slate-500'
-                            } flex items-center justify-center`}
-                          >
-                            {idx < activity.completedTasks && (
-                              <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
-                            )}
-                          </div>
-                          <span className={`text-xs ${idx < activity.completedTasks ? 'text-slate-400 line-through' : 'text-slate-300'}`}>
-                            {item}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
                   {/* Actions */}
                   <div className="flex flex-col gap-2">
                     {activity.status === 'completed' && activity.certificateUrl ? (
@@ -403,12 +370,6 @@ function StudentMyActivitiesPage() {
                         Xem chi tiết
                       </button>
                     )}
-                    <button className="inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/5">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                      Nhắn tin
-                    </button>
                   </div>
 
                   <div className="text-xs text-slate-500">
