@@ -33,29 +33,6 @@ function StudentDashboardPage() {
               </p>
             </div>
             <div className="flex items-center gap-3 rounded-2xl bg-black/20 px-4 py-3 border border-white/10">
-              <div className="rounded-xl bg-emerald-500/20 p-2.5">
-                <svg
-                  className="h-6 w-6 text-emerald-300"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-slate-300">
-                  Tỉ lệ hoàn thành hoạt động
-                </p>
-                <p className="text-lg font-semibold text-emerald-300">
-                  {completionRate}%
-                </p>
-              </div>
             </div>
           </div>
         </div>

@@ -126,6 +126,12 @@ function StudentActivitiesPage() {
     }
   };
 
+  const handleJoinActivity = (activityId: number) => {
+    // TODO: Implement join activity logic
+    console.log('Join activity:', activityId);
+    alert(`Đăng ký tham gia hoạt động ID: ${activityId}`);
+  };
+
   return (
     <StudentLayout title="Hoạt động" subtitle="Khám phá và đăng ký tham gia các hoạt động">
       <div className="space-y-6">
@@ -168,9 +174,6 @@ function StudentActivitiesPage() {
         <div className="space-y-4">
           {filteredActivities.map((activity) => {
             const statusConfig = getStatusConfig(activity.status);
-            const progress = (activity.registered / activity.maxParticipants) * 100;
-            const isAlmostFull = progress >= 80;
-
             return (
               <div
                 key={activity.id}
@@ -192,11 +195,6 @@ function StudentActivitiesPage() {
                           <span className="rounded-full bg-violet-500/20 px-3 py-1 text-xs font-medium text-violet-400">
                             {activity.category}
                           </span>
-                          {activity.fee === 0 && (
-                            <span className="rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-semibold text-emerald-400">
-                              MIỄN PHÍ
-                            </span>
-                          )}
                         </div>
                         <h3 className="text-xl font-bold text-white">{activity.title}</h3>
                         <p className="mt-1 text-sm text-slate-400">{activity.club}</p>
@@ -257,80 +255,34 @@ function StudentActivitiesPage() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Progress Bar */}
-                    <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                      <div className="mb-2 flex items-center justify-between text-sm">
-                        <span className="font-medium text-white">
-                          {activity.registered}/{activity.maxParticipants} người đăng ký
-                        </span>
-                        <span className={`font-semibold ${isAlmostFull ? 'text-amber-400' : 'text-slate-400'}`}>
-                          {Math.round(progress)}%
-                        </span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/10">
-                        <div 
-                          className={`h-2 rounded-full transition-all ${
-                            isAlmostFull 
-                              ? 'bg-gradient-to-r from-amber-500 to-orange-500' 
-                              : 'bg-gradient-to-r from-emerald-500 to-emerald-400'
-                          }`}
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                      {isAlmostFull && activity.status === 'open' && (
-                        <p className="mt-2 text-xs text-amber-400">⚠️ Sắp đầy - Đăng ký ngay!</p>
-                      )}
-                    </div>
                   </div>
 
                   {/* Right: Registration Card */}
-                  <div className="lg:w-72">
-                    <div className={`rounded-2xl border ${statusConfig.borderColor} ${statusConfig.bgColor} p-6 backdrop-blur-sm`}>
-                      {/* Fee */}
-                      <div className="mb-4 text-center">
-                        <p className="text-sm text-slate-400">Phí tham gia</p>
-                        {activity.fee === 0 ? (
-                          <p className="mt-1 text-3xl font-bold text-emerald-400">Miễn phí</p>
-                        ) : (
-                          <p className="mt-1 text-3xl font-bold text-white">
-                            {activity.fee.toLocaleString('vi-VN')}₫
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Action Button */}
-                      {activity.status === 'open' ? (
-                        <button className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:scale-[1.02] hover:shadow-violet-500/50">
-                          Đăng ký ngay
-                        </button>
-                      ) : activity.status === 'full' ? (
-                        <button disabled className="w-full rounded-xl border border-white/10 bg-white/5 px-6 py-3 font-semibold text-slate-500 cursor-not-allowed">
-                          Đã đầy chỗ
-                        </button>
-                      ) : (
-                        <button disabled className="w-full rounded-xl border border-white/10 bg-white/5 px-6 py-3 font-semibold text-slate-500 cursor-not-allowed">
-                          Đã đóng đăng ký
-                        </button>
-                      )}
-
-                      {/* Additional Info */}
-                      <div className="mt-4 space-y-2 text-xs text-slate-400">
-                        <div className="flex items-center gap-2">
-                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span>Xác nhận sau khi đăng ký</span>
-                        </div>
-                        {activity.fee > 0 && (
-                          <div className="flex items-center gap-2">
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  <div className="w-full lg:w-64 lg:flex-shrink-0">
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
+                      {/* Join Button */}
+                      <button
+                        onClick={() => handleJoinActivity(activity.id)}
+                        disabled={activity.status !== 'open'}
+                        className={`w-full rounded-lg px-4 py-3 font-semibold text-white transition-all ${
+                          activity.status === 'open'
+                            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-500/30 hover:shadow-violet-500/50 active:scale-95'
+                            : 'bg-slate-700/50 text-slate-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {activity.status === 'open' ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                             </svg>
-                            <span>Thanh toán online hoặc tại chỗ</span>
-                          </div>
+                            Tham gia
+                          </span>
+                        ) : activity.status === 'full' ? (
+                          'Đã đầy'
+                        ) : (
+                          'Đã đóng'
                         )}
-                      </div>
+                      </button>
                     </div>
                   </div>
                 </div>

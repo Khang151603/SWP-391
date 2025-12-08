@@ -335,46 +335,6 @@ function StudentMyActivitiesPage() {
                       </div>
                     </div>
                   </div>
-
-                  {/* Progress */}
-                  <div className="space-y-2">
-                    <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 transition-all duration-500"
-                        style={{ width: `${activity.progress}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-slate-500">
-                      {activity.completedTasks}/{activity.tasks} nhiệm vụ hoàn thành
-                    </p>
-                  </div>
-                </div>
-
-                {/* Right: Actions & Checklist */}
-                <div className="flex flex-col gap-4 lg:w-80">
-                  {/* Checklist Preview */}
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2">
-                    {activity.status === 'completed' && activity.certificateUrl ? (
-                      <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:shadow-emerald-500/50">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Tải chứng nhận
-                      </button>
-                    ) : (
-                      <button className="inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:shadow-violet-500/50">
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                        </svg>
-                        Xem chi tiết
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="text-xs text-slate-500">
-                    Đăng ký: {activity.registeredDate}
-                  </div>
                 </div>
               </div>
             </div>

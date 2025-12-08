@@ -54,7 +54,7 @@ const features = [
   },
   {
     title: 'Thu phí & quỹ CLB',
-    description: 'Quản lý các gói hội phí, trạng thái thanh toán và báo cáo thu chi realtime.',
+    description: 'Quản lý các gói hội phí, trạng thái thanh toán và báo cáo thu chi',
     stats: '215.000.000đ quỹ minh bạch',
     tags: ['Ủy quyền chi', 'Đối soát ngân hàng', 'Nhắc phí tự động'],
     icon: icons.finance,
@@ -89,13 +89,6 @@ const activityHighlights = [
   },
 ];
 
-const approvalFlow = [
-  { step: '01', title: 'Tiếp nhận', detail: 'Biểu mẫu online chuẩn hoá theo từng loại đơn.' },
-  { step: '02', title: 'Đánh giá', detail: 'Giao người phụ trách, thêm comment và checklist.' },
-  { step: '03', title: 'Phê duyệt', detail: 'Ký số, phản hồi tự động qua email & app.' },
-  { step: '04', title: 'Lưu vết', detail: 'Nhật ký quyết định và báo cáo phân tích tức thời.' },
-];
-
 const feePlans = [
   {
     title: 'Hội phí cơ bản',
@@ -106,27 +99,6 @@ const feePlans = [
     title: 'Gói Ban điều hành',
     price: '250.000đ/học kỳ',
     benefits: ['Ngân sách đào tạo riêng', 'Báo cáo hiệu suất cá nhân', 'Tạm ứng nhanh trong 2h'],
-  },
-];
-
-const requestInsights = [
-  {
-    title: 'Đơn gia nhập CLB',
-    count: '87 đơn mới',
-    status: '72% đã duyệt',
-    detail: 'Tự động kiểm tra thông tin sinh viên và hạn chế trùng lặp.',
-  },
-  {
-    title: 'Mượn thiết bị & cơ sở vật chất',
-    count: '24 yêu cầu',
-    status: '100% có biên bản',
-    detail: 'Theo dõi bàn giao bằng mã QR, giảm thất thoát còn 0%.',
-  },
-  {
-    title: 'Đề xuất hoạt động ngoại khóa',
-    count: '12 đề xuất',
-    status: '8 hoạt động đã lịch',
-    detail: 'Quy trình phê duyệt đa cấp, nhắc deadline cho từng người ký.',
   },
 ];
 
@@ -150,14 +122,13 @@ function HomePage() {
               <a href="#features" className="transition hover:text-white">Tính năng</a>
               <a href="#activities" className="transition hover:text-white">Hoạt động</a>
               <a href="#finance" className="transition hover:text-white">Thu phí</a>
-              <a href="#approvals" className="transition hover:text-white">Phê duyệt</a>
             </nav>
             <div className="flex gap-3">
               <Link to="/login" className="rounded-full border border-white/30 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/10">
                 Đăng nhập
               </Link>
               <Link to="/register" className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/30 transition hover:scale-105">
-                Đăng ký CLB
+                Đăng ký tài khoản
               </Link>
             </div>
           </header>
@@ -174,14 +145,6 @@ function HomePage() {
               <p className="text-lg text-slate-300">
                 Student Club Management System (SCMS) giúp ban điều hành tự động hóa quy trình, nâng cao trải nghiệm thành viên và minh bạch hóa mọi quyết định chỉ với vài cú nhấp chuột.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <Link to="/register" className="rounded-2xl bg-white px-6 py-3 text-base font-semibold text-slate-900 shadow-xl shadow-white/20 transition hover:translate-y-0.5">
-                  Khởi tạo CLB trong 5 phút
-                </Link>
-                <a href="#features" className="rounded-2xl border border-white/30 px-6 py-3 text-base font-semibold text-white transition hover:bg-white/10">
-                  Tải brochure
-                </a>
-              </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 {stats.map((item) => (
                   <div key={item.label} className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -276,18 +239,6 @@ function HomePage() {
               ))}
             </div>
           </div>
-          <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-8">
-            <p className="text-sm uppercase tracking-[0.3em] text-cyan-200">Workflow</p>
-            <h3 className="mt-3 text-2xl font-semibold text-white">Timeline từng ban</h3>
-            <ul className="mt-6 space-y-6">
-              {['Ban Nội dung', 'Ban Sự kiện', 'Ban Đối ngoại', 'Ban Hậu cần'].map((team) => (
-                <li key={team} className="flex items-center gap-3 text-sm text-slate-300">
-                  <span className="h-2 w-2 rounded-full bg-gradient-to-r from-fuchsia-400 to-violet-500" />
-                  {team}: 100% nhiệm vụ đồng bộ với Google Calendar, Notion và Microsoft Teams.
-                </li>
-              ))}
-            </ul>
-          </div>
         </section>
 
         <section id="finance" className="grid gap-10 lg:grid-cols-2">
@@ -337,38 +288,6 @@ function HomePage() {
             </div>
           </div>
         </section>
-
-        <section id="approvals" className="grid gap-10 lg:grid-cols-[0.9fr,1.1fr]">
-          <div className="rounded-3xl border border-white/10 bg-slate-900/70 p-8">
-            <p className="text-sm uppercase tracking-[0.3em] text-cyan-200">Quy trình phê duyệt</p>
-            <h2 className="mt-3 text-3xl font-semibold text-white">Không còn email lòng vòng</h2>
-            <div className="mt-8 space-y-6">
-              {approvalFlow.map((step) => (
-                <div key={step.step} className="flex gap-4">
-                  <div className="text-3xl font-semibold text-fuchsia-300">{step.step}</div>
-                  <div>
-                    <p className="text-lg font-semibold text-white">{step.title}</p>
-                    <p className="text-sm text-slate-300">{step.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-fuchsia-500/10 via-violet-500/5 to-transparent p-8">
-            <p className="text-sm uppercase tracking-[0.3em] text-fuchsia-200">Đơn & insight</p>
-            <div className="mt-6 grid gap-6 md:grid-cols-2">
-              {requestInsights.map((request) => (
-                <div key={request.title} className="rounded-2xl border border-white/10 bg-slate-900/60 p-5">
-                  <p className="text-sm text-slate-400">{request.title}</p>
-                  <p className="mt-2 text-2xl font-semibold text-white">{request.count}</p>
-                  <p className="text-sm text-emerald-300">{request.status}</p>
-                  <p className="mt-3 text-sm text-slate-300">{request.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-violet-600/40 via-fuchsia-500/30 to-rose-500/30 px-8 py-10 text-center">
           <p className="text-sm uppercase tracking-[0.3em] text-white/80">Sẵn sàng vận hành thế hệ CLB tiếp theo</p>
           <h2 className="mt-4 text-3xl font-semibold text-white md:text-4xl">Triển khai SCMS cho CLB của bạn chỉ trong 5 phút</h2>
@@ -377,10 +296,10 @@ function HomePage() {
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-4">
             <button className="rounded-2xl bg-white px-6 py-3 text-base font-semibold text-slate-900 shadow-lg shadow-slate-900/20 transition hover:-translate-y-0.5">
-              Đặt lịch tư vấn
+              Đặng ký
             </button>
             <button className="rounded-2xl border border-white/60 px-6 py-3 text-base font-semibold text-white transition hover:bg-white/10">
-              Xem demo tương tác
+              Đăng nhập
             </button>
           </div>
         </section>
