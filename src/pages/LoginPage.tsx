@@ -21,7 +21,7 @@ function LoginPage() {
       setSuccessMessage(state.message);
       // Pre-fill username nếu có
       if (state.username) {
-        setFormData(prev => ({ ...prev, username: state.username }));
+        setFormData(prev => ({ ...prev, username: state.username || '' }));
       }
       // Clear state để tránh hiển thị lại khi refresh
       window.history.replaceState({}, document.title);
