@@ -1,36 +1,19 @@
 import LeaderLayout from '../../components/layout/LeaderLayout';
-import { feeTracking, financeOverview } from './leaderData';
+import { feeTracking} from './leaderData';
 
-function ClubLeaderFinancePage() {
+function ClubLeaderFinancePage() {  
   return (
     <LeaderLayout
       title="Quản lý tài chính & thu phí"
       subtitle="Thiết lập mức phí, theo dõi tình trạng đóng và ghi nhận thủ công"
     >
       <div className="space-y-6">
-        <section className="grid gap-4 lg:grid-cols-3">
-          {financeOverview.map((item) => (
-            <div key={item.label} className="rounded-2xl border border-white/10 bg-slate-950/70 p-4">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-400">{item.label}</p>
-              <p className="mt-2 text-3xl font-semibold text-white">{item.value}</p>
-              <p className="text-sm text-emerald-300">{item.trend}</p>
-            </div>
-          ))}
-        </section>
 
         <section className="rounded-2xl border border-white/10 bg-slate-950/70 p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-white">Thiết lập mức phí</h3>
               <p className="text-sm text-slate-400">Áp dụng cho hoạt động cụ thể hoặc phí thành viên định kỳ</p>
-            </div>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <button className="rounded-2xl border border-white/10 px-4 py-2 text-white hover:bg-white/10">
-                Tạo mẫu thu phí
-              </button>
-              <button className="rounded-2xl border border-white/10 px-4 py-2 text-white hover:bg-white/10">
-                Gửi nhắc nhở
-              </button>
             </div>
           </div>
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
@@ -42,7 +25,7 @@ function ClubLeaderFinancePage() {
               />
             </label>
             <label className="text-sm text-slate-300">
-              Mức phí
+              Mức phí/tháng
               <input
                 placeholder="300.000đ"
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-fuchsia-300 focus:outline-none"
@@ -56,7 +39,7 @@ function ClubLeaderFinancePage() {
               />
             </label>
             <label className="text-sm text-slate-300 lg:col-span-3">
-              Ghi chú / Yêu cầu chứng từ
+              Ghi chú 
               <textarea
                 placeholder="Ví dụ: upload biên lai chuyển khoản, chọn ngân hàng quỹ CLB..."
                 className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white focus:border-fuchsia-300 focus:outline-none"
@@ -65,9 +48,8 @@ function ClubLeaderFinancePage() {
             </label>
           </div>
           <div className="mt-4 flex gap-3 text-sm">
-            <button className="rounded-2xl border border-white/10 px-4 py-2 text-white hover:bg-white/10">Lưu nháp</button>
             <button className="rounded-2xl bg-white px-4 py-2 font-semibold text-slate-900 hover:bg-white/90">
-              Công bố tới thành viên
+              Gửi thông báo
             </button>
           </div>
         </section>
@@ -77,12 +59,6 @@ function ClubLeaderFinancePage() {
             <div>
               <h3 className="text-lg font-semibold text-white">Theo dõi đóng phí</h3>
               <p className="text-sm text-slate-400">Cập nhật trạng thái thủ công hoặc đồng bộ file kế toán</p>
-            </div>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <button className="rounded-2xl border border-white/10 px-4 py-2 text-white hover:bg-white/10">Import Excel</button>
-              <button className="rounded-2xl border border-white/10 px-4 py-2 text-white hover:bg-white/10">
-                Gửi nhắc nợ
-              </button>
             </div>
           </div>
           <div className="mt-4 overflow-x-auto rounded-2xl border border-white/5">

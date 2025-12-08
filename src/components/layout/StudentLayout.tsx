@@ -20,6 +20,7 @@ const menuItems: MenuItem[] = [
   { label: 'Hoạt động', path: '/student/activities' },
   { label: 'Hoạt động của tôi', path: '/student/my-activities' },
   { label: 'Tài chính', path: '/student/fees' },
+  { label: 'Yêu cầu trở thành Club Leader', path: '/student/become-leader' },
 ];
 
 function StudentLayout({

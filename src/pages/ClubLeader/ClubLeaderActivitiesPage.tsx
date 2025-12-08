@@ -69,15 +69,9 @@ function ClubLeaderActivitiesPage() {
           </form>
 
           <div className="mt-5 flex flex-wrap items-center gap-3 text-sm">
-            <button className="rounded-2xl border border-white/15 bg-white/5 px-4 py-2 text-white hover:bg-white/10">
-              Lưu nháp
-            </button>
             <button className="rounded-2xl bg-fuchsia-500/90 px-4 py-2 font-semibold text-white hover:bg-fuchsia-500">
               Tạo hoạt động
             </button>
-            <p className="text-xs text-slate-400">
-              Gợi ý: tạo trước ít nhất <span className="font-medium text-slate-200">2 tuần</span> để các ban có thời gian chuẩn bị.
-            </p>
           </div>
         </section>
 
@@ -85,8 +79,7 @@ function ClubLeaderActivitiesPage() {
         <section className="rounded-3xl border border-white/10 bg-slate-950/80 p-5 lg:p-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-emerald-100/80">Theo dõi triển khai</p>
-              <h3 className="mt-1 text-lg font-semibold text-white">Pipeline hoạt động</h3>
+              <p className="text-xs uppercase tracking-[0.35em] text-emerald-100/80">Danh sách hoạt động</p>
             </div>
             <div className="flex flex-wrap gap-2 text-sm">
               <button className="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-white hover:bg-white/10">

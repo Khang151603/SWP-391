@@ -16,6 +16,7 @@ import StudentDashboardPage from '../pages/Student/StudentDashboardPage';
 import StudentExplorePage from '../pages/Student/StudentExplorePage';
 import StudentExploreDetailPage from '../pages/Student/StudentExploreDetailPage';
 import StudentFeesPage from '../pages/Student/StudentFeesPage';
+import StudentBecomeLeaderPage from '../pages/Student/StudentBecomeLeaderPage';
 
 function AppRoutes() {
   return (
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="/student/activities" element={<StudentActivitiesPage />} />
         <Route path="/student/my-activities" element={<StudentMyActivitiesPage />} />
         <Route path="/student/fees" element={<StudentFeesPage />} />
+        <Route path="/student/become-leader" element={<StudentBecomeLeaderPage />} />
         <Route path="/student/clubs/:clubId" element={<ClubDetailPage />} />
         <Route path="/leader" element={<ClubLeaderDashboardPage />} />
         <Route path="/leader/club-info" element={<ClubLeaderInfoPage />} />

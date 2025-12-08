@@ -7,14 +7,11 @@ const allClubs = [
   {
     id: 'innovation',
     name: 'CLB Lập trình Sáng tạo',
-    category: 'tech',
     description: 'Học và chia sẻ kinh nghiệm lập trình, xây dựng dự án thực tế',
     members: 127,
-    activities: 2,
     fee: 500000,
     rating: 4.8,
     reviews: 45,
-    tags: ['React', 'AI', 'Hackathon'],
     badge: 'Top Pick',
     nextEvent: 'Workshop React - 15/12',
     recruiting: true,
@@ -22,14 +19,11 @@ const allClubs = [
   {
     id: 'english',
     name: 'CLB Tiếng Anh Giao tiếp',
-    category: 'language',
     description: 'Rèn luyện kỹ năng giao tiếp tiếng Anh qua hoạt động thực tế',
     members: 95,
-    activities: 3,
     fee: 350000,
     rating: 4.6,
     reviews: 38,
-    tags: ['Speaking', 'TOEIC', 'Networking'],
     badge: 'Popular',
     nextEvent: 'English Club - 12/12',
     recruiting: true,
@@ -37,14 +31,11 @@ const allClubs = [
   {
     id: 'design',
     name: 'CLB Thiết kế Đồ họa',
-    category: 'creative',
     description: 'Sáng tạo các tác phẩm thiết kế chuyên nghiệp',
     members: 68,
-    activities: 1,
     fee: 0,
     rating: 4.7,
     reviews: 29,
-    tags: ['UI/UX', 'Photoshop', 'Illustrator'],
     badge: 'Free',
     nextEvent: 'Design Contest - 18/12',
     recruiting: true,
@@ -52,14 +43,11 @@ const allClubs = [
   {
     id: 'volunteer',
     name: 'CLB Tình nguyện Xanh',
-    category: 'creative',
     description: 'Hoạt động tình nguyện vì cộng đồng và môi trường',
     members: 156,
-    activities: 2,
     fee: 0,
     rating: 4.9,
     reviews: 87,
-    tags: ['Thiện nguyện', 'Môi trường', 'Cộng đồng'],
     badge: 'Top Rated',
     nextEvent: 'Mùa đông ấm - 10/12',
     recruiting: true,
@@ -67,14 +55,11 @@ const allClubs = [
   {
     id: 'blockchain',
     name: 'CLB Blockchain & Web3',
-    category: 'tech',
     description: 'Nghiên cứu và phát triển ứng dụng Blockchain',
     members: 82,
-    activities: 1,
     fee: 400000,
     rating: 4.5,
     reviews: 31,
-    tags: ['Blockchain', 'Smart Contract', 'DeFi'],
     badge: 'Popular',
     nextEvent: 'Seminar Web3 - 20/12',
     recruiting: false,
@@ -82,26 +67,16 @@ const allClubs = [
   {
     id: 'football',
     name: 'CLB Bóng đá FPT',
-    category: 'sport',
     description: 'Rèn luyện sức khỏe và kỹ năng bóng đá',
     members: 143,
-    activities: 3,
     fee: 200000,
     rating: 4.6,
     reviews: 56,
-    tags: ['Thể thao', 'Sức khỏe', 'Teamwork'],
     nextEvent: 'Giao hữu - Thứ 7',
     recruiting: true,
   },
 ];
 
-const availabilityOptions = [
-  { id: 'weekday-evening', label: 'Tối trong tuần', subtext: '18:00 - 21:00' },
-  { id: 'weekday-morning', label: 'Sáng trong tuần', subtext: '07:30 - 11:00' },
-  { id: 'weekend', label: 'Cuối tuần', subtext: 'Thứ 7 - Chủ nhật' },
-  { id: 'hybrid', label: 'Hybrid', subtext: 'Online + Offline' },
-  { id: 'remote', label: 'Online', subtext: 'Qua Teams/Zoom' },
-];
 
 function StudentExplorePage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -158,16 +133,6 @@ function StudentExplorePage() {
 
   const handleFormChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const toggleAvailability = (slotId: string) => {
-    setFormData(prev => {
-      const isSelected = prev.availability.includes(slotId);
-      return {
-        ...prev,
-        availability: isSelected ? prev.availability.filter(id => id !== slotId) : [...prev.availability, slotId],
-      };
-    });
   };
 
   const isFormValid = () => {
@@ -279,25 +244,6 @@ function StudentExplorePage() {
                     key={club.id}
                     className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/10 bg-slate-950/60 p-5 backdrop-blur-sm transition hover:border-violet-500/40 hover:bg-slate-950/90 hover:shadow-xl hover:shadow-violet-500/15"
                   >
-                    {/* Badge */}
-                    {club.badge && (
-                      <div className="absolute right-4 top-4">
-                        <span
-                          className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold ${
-                            club.badge === 'Top Pick'
-                              ? 'border border-amber-500/40 bg-amber-500/20 text-amber-200'
-                              : club.badge === 'Popular'
-                              ? 'border border-violet-500/40 bg-violet-500/20 text-violet-100'
-                              : club.badge === 'Free'
-                              ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-100'
-                              : 'border border-blue-500/40 bg-blue-500/20 text-blue-100'
-                          }`}
-                        >
-                          {club.badge}
-                        </span>
-                      </div>
-                    )}
-
                     {/* Avatar chữ cái */}
                     <div className="mb-3 flex items-center gap-3">
                       <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-600/30 to-fuchsia-600/30 text-sm font-semibold text-white/90">
@@ -309,17 +255,6 @@ function StudentExplorePage() {
                       </div>
                       <div className="min-w-0">
                         <h3 className="truncate text-sm font-semibold text-white sm:text-base">{club.name}</h3>
-                        <p className="mt-0.5 text-[11px] uppercase tracking-[0.18em] text-slate-400">
-                          {club.category === 'tech'
-                            ? 'Kỹ thuật & Công nghệ'
-                            : club.category === 'creative'
-                            ? 'Sáng tạo & Cộng đồng'
-                            : club.category === 'language'
-                            ? 'Ngôn ngữ & Giao tiếp'
-                            : club.category === 'sport'
-                            ? 'Thể thao & Sức khỏe'
-                            : 'Khác'}
-                        </p>
                       </div>
                     </div>
 
@@ -329,35 +264,18 @@ function StudentExplorePage() {
 
                     {/* Stats + tags */}
                     <div className="mt-3 space-y-3">
-                      <div className="grid grid-cols-3 gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 text-center text-[11px] text-slate-300">
+                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 text-center text-[11px] text-slate-300">
                         <div>
                           <p className="text-[11px] text-slate-400">Thành viên</p>
                           <p className="mt-0.5 text-sm font-semibold text-white">{club.members}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] text-slate-400">HĐ/tuần</p>
-                          <p className="mt-0.5 text-sm font-semibold text-white">{club.activities}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] text-slate-400">Phí</p>
+                          <p className="text-[11px] text-slate-400">Phí/tháng</p>
                           <p className="mt-0.5 text-sm font-semibold text-emerald-400">
                             {club.fee === 0 ? 'Miễn phí' : club.fee.toLocaleString() + 'đ'}
                           </p>
                         </div>
                       </div>
-
-                      {club.tags && (
-                        <div className="flex flex-wrap gap-1.5">
-                          {club.tags.slice(0, 3).map((tag) => (
-                            <span
-                              key={tag}
-                              className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] text-slate-200"
-                            >
-                              #{tag}
-                            </span>
-                          ))}
-                        </div>
-                      )}
                     </div>
 
                     {/* Actions */}
@@ -406,53 +324,22 @@ function StudentExplorePage() {
                       <div className="min-w-0 space-y-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <h3 className="text-base font-semibold text-white sm:text-lg">{club.name}</h3>
-                          {club.badge && (
-                            <span
-                              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
-                                club.badge === 'Top Pick'
-                                  ? 'border border-amber-500/40 bg-amber-500/20 text-amber-200'
-                                  : club.badge === 'Popular'
-                                  ? 'border border-violet-500/40 bg-violet-500/20 text-violet-100'
-                                  : club.badge === 'Free'
-                                  ? 'border border-emerald-500/40 bg-emerald-500/20 text-emerald-100'
-                                  : 'border border-blue-500/40 bg-blue-500/20 text-blue-100'
-                              }`}
-                            >
-                              {club.badge}
-                            </span>
-                          )}
                         </div>
                         <p className="text-[13px] leading-relaxed text-slate-300">{club.description}</p>
-                        {club.tags && (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {club.tags.slice(0, 4).map((tag) => (
-                              <span
-                                key={tag}
-                                className="rounded-full border border-white/15 bg-white/5 px-2.5 py-0.5 text-[11px] text-slate-200"
-                              >
-                                #{tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </div>
                     </div>
 
                     {/* Phải: thống kê & action */}
                     <div className="flex flex-col justify-between gap-3 sm:w-72 sm:flex-shrink-0">
-                      <div className="grid grid-cols-3 gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 text-center text-[11px] text-slate-300">
+                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-white/10 bg-white/5 p-2.5 text-center text-[11px] text-slate-300">
                         <div>
                           <p className="text-[11px] text-slate-400">Thành viên</p>
                           <p className="mt-0.5 text-base font-semibold text-white">{club.members}</p>
                         </div>
                         <div>
-                          <p className="text-[11px] text-slate-400">HĐ/tuần</p>
-                          <p className="mt-0.5 text-base font-semibold text-white">{club.activities}</p>
-                        </div>
-                        <div>
-                          <p className="text-[11px] text-slate-400">Phí tham gia</p>
+                          <p className="text-[11px] text-slate-400">Phí/tháng</p>
                           <p className="mt-0.5 text-base font-semibold text-emerald-400">
-                            {club.fee === 0 ? 'Miễn phí' : club.fee.toLocaleString() + 'đ'}
+                            {club.fee === 0 ? 'Miễn phí' : club.fee.toLocaleString() + 'đ/tháng'}
                           </p>
                         </div>
                       </div>
@@ -527,15 +414,11 @@ function StudentExplorePage() {
                             <p className="text-lg font-semibold">{selectedClub.members}+ thành viên</p>
                           </div>
                         </div>
-                        <ul className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                        <ul className="mt-4 grid grid-cols-1 gap-3 text-sm">
                           <li className="rounded-xl border border-white/10 bg-white/5 p-3">
-                            <p className="text-xs text-white/60">Hoạt động/tuần</p>
-                            <p className="text-lg font-semibold text-white">{selectedClub.activities}</p>
-                          </li>
-                          <li className="rounded-xl border border-white/10 bg-white/5 p-3">
-                            <p className="text-xs text-white/60">Chi phí</p>
+                            <p className="text-xs text-white/60">Phí/tháng</p>
                             <p className="text-lg font-semibold text-emerald-300">
-                              {selectedClub.fee === 0 ? 'Miễn phí' : `${selectedClub.fee.toLocaleString()}đ`}
+                              {selectedClub.fee === 0 ? 'Miễn phí' : `${selectedClub.fee.toLocaleString()}đ/tháng`}
                             </p>
                           </li>
                         </ul>
@@ -669,58 +552,6 @@ function StudentExplorePage() {
                               />
                             </div>
                           </div>
-                        </div>
-
-                        <div className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                          <h5 className="flex items-center gap-2 text-sm font-semibold text-white">
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500/20 text-xs text-violet-300">3</span>
-                            Thời gian & cam kết
-                          </h5>
-                          <p className="mt-2 text-sm text-slate-400">Chọn khung thời gian bạn có thể tham gia hoạt động định kỳ.</p>
-
-                          <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                            {availabilityOptions.map(slot => {
-                              const isSelected = formData.availability.includes(slot.id);
-                              return (
-                                <button
-                                  key={slot.id}
-                                  type="button"
-                                  onClick={() => toggleAvailability(slot.id)}
-                                  aria-pressed={isSelected}
-                                  className={`rounded-2xl border px-4 py-3 text-left transition ${
-                                    isSelected
-                                      ? 'border-emerald-400/60 bg-emerald-400/15 text-white shadow-lg shadow-emerald-500/20'
-                                      : 'border-white/10 bg-white/5 text-white/80 hover:border-white/30 hover:bg-white/10'
-                                  }`}
-                                >
-                                  <p className="text-sm font-semibold">{slot.label}</p>
-                                  <p className="text-xs text-white/60">{slot.subtext}</p>
-                                </button>
-                              );
-                            })}
-                          </div>
-
-                          <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-                            <label className="flex cursor-pointer items-start gap-3">
-                              <input
-                                type="checkbox"
-                                checked={formData.agreedToTerms}
-                                onChange={(e) => handleFormChange('agreedToTerms', e.target.checked)}
-                                className="mt-1 h-5 w-5 rounded border-white/20 bg-slate-900/40 text-violet-600 focus:ring-2 focus:ring-violet-500/20 focus:ring-offset-0"
-                              />
-                              <span className="text-sm text-slate-300">
-                                Tôi cam kết tham gia đầy đủ hoạt động, tuân thủ nội quy và hoàn tất phí nếu có. <span className="text-red-400">*</span>
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-
-                        <div className="mt-6 space-y-2 rounded-2xl border border-blue-400/30 bg-blue-950/40 p-5 text-sm text-blue-100">
-                          <p className="font-semibold">Lưu ý</p>
-                          <p>
-                            Ban Quản Lý sẽ phản hồi qua email trong 24-48 giờ. Bạn có thể theo dõi trạng thái tại trang
-                            "Đơn của tôi".
-                          </p>
                         </div>
                       </div>
 

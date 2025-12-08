@@ -19,13 +19,11 @@ export const profileUpdates = [
 export const managedClubs = [
   {
     name: 'CLB Truyền thông',
-    role: 'Phó chủ nhiệm',
     members: 84,
     pending: 5,
   },
   {
     name: 'CLB Tình nguyện',
-    role: 'Thành viên nòng cốt',
     members: 62,
     pending: 2,
   },

@@ -11,7 +11,7 @@ const leaderMenu = [
   { label: 'Dashboard', path: '/leader', badge: 'Live' },
   { label: 'Thông tin CLB', path: '/leader/club-info' },
   { label: 'Thành viên & Đơn', path: '/leader/members' },
-  { label: 'Hoạt động & Sự kiện', path: '/leader/activities' },
+  { label: 'Hoạt động', path: '/leader/activities' },
   { label: 'Tài chính', path: '/leader/finance' },
   { label: 'Báo cáo & Xuất dữ liệu', path: '/leader/reports' },
 ];

@@ -5,29 +5,16 @@ import { managedClubs } from './studentData';
 
 function StudentClubsPage() {
   const [search, setSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'leader' | 'member'>('all');
 
   const filteredClubs = useMemo(() => {
     return managedClubs.filter((club) => {
       const matchSearch =
         !search ||
-        club.name.toLowerCase().includes(search.toLowerCase()) ||
-        club.role.toLowerCase().includes(search.toLowerCase());
+        club.name.toLowerCase().includes(search.toLowerCase());
 
-      const matchRole =
-        roleFilter === 'all'
-          ? true
-          : roleFilter === 'leader'
-          ? club.role.toLowerCase().includes('chủ nhiệm') ||
-            club.role.toLowerCase().includes('leader')
-          : !(
-              club.role.toLowerCase().includes('chủ nhiệm') ||
-              club.role.toLowerCase().includes('leader')
-            );
-
-      return matchSearch && matchRole;
+      return matchSearch;
     });
-  }, [search, roleFilter]);
+  }, [search]);
 
   const hasNoClub = managedClubs.length === 0;
 
@@ -68,48 +55,9 @@ function StudentClubsPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Tìm theo tên CLB, vai trò..."
+              placeholder="Tìm theo tên CLB..."
               className="h-8 w-full bg-transparent text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
             />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <p className="hidden text-xs text-slate-400 sm:block">Lọc theo vai trò:</p>
-            <div className="inline-flex rounded-xl bg-slate-900/40 p-1 text-xs ring-1 ring-white/10">
-              <button
-                type="button"
-                onClick={() => setRoleFilter('all')}
-                className={`rounded-lg px-3 py-1.5 font-medium transition ${
-                  roleFilter === 'all'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-300 hover:bg-white/5'
-                }`}
-              >
-                Tất cả
-              </button>
-              <button
-                type="button"
-                onClick={() => setRoleFilter('leader')}
-                className={`rounded-lg px-3 py-1.5 font-medium transition ${
-                  roleFilter === 'leader'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-300 hover:bg-white/5'
-                }`}
-              >
-                Ban chủ nhiệm
-              </button>
-              <button
-                type="button"
-                onClick={() => setRoleFilter('member')}
-                className={`rounded-lg px-3 py-1.5 font-medium transition ${
-                  roleFilter === 'member'
-                    ? 'bg-white text-slate-900 shadow-sm'
-                    : 'text-slate-300 hover:bg-white/5'
-                }`}
-              >
-                Thành viên
-              </button>
-            </div>
           </div>
         </div>
 
@@ -144,13 +92,12 @@ function StudentClubsPage() {
                 Không tìm thấy CLB phù hợp với bộ lọc hiện tại.
               </p>
               <p className="text-xs text-amber-100/80">
-                Thử xoá từ khóa tìm kiếm hoặc đổi bộ lọc vai trò để xem thêm CLB.
+                Thử xoá từ khóa tìm kiếm để xem thêm CLB.
               </p>
               <button
                 type="button"
                 onClick={() => {
                   setSearch('');
-                  setRoleFilter('all');
                 }}
                 className="inline-flex items-center gap-2 rounded-lg bg-amber-400/20 px-4 py-1.5 text-xs font-medium text-amber-50 ring-1 ring-amber-300/40 hover:bg-amber-400/30"
               >
@@ -182,10 +129,6 @@ function StudentClubsPage() {
                     <div className="flex-1">
                       <div className="mb-2 flex flex-wrap items-center gap-2">
                         <h3 className="text-lg font-semibold text-white sm:text-xl">{club.name}</h3>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium uppercase tracking-wide text-emerald-300 ring-1 ring-emerald-400/40">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                          {club.role}
-                        </span>
                       </div>
 
                       <div className="flex flex-wrap gap-4 text-sm text-slate-300">
