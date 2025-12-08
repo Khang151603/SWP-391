@@ -7,8 +7,14 @@ type StudentLayoutProps = {
   children: ReactNode;
 };
 
-const menuItems = [
-  { label: 'Tổng quan', path: '/student', badge: 'Live' },
+type MenuItem = {
+  label: string;
+  path: string;
+  badge?: string | number;
+};
+
+const menuItems: MenuItem[] = [
+  { label: 'Tổng quan', path: '/student'},
   { label: 'CLB của tôi', path: '/student/clubs' },
   { label: 'Khám phá CLB', path: '/student/explore' },
   { label: 'Hoạt động', path: '/student/activities' },
