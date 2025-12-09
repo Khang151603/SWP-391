@@ -33,72 +33,40 @@ function ClubLeaderMembersPage() {
       <div className="space-y-8">
         {/* Top overview cards */}
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="group rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-xs text-slate-300 shadow-sm shadow-fuchsia-500/10 transition hover:border-fuchsia-400/60 hover:shadow-md">
+          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-center justify-between">
-              <p className="uppercase tracking-[0.25em]">Đơn đăng ký</p>
-              <span className="rounded-full bg-fuchsia-500/10 px-2 py-0.5 text-[0.7rem] font-semibold text-fuchsia-200">
-                Cần xử lý
-              </span>
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Đơn đăng ký</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-white">{pendingCount}</p>
-            <p className="mt-1 text-[0.72rem] text-slate-400">
-              Ưu tiên duyệt trong vòng <span className="font-medium text-slate-200">48 giờ</span> để giữ trải nghiệm tốt
-              cho ứng viên.
-            </p>
-            <button className="mt-3 w-full rounded-xl bg-fuchsia-500/90 px-3 py-2 text-[0.72rem] font-semibold text-white transition group-hover:bg-fuchsia-400">
-              Mở danh sách đơn chờ
-            </button>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{pendingCount}</p>
           </div>
 
-          <div className="group rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-xs text-slate-300 shadow-sm shadow-emerald-500/10 transition hover:border-emerald-400/60 hover:shadow-md">
+          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-center justify-between">
-              <p className="uppercase tracking-[0.25em]">Thành viên đang hoạt động</p>
-              <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[0.7rem] font-semibold text-emerald-200">
-                Core team
-              </span>
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Thành viên đang hoạt động</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-white">{activeMembers}</p>
-            <p className="mt-1 text-[0.72rem] text-slate-400">
-              Bao gồm thành viên có trạng thái <span className="font-medium text-emerald-200">Active</span> trong hệ
-              thống.
-            </p>
-            <button
-              className="mt-3 w-full rounded-xl border border-emerald-300/50 bg-emerald-500/10 px-3 py-2 text-[0.72rem] font-semibold text-emerald-100 transition hover:bg-emerald-500/20"
-              onClick={() => setStatusFilter('Active')}
-            >
-              Lọc chỉ xem thành viên Active
-            </button>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{activeMembers}</p>
           </div>
 
-          <div className="group rounded-2xl border border-white/10 bg-slate-950/80 p-4 text-xs text-slate-300 shadow-sm shadow-sky-500/10 transition hover:border-sky-400/60 hover:shadow-md">
+          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-center justify-between">
-              <p className="uppercase tracking-[0.25em]">Tổng thành viên</p>
-              <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[0.7rem] font-semibold text-sky-200">
-                Quy mô CLB
-              </span>
+              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Tổng thành viên</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-white">{totalMembers}</p>
-            <p className="mt-1 text-[0.72rem] text-slate-400">
-              Gồm cả thành viên đang active, tạm ngưng và chờ xác nhận.
-            </p>
-            <button className="mt-3 w-full rounded-xl border border-sky-300/50 bg-sky-500/10 px-3 py-2 text-[0.72rem] font-semibold text-sky-100 transition hover:bg-sky-500/20">
-              Xuất danh sách thành viên
-            </button>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{totalMembers}</p>
           </div>
         </section>
 
         {/* Pending applications table */}
-        <section className="rounded-3xl border border-white/10 bg-slate-950/80 p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-orange-100/80">Ứng viên mới</p>
-              <h3 className="mt-1 text-lg font-semibold text-white">Đơn đăng ký đang chờ duyệt</h3>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Ứng viên mới</p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-900">Đơn đăng ký đang chờ duyệt</h3>
             </div>
           </div>
 
-          <div className="mt-5 overflow-x-auto rounded-2xl border border-white/5 bg-slate-950/80">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-white/5 text-xs uppercase tracking-[0.3em] text-slate-400">
+          <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
                 <tr>
                   <th className="px-4 py-3">Ứng viên</th>
                   <th className="px-4 py-3">Mã SV</th>
@@ -109,24 +77,24 @@ function ClubLeaderMembersPage() {
               </thead>
               <tbody>
                 {pendingApplications.map((application) => (
-                  <tr key={application.studentId} className="border-t border-white/5 hover:bg-white/5">
+                  <tr key={application.studentId} className="border-t border-slate-200 hover:bg-slate-50">
                     <td className="px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white">{application.name}</span>
-                        <span className="text-[0.72rem] text-slate-400">Nộp {application.submittedAt}</span>
+                        <span className="text-sm font-semibold text-slate-900">{application.name}</span>
+                        <span className="text-[0.72rem] text-slate-500">Nộp {application.submittedAt}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3">{application.studentId}</td>
-                    <td className="px-4 py-3">{application.submittedAt}</td>
+                    <td className="px-4 py-3 text-slate-700">{application.studentId}</td>
+                    <td className="px-4 py-3 text-slate-700">{application.submittedAt}</td>
                     <td className="px-4 py-3 max-w-xs">
-                      <p className="text-[0.85rem] text-slate-200 line-clamp-2">{application.note}</p>
+                      <p className="text-[0.85rem] text-slate-600 line-clamp-2">{application.note}</p>
                     </td>
                     <td className="px-4 py-3 text-right text-[0.85rem]">
                       <div className="flex flex-wrap justify-end gap-2">
-                        <button className="rounded-full border border-emerald-400/60 bg-emerald-500/10 px-3 py-1 font-semibold text-emerald-100 hover:bg-emerald-500/20">
+                        <button className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors">
                           Approve
                         </button>
-                        <button className="rounded-full border border-rose-400/60 bg-rose-500/10 px-3 py-1 font-semibold text-rose-100 hover:bg-rose-500/20">
+                        <button className="rounded-lg border border-red-300 bg-red-50 px-3 py-1 font-semibold text-red-700 hover:bg-red-100 transition-colors">
                           Reject
                         </button>
                       </div>
@@ -139,11 +107,11 @@ function ClubLeaderMembersPage() {
         </section>
 
         {/* Members table */}
-        <section className="rounded-3xl border border-white/10 bg-slate-950/80 p-6">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-orange-100/80">Đội ngũ hiện tại</p>
-              <h3 className="mt-1 text-lg font-semibold text-white">Danh sách thành viên CLB</h3>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Đội ngũ hiện tại</p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-900">Danh sách thành viên CLB</h3>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <input
@@ -151,12 +119,12 @@ function ClubLeaderMembersPage() {
                 placeholder="Tìm theo tên hoặc mã SV..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-300 focus:outline-none md:w-52"
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 md:w-52"
               />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-white focus:border-fuchsia-300 focus:outline-none"
+                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="">Lọc theo trạng thái</option>
                 {memberStatuses.map((status) => (
@@ -168,9 +136,9 @@ function ClubLeaderMembersPage() {
             </div>
           </div>
 
-          <div className="mt-4 overflow-x-auto rounded-2xl border border-white/5 bg-slate-950/80">
-            <table className="w-full text-left text-sm text-slate-300">
-              <thead className="bg-white/5 text-xs uppercase tracking-[0.3em] text-slate-400">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
                 <tr>
                   <th className="w-1/3 min-w-[180px] px-4 py-3">Thành viên</th>
                   <th className="w-1/5 px-4 py-3">Mã SV</th>
@@ -180,23 +148,23 @@ function ClubLeaderMembersPage() {
               </thead>
               <tbody>
                 {filteredMembers.map((member) => (
-                  <tr key={member.studentId} className="border-t border-white/5 hover:bg-white/5">
+                  <tr key={member.studentId} className="border-t border-slate-200 hover:bg-slate-50">
                     <td className="w-1/3 min-w-[180px] px-4 py-3">
                       <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-white">{member.name}</span>
-                        <span className="text-[0.72rem] text-slate-400">Gen {member.joinedAt.slice(-2)} • {member.department}</span>
+                        <span className="text-sm font-semibold text-slate-900">{member.name}</span>
+                        <span className="text-[0.72rem] text-slate-500">Gen {member.joinedAt.slice(-2)} • {member.department}</span>
                       </div>
                     </td>
-                    <td className="w-1/5 px-4 py-3 whitespace-nowrap">{member.studentId}</td>
-                    <td className="w-1/5 px-4 py-3 whitespace-nowrap">{member.joinedAt}</td>
+                    <td className="w-1/5 px-4 py-3 whitespace-nowrap text-slate-700">{member.studentId}</td>
+                    <td className="w-1/5 px-4 py-3 whitespace-nowrap text-slate-700">{member.joinedAt}</td>
                     <td className="w-1/5 px-4 py-3 text-right">
                       <span
-                        className={`rounded-full px-3 py-1 text-xs ${
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
                           member.status === 'Active'
-                            ? 'bg-emerald-500/10 text-emerald-300'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : member.status === 'Pending'
-                              ? 'bg-amber-500/10 text-amber-200'
-                              : 'bg-slate-700 text-slate-300'
+                              ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                              : 'bg-slate-100 text-slate-700 border border-slate-300'
                         }`}
                       >
                         {member.status}

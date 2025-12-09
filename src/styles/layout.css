@@ -6,8 +6,9 @@
 
 .app-header {
   padding: 12px 24px;
-  background: #242424;
-  color: #fff;
+  background: #ffffff;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .app-main {

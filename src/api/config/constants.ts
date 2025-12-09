@@ -13,6 +13,8 @@ export const AUTH_ENDPOINTS = {
 // Club Endpoints
 export const CLUB_ENDPOINTS = {
   GET_ALL: '/api/Club',
+  GET_ALL_CLUBS: '/api/Clubs', // Endpoint for student explore page
+  GET_MY_CLUBS: '/api/clubs/my',
   GET_BY_ID: (id: number | string) => `/api/Club/${id}`,
   CREATE: '/api/Club',
   UPDATE: (id: number | string) => `/api/Club/${id}`,
@@ -20,6 +22,10 @@ export const CLUB_ENDPOINTS = {
   GET_MEMBERS: (id: number | string) => `/api/Club/${id}/members`,
   JOIN_REQUEST: (id: number | string) => `/api/Club/${id}/join`,
   LEADER_REQUEST: '/api/club-leader-requests',
+  MY_LEADER_REQUEST: '/api/club-leader-requests/my-request',
+  LEADER_CREATE: '/api/leader/clubs',
+  LEADER_MY_CLUBS: '/api/clubs/my',
+  LEADER_CLUB_BY_ID: (id: number | string) => `/api/clubs/${id}`,
 } as const;
 
 // Activities Endpoints

@@ -50,14 +50,14 @@ function RegisterPage() {
     <AuthLayout title="Tạo tài khoản">
       <form className="space-y-5" onSubmit={handleSubmit}>
         {error && (
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
         {/* Username */}
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-slate-300">
+          <label htmlFor="username" className="block text-sm font-medium text-slate-700">
             Tên đăng nhập
           </label>
           <input
@@ -67,14 +67,14 @@ function RegisterPage() {
             placeholder="babt"
             value={formData.username}
             onChange={handleChange}
-            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             required
           />
         </div>
 
         {/* Fullname */}
         <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-slate-300">
+          <label htmlFor="fullName" className="block text-sm font-medium text-slate-700">
             Họ và tên
           </label>
           <input
@@ -84,14 +84,14 @@ function RegisterPage() {
             placeholder="Nguyễn Minh Khang"
             value={formData.fullName}
             onChange={handleChange}
-            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             required
           />
         </div>
 
         {/* Email */}
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+          <label htmlFor="email" className="block text-sm font-medium text-slate-700">
             Email
           </label>
           <input
@@ -101,14 +101,14 @@ function RegisterPage() {
             placeholder="string@gmail.com"
             value={formData.email}
             onChange={handleChange}
-            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             required
           />
         </div>
 
         {/* Password */}
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-slate-300">
+          <label htmlFor="password" className="block text-sm font-medium text-slate-700">
             Mật khẩu
           </label>
           <input
@@ -118,7 +118,7 @@ function RegisterPage() {
             placeholder="Tối thiểu 8 ký tự"
             value={formData.password}
             onChange={handleChange}
-            className="mt-2 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             required
           />
         </div>
@@ -126,15 +126,15 @@ function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-fuchsia-500 px-4 py-3 text-base font-semibold text-white shadow-lg shadow-fuchsia-500/30 transition hover:translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full rounded-xl bg-blue-600 px-4 py-3 text-base font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Đang đăng ký...' : 'Đăng ký ngay'}
         </button>
       </form>
 
-      <div className="text-sm text-slate-400">
+      <div className="text-sm text-slate-600">
         Đã có tài khoản?{' '}
-        <Link to="/login" className="font-medium text-white hover:underline">
+        <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700 hover:underline">
           Đăng nhập
         </Link>
       </div>

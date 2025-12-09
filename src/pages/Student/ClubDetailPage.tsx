@@ -16,22 +16,22 @@ function ClubDetailPage() {
     <StudentLayout title={formattedName} subtitle="Thông tin chi tiết câu lạc bộ">
       <div className="space-y-6">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-slate-400">
-          <Link to="/student/clubs" className="hover:text-white transition">
+        <nav className="flex items-center gap-2 text-sm text-slate-500">
+          <Link to="/student/clubs" className="hover:text-blue-600 transition">
             CLB của tôi
           </Link>
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
-          <span className="text-white">{formattedName}</span>
+          <span className="text-slate-700">{formattedName}</span>
         </nav>
 
         {/* Hero Section */}
-        <div className="rounded-2xl bg-gradient-to-br from-violet-600/20 to-fuchsia-600/20 p-8 backdrop-blur-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-2 flex items-start justify-between">
             <div className="flex-1 space-y-3">
-              <h1 className="text-3xl font-bold text-white">{formattedName}</h1>
-              <p className="max-w-3xl text-slate-300">{mockClubDetail.description}</p>
+              <h1 className="text-3xl font-bold text-slate-900">{formattedName}</h1>
+              <p className="max-w-3xl text-slate-600">{mockClubDetail.description}</p>
             </div>
           </div>
         </div>
@@ -48,6 +48,4 @@ function ClubDetailPage() {
 }
 
 export default ClubDetailPage;
-
-
 

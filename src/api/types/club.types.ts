@@ -10,6 +10,28 @@ export interface Club {
   memberCount?: number;
 }
 
+// Club response from /api/Clubs endpoint
+export interface ClubListItem {
+  id: number;
+  name: string;
+  description: string;
+  establishedDate?: string;
+  imageClubsUrl: string | null;
+  memberCount?: number;
+  membershipFee: number;
+  status: 'Active' | 'Unactive' | string;
+}
+
+export interface LeaderClubListItem {
+  id: number;
+  name: string;
+  description: string;
+  establishedDate: string;
+  imageClubsUrl: string | null;
+  membershipFee: number;
+  status: 'Active' | 'Unactive' | string;
+}
+
 export interface CreateClubRequest {
   name: string;
   description: string;
@@ -39,5 +61,32 @@ export interface ClubMember {
 
 export interface CreateLeaderRequest {
   reason: string;
+}
+
+export interface CreateLeaderClubRequest {
+  name: string;
+  description: string;
+  establishedDate: string; // ISO date string
+  imageClubsUrl: string;
+  membershipFee: number;
+}
+
+export interface UpdateLeaderClubRequest {
+  name: string;
+  description: string;
+  establishedDate: string;
+  imageClubsUrl: string;
+  membershipFee: number;
+  status: 'Active' | 'Unactive';
+}
+
+export interface LeaderRequest {
+  id: number;
+  requestDate: string;
+  status: 'pending' | 'approved' | 'rejected';
+  reason: string;
+  note?: string;
+  processedBy?: number;
+  processedAt?: string;
 }
 

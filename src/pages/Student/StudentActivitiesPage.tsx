@@ -60,13 +60,13 @@ function StudentActivitiesPage() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'open':
-        return { label: 'Đang mở', color: 'emerald', bgColor: 'bg-emerald-500/20', textColor: 'text-emerald-400', borderColor: 'border-emerald-500/30' };
+        return { label: 'Đang mở', color: 'emerald', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', borderColor: 'border-emerald-200' };
       case 'full':
-        return { label: 'Đã đầy', color: 'fuchsia', bgColor: 'bg-fuchsia-500/20', textColor: 'text-fuchsia-400', borderColor: 'border-fuchsia-500/30' };
+        return { label: 'Đã đầy', color: 'amber', bgColor: 'bg-amber-50', textColor: 'text-amber-700', borderColor: 'border-amber-200' };
       case 'closed':
-        return { label: 'Đã đóng', color: 'slate', bgColor: 'bg-slate-500/20', textColor: 'text-slate-400', borderColor: 'border-slate-500/30' };
+        return { label: 'Đã đóng', color: 'slate', bgColor: 'bg-slate-100', textColor: 'text-slate-600', borderColor: 'border-slate-300' };
       default:
-        return { label: 'Đang mở', color: 'emerald', bgColor: 'bg-emerald-500/20', textColor: 'text-emerald-400', borderColor: 'border-emerald-500/30' };
+        return { label: 'Đang mở', color: 'emerald', bgColor: 'bg-emerald-50', textColor: 'text-emerald-700', borderColor: 'border-emerald-200' };
     }
   };
 
@@ -87,7 +87,7 @@ function StudentActivitiesPage() {
               placeholder="Tìm kiếm hoạt động hoặc CLB..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-400 backdrop-blur-sm transition focus:border-violet-500/50 focus:outline-none focus:ring-2 focus:ring-violet-500/20"
+              className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 placeholder-slate-400 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
             <svg className="absolute left-3 top-3 h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -95,7 +95,7 @@ function StudentActivitiesPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm text-slate-400">Lọc:</span>
+            <span className="text-sm text-slate-600">Lọc:</span>
             <div className="flex flex-wrap gap-2">
               {categories.map((category) => (
                 <button
@@ -103,8 +103,8 @@ function StudentActivitiesPage() {
                   onClick={() => setSelectedCategory(category)}
                   className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
                     selectedCategory === category
-                      ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-lg shadow-violet-500/30'
-                      : 'border border-white/10 text-slate-400 hover:border-white/20 hover:text-white'
+                      ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
+                      : 'border border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'
                   }`}
                 >
                   {category}
@@ -121,27 +121,27 @@ function StudentActivitiesPage() {
             return (
               <div
                 key={activity.id}
-                className="rounded-xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm transition hover:border-violet-500/30 hover:bg-white/[0.07]"
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md"
               >
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   {/* Left: Activity Info */}
                   <div className="flex-1">
                     <div className="mb-2 flex items-center gap-2">
-                      <span className={`inline-flex items-center gap-1.5 rounded-full ${statusConfig.bgColor} px-2.5 py-0.5`}>
+                      <span className={`inline-flex items-center gap-1.5 rounded-full border ${statusConfig.bgColor} ${statusConfig.borderColor} px-2.5 py-0.5`}>
                         <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.textColor.replace('text-', 'bg-')} ${activity.status === 'open' ? 'animate-pulse' : ''}`}></div>
                         <span className={`text-xs font-medium ${statusConfig.textColor}`}>
                           {statusConfig.label}
                         </span>
                       </span>
-                      <span className="rounded-full bg-violet-500/20 px-2.5 py-0.5 text-xs text-violet-400">
+                      <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs text-blue-700 border border-blue-200">
                         {activity.category}
                       </span>
                     </div>
-                    <h3 className="mb-1 text-lg font-semibold text-white">{activity.title}</h3>
-                    <p className="mb-2 text-sm text-slate-400">{activity.club}</p>
-                    <div className="flex flex-wrap gap-4 text-sm text-slate-300">
+                    <h3 className="mb-1 text-lg font-semibold text-slate-900">{activity.title}</h3>
+                    <p className="mb-2 text-sm text-slate-600">{activity.club}</p>
+                    <div className="flex flex-wrap gap-4 text-sm text-slate-600">
                       <span>{activity.date} • {activity.time}</span>
-                      <span className="text-slate-500">•</span>
+                      <span className="text-slate-400">•</span>
                       <span>{activity.location}</span>
                     </div>
                   </div>
@@ -153,8 +153,8 @@ function StudentActivitiesPage() {
                       disabled={activity.status !== 'open'}
                       className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-all ${
                         activity.status === 'open'
-                          ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-md shadow-violet-500/20 active:scale-95'
-                          : 'bg-slate-700/50 text-slate-400 cursor-not-allowed'
+                          ? 'bg-blue-600 hover:bg-blue-700 shadow-md active:scale-95'
+                          : 'bg-slate-200 text-slate-500 cursor-not-allowed'
                       }`}
                     >
                       {activity.status === 'open' ? 'Tham gia' : activity.status === 'full' ? 'Đã đầy' : 'Đã đóng'}
@@ -168,9 +168,9 @@ function StudentActivitiesPage() {
 
         {/* Empty State */}
         {filteredActivities.length === 0 && (
-          <div className="rounded-xl border border-dashed border-white/20 bg-white/5 p-8 text-center backdrop-blur-sm">
-            <h4 className="mb-2 text-lg font-semibold text-white">Không tìm thấy hoạt động</h4>
-            <p className="text-sm text-slate-400">
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center shadow-sm">
+            <h4 className="mb-2 text-lg font-semibold text-slate-900">Không tìm thấy hoạt động</h4>
+            <p className="text-sm text-slate-600">
               Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
             </p>
           </div>

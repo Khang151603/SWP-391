@@ -18,21 +18,19 @@ function StudentDashboardPage() {
     >
       <div className="space-y-6">
         {/* Header banner */}
-        <div className="rounded-2xl bg-gradient-to-br from-violet-600/25 via-fuchsia-600/20 to-emerald-500/20 p-6 md:p-7 backdrop-blur-sm border border-white/10">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-7 shadow-sm">
           <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wide text-violet-200/80">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Student dashboard
               </p>
-              <h2 className="text-2xl md:text-3xl font-bold text-white">
+              <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
                 Thống kê tham gia hoạt động của bạn
               </h2>
-              <p className="text-sm text-slate-200/90 max-w-xl">
+              <p className="text-sm text-slate-600 max-w-xl">
                 Nắm nhanh số lượng câu lạc bộ đang tham gia, tổng số hoạt động đã đăng ký
                 và mức độ hoàn thành để quản lý thời gian hiệu quả hơn.
               </p>
-            </div>
-            <div className="flex items-center gap-3 rounded-2xl bg-black/20 px-4 py-3 border border-white/10">
             </div>
           </div>
         </div>
@@ -40,18 +38,18 @@ function StudentDashboardPage() {
         {/* Main stats cards */}
         <div className="grid gap-4 md:grid-cols-3">
           {/* Tổng CLB */}
-          <div className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm transition hover:border-violet-400/60 hover:bg-white/10">
+          <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                   Câu lạc bộ của tôi
                 </p>
-                <p className="mt-2 text-3xl font-bold text-white">{totalClubs}</p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-3xl font-bold text-slate-900">{totalClubs}</p>
+                <p className="mt-2 text-xs text-slate-600">
                   Số lượng CLB bạn đang tham gia và cần theo dõi lịch hoạt động.
                 </p>
               </div>
-              <div className="rounded-xl bg-violet-500/20 p-3 text-violet-300 group-hover:bg-violet-500/30">
+              <div className="rounded-xl bg-blue-100 p-3 text-blue-600 group-hover:bg-blue-200">
                 <svg
                   className="h-6 w-6"
                   fill="none"
@@ -70,21 +68,21 @@ function StudentDashboardPage() {
           </div>
 
           {/* Tổng hoạt động */}
-          <div className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm transition hover:border-fuchsia-400/60 hover:bg-white/10">
+          <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                   Hoạt động của tôi
                 </p>
-                <p className="mt-2 text-3xl font-bold text-white">
+                <p className="mt-2 text-3xl font-bold text-slate-900">
                   {totalActivities}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-slate-600">
                   Tổng số hoạt động mà bạn đã đăng ký hoặc được phân công
                   trong các câu lạc bộ.
                 </p>
               </div>
-              <div className="rounded-xl bg-fuchsia-500/20 p-3 text-fuchsia-300 group-hover:bg-fuchsia-500/30">
+              <div className="rounded-xl bg-blue-100 p-3 text-blue-600 group-hover:bg-blue-200">
                 <svg
                   className="h-6 w-6"
                   fill="none"
@@ -103,20 +101,20 @@ function StudentDashboardPage() {
           </div>
 
           {/* Hoạt động hoàn thành */}
-          <div className="group rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm transition hover:border-emerald-400/60 hover:bg-white/10">
+          <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                   Hoạt động đã hoàn thành
                 </p>
-                <p className="mt-2 text-3xl font-bold text-white">
+                <p className="mt-2 text-3xl font-bold text-slate-900">
                   {completedActivities}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">
+                <p className="mt-2 text-xs text-slate-600">
                   Số hoạt động bạn đã tham gia đầy đủ và được ghi nhận hoàn thành.
                 </p>
               </div>
-              <div className="rounded-xl bg-emerald-500/20 p-3 text-emerald-300 group-hover:bg-emerald-500/30">
+              <div className="rounded-xl bg-emerald-100 p-3 text-emerald-600 group-hover:bg-emerald-200">
                 <svg
                   className="h-6 w-6"
                   fill="none"
@@ -135,15 +133,15 @@ function StudentDashboardPage() {
 
             {/* mini progress bar */}
             <div className="mt-4 space-y-1.5">
-              <div className="flex items-center justify-between text-[11px] text-slate-400">
+              <div className="flex items-center justify-between text-[11px] text-slate-600">
                 <span>Tiến độ hoàn thành</span>
-                <span className="font-semibold text-emerald-300">
+                <span className="font-semibold text-emerald-700">
                   {completionRate}%
                 </span>
               </div>
-              <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
                 <div
-                  className="h-1.5 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-300 transition-all"
+                  className="h-1.5 rounded-full bg-emerald-600 transition-all"
                   style={{ width: `${completionRate}%` }}
                 ></div>
               </div>

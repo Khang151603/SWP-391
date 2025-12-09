@@ -67,8 +67,8 @@ function RoleSelectionPage() {
   // Hiển thị loading hoặc redirect message
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-lg">Đang tải...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-700 text-lg">Đang tải...</div>
       </div>
     );
   }
@@ -76,8 +76,8 @@ function RoleSelectionPage() {
   // Không render gì nếu đang redirect hoặc không có data
   if (!roles.length || roles.length === 1) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="text-white text-lg">Đang chuyển hướng...</div>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-700 text-lg">Đang chuyển hướng...</div>
       </div>
     );
   }
@@ -107,18 +107,18 @@ function RoleSelectionPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-slate-50">
       <div className="flex min-h-screen items-center justify-center p-4">
         <div className="w-full max-w-2xl">
           {/* Header */}
           <div className="mb-8 text-center">
-            <h1 className="mb-3 text-4xl font-bold text-white">
+            <h1 className="mb-3 text-4xl font-bold text-slate-900">
               Chọn vai trò của bạn
             </h1>
-            <p className="text-lg text-slate-300">
-              Xin chào, <span className="font-semibold text-white">{userInfo?.fullName}</span>
+            <p className="text-lg text-slate-600">
+              Xin chào, <span className="font-semibold text-slate-900">{userInfo?.fullName}</span>
             </p>
-            <p className="text-sm text-slate-400">{userInfo?.email}</p>
+            <p className="text-sm text-slate-500">{userInfo?.email}</p>
           </div>
 
           {/* Role Cards */}
@@ -129,24 +129,21 @@ function RoleSelectionPage() {
                 <button
                   key={role}
                   onClick={() => handleRoleSelect(role)}
-                  className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-8 text-left backdrop-blur-sm transition-all hover:scale-105 hover:border-fuchsia-400/50 hover:bg-white/10 hover:shadow-2xl hover:shadow-fuchsia-500/20"
+                  className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 text-left shadow-sm transition-all hover:scale-105 hover:border-blue-300 hover:shadow-md"
                 >
-                  {/* Background Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-violet-600/10 to-fuchsia-600/10 opacity-0 transition-opacity group-hover:opacity-100" />
-                  
                   {/* Content */}
                   <div className="relative">
                     <div className="mb-4 text-5xl">{roleInfo.icon}</div>
-                    <h2 className="mb-2 text-2xl font-bold text-white">
+                    <h2 className="mb-2 text-2xl font-bold text-slate-900">
                       {roleInfo.title}
                     </h2>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-slate-600">
                       {roleInfo.description}
                     </p>
                   </div>
 
                   {/* Arrow Icon */}
-                  <div className="absolute bottom-6 right-6 text-3xl text-white/50 transition-all group-hover:translate-x-1 group-hover:text-fuchsia-400">
+                  <div className="absolute bottom-6 right-6 text-3xl text-slate-400 transition-all group-hover:translate-x-1 group-hover:text-blue-600">
                     →
                   </div>
                 </button>
@@ -161,7 +158,7 @@ function RoleSelectionPage() {
                 tokenManager.clear();
                 navigate('/login');
               }}
-              className="text-sm text-slate-400 transition hover:text-white"
+              className="text-sm text-slate-500 transition hover:text-slate-700"
             >
               Đăng xuất
             </button>

@@ -13,12 +13,12 @@ function ClubLeaderDashboardPage() {
     >
       <div className="space-y-8">
         {/* Hero / Greeting */}
-        <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-fuchsia-600/40 via-slate-950 to-orange-500/30 p-6 shadow-[0_25px_80px_rgba(15,23,42,0.9)]">
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-3">
               <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-orange-100/80">Xin chào, Leader</p>
-                <h2 className="mt-2 text-3xl font-semibold leading-tight text-white md:text-4xl">
+                <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Xin chào, Leader</p>
+                <h2 className="mt-2 text-3xl font-semibold leading-tight text-slate-900 md:text-4xl">
                   Toàn cảnh hoạt động CLB trong hôm nay.
                 </h2>
               </div>
@@ -28,25 +28,25 @@ function ClubLeaderDashboardPage() {
 
         {/* Today focus cards */}
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="group rounded-2xl border border-white/10 bg-slate-950/80 p-4 shadow-sm shadow-fuchsia-500/10 transition hover:border-fuchsia-400/50 hover:shadow-md">
-            <div className="flex items-center justify-between text-xs text-slate-300">
+          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
+            <div className="flex items-center justify-between text-xs text-slate-500">
               <p className="uppercase tracking-[0.25em]">Đơn đăng ký</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-white">{pendingCount}</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{pendingCount}</p>
           </div>
 
-          <div className="group rounded-2xl border border-white/10 bg-slate-950/80 p-4 shadow-sm shadow-emerald-500/10 transition hover:border-emerald-400/60 hover:shadow-md">
-            <div className="flex items-center justify-between text-xs text-slate-300">
+          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
+            <div className="flex items-center justify-between text-xs text-slate-500">
               <p className="uppercase tracking-[0.25em]">Hoạt động sắp diễn ra</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-white">{upcomingActivities}</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{upcomingActivities}</p>
           </div>
 
-          <div className="group rounded-2xl border border-white/10 bg-slate-950/80 p-4 shadow-sm shadow-sky-500/10 transition hover:border-sky-400/60 hover:shadow-md">
-            <div className="flex items-center justify-between text-xs text-slate-300">
+          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
+            <div className="flex items-center justify-between text-xs text-slate-500">
               <p className="uppercase tracking-[0.25em]">Tổng thành viên</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-white">{totalMembers}</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{totalMembers}</p>
           </div>
         </section>
       </div>

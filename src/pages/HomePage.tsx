@@ -72,33 +72,23 @@ const clubs = [
 
 function HomePage() {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-50 text-slate-900">
       <div className="relative isolate overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-600/20 via-fuchsia-500/10 to-slate-900 blur-3xl" />
         <div className="relative mx-auto max-w-6xl px-6 py-8 lg:py-12">
-          <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-transparent p-8 backdrop-blur-xl shadow-2xl shadow-violet-900/20">
-            {/* Decorative background elements */}
-            <div className="absolute inset-0 overflow-hidden">
-              <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 blur-3xl" />
-              <div className="absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-gradient-to-tr from-purple-500/15 to-pink-500/15 blur-2xl" />
-            </div>
-            
+          <header className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
             <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
               {/* Logo and Brand Section */}
               <div className="flex items-center gap-5">
-                <div className="group relative">
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-violet-500/40 to-fuchsia-500/40 blur-xl opacity-50 group-hover:opacity-75 transition-opacity" />
-                  <div className="relative rounded-2xl bg-gradient-to-br from-violet-600/20 to-fuchsia-600/20 p-4 ring-2 ring-white/20 backdrop-blur-sm">
-                    <span className="text-2xl font-bold bg-gradient-to-r from-white via-violet-100 to-fuchsia-100 bg-clip-text text-transparent">
-                      SCMS
-                    </span>
-                  </div>
+                <div className="rounded-2xl bg-blue-600 p-4 ring-2 ring-blue-100">
+                  <span className="text-2xl font-bold text-white">
+                    SCMS
+                  </span>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-fuchsia-300/90">
+                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
                     Student Club Management System
                   </p>
-                  <p className="text-lg font-semibold text-white">
+                  <p className="text-lg font-semibold text-slate-900">
                     Nền tảng quản trị câu lạc bộ
                   </p>
                 </div>
@@ -108,22 +98,20 @@ function HomePage() {
               <div className="flex items-center gap-4">
                 <Link 
                   to="/login" 
-                  className="group relative overflow-hidden rounded-xl border border-white/20 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-300 hover:border-white/30 hover:bg-white/10 hover:shadow-lg hover:shadow-violet-500/20"
+                  className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md"
                 >
-                  <span className="relative z-10">Đăng nhập</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/10 to-fuchsia-500/0 opacity-0 transition-opacity group-hover:opacity-100" />
+                  Đăng nhập
                 </Link>
                 <Link 
                   to="/register" 
-                  className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 via-violet-500 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-fuchsia-500/30 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-fuchsia-500/40"
+                  className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-blue-700 hover:shadow-lg"
                 >
-                  <span className="relative z-10 flex items-center gap-2">
+                  <span className="flex items-center gap-2">
                     <span>Đăng ký tài khoản</span>
                     <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                     </svg>
                   </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-fuchsia-500 to-pink-500 opacity-0 transition-opacity group-hover:opacity-100" />
                 </Link>
               </div>
             </div>
@@ -131,7 +119,7 @@ function HomePage() {
 
           <section className="mt-12">
             <div className="space-y-6 text-center">
-              <h1 className="mx-auto max-w-4xl text-4xl font-semibold leading-tight text-white md:text-5xl lg:text-6xl">
+              <h1 className="mx-auto max-w-4xl text-4xl font-semibold leading-tight text-slate-900 md:text-5xl lg:text-6xl">
                 Quản lý câu lạc bộ trong trường đại học
               </h1>
             </div>
@@ -142,9 +130,9 @@ function HomePage() {
       <main className="relative z-10 mx-auto max-w-6xl space-y-16 px-6 py-12">
         <section id="clubs" className="space-y-10">
           <div className="flex flex-col gap-4 text-center">
-            <p className="text-sm uppercase tracking-[0.3em] text-violet-200">CÂU LẠC BỘ</p>
-            <h2 className="text-3xl font-semibold text-white md:text-4xl">Tham gia câu lạc bộ phù hợp với bạn</h2>
-            <p className="mx-auto max-w-3xl text-base text-slate-300">
+            <p className="text-sm uppercase tracking-[0.3em] text-slate-500">CÂU LẠC BỘ</p>
+            <h2 className="text-3xl font-semibold text-slate-900 md:text-4xl">Tham gia câu lạc bộ phù hợp với bạn</h2>
+            <p className="mx-auto max-w-3xl text-base text-slate-600">
               Khám phá các câu lạc bộ đang hoạt động trong trường, tìm hiểu về hoạt động và đăng ký tham gia ngay hôm nay.
             </p>
           </div>
@@ -152,40 +140,39 @@ function HomePage() {
             {clubs.map((club) => (
               <div
                 key={club.id}
-                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-slate-900/70 p-6 transition hover:-translate-y-1 hover:border-violet-400/60"
+                className="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-blue-300 hover:shadow-md"
               >
-                <div className="absolute inset-0 opacity-0 blur-3xl transition group-hover:opacity-30" style={{ background: 'radial-gradient(circle at top, rgba(139,92,246,0.4), transparent 60%)' }} />
                 <div className="relative">
                   <div className="mb-4">
-                    <h3 className="text-lg font-semibold text-white mb-1">{club.name}</h3>
-                    <span className="inline-block rounded-full bg-violet-500/20 px-2.5 py-0.5 text-xs font-medium text-violet-300">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-1">{club.name}</h3>
+                    <span className="inline-block rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
                       {club.category}
                     </span>
                   </div>
-                  <p className="mb-4 text-sm text-slate-300 line-clamp-2">{club.description}</p>
-                  <div className="mb-4 flex items-center gap-4 text-sm text-slate-400">
+                  <p className="mb-4 text-sm text-slate-600 line-clamp-2">{club.description}</p>
+                  <div className="mb-4 flex items-center gap-4 text-sm text-slate-500">
                     <span>{club.members} thành viên</span>
                     <span>•</span>
                     <span>{club.activities} hoạt động</span>
                   </div>
-                  <div className="mb-4 rounded-lg bg-amber-500/10 px-3 py-2">
+                  <div className="mb-4 rounded-lg bg-amber-50 px-3 py-2 border border-amber-200">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-slate-400">Phí tham gia</span>
-                      <span className="text-sm font-semibold text-amber-300">
+                      <span className="text-xs text-slate-600">Phí tham gia</span>
+                      <span className="text-sm font-semibold text-amber-700">
                         {club.monthlyFee === 0 ? (
-                          <span className="text-emerald-400">Miễn phí</span>
+                          <span className="text-emerald-700">Miễn phí</span>
                         ) : (
                           <span>{club.monthlyFee.toLocaleString('vi-VN')} ₫/tháng</span>
                         )}
                       </span>
                     </div>
                   </div>
-                  <div className="mb-4 rounded-lg bg-emerald-500/10 px-3 py-2">
-                    <p className="text-xs font-medium text-emerald-300">{club.status}</p>
+                  <div className="mb-4 rounded-lg bg-emerald-50 px-3 py-2 border border-emerald-200">
+                    <p className="text-xs font-medium text-emerald-700">{club.status}</p>
                   </div>
                   <Link
                     to="/register"
-                    className="block w-full rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-violet-500/50"
+                    className="block w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg"
                   >
                     Tham gia ngay
                   </Link>
@@ -196,7 +183,7 @@ function HomePage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/5 bg-slate-950/70 py-8 text-center text-sm text-slate-500">
+      <footer className="border-t border-slate-200 bg-white py-8 text-center text-sm text-slate-500">
         © {new Date().getFullYear()} SCMS • Giải pháp quản lý câu lạc bộ dành cho sinh viên Việt Nam.
       </footer>
     </div>
