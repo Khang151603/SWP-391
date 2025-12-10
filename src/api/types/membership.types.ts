@@ -25,3 +25,22 @@ export interface CreateMembershipRequest {
   message?: string;
 }
 
+// Student membership request types
+export interface StudentMembershipRequest {
+  clubId: number;
+  reason: string;
+  fullName: string;
+  email: string;
+  phone: string;
+}
+
+export interface StudentMembershipRequestResponse {
+  id: number;
+  clubName: string;
+  status: string;
+  note: string;
+  requestDate: string;
+  paymentId: number | null;
+  amount: number | null;
+}
+

@@ -58,6 +58,9 @@ export const MEMBERSHIP_ENDPOINTS = {
   DELETE: (id: number | string) => `/api/Membership/${id}`,
   APPROVE: (id: number | string) => `/api/Membership/${id}/approve`,
   REJECT: (id: number | string) => `/api/Membership/${id}/reject`,
+  // Student membership request endpoints
+  STUDENT_REQUEST: '/api/student/membership/request',
+  STUDENT_REQUESTS: '/api/student/membership/requests',
 } as const;
 
 // Finance Endpoints

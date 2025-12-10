@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { Dialog } from '../../components/ui/Dialog';
 import { clubService } from '../../api/services/club.service';
+import { membershipService } from '../../api/services/membership.service';
 import type { ClubListItem } from '../../api/types/club.types';
 
 // Extended club type for UI display
@@ -71,18 +72,15 @@ function StudentExplorePage() {
     agreedToTerms: false,
   });
 
-  const requiredFieldKeys: Array<keyof typeof formData> = ['fullName', 'studentId', 'email', 'phone', 'major', 'motivation'];
+  // Only validate fields required by API: fullName, email, phone, motivation (reason)
+  const requiredFieldKeys: Array<keyof typeof formData> = ['fullName', 'email', 'phone', 'motivation'];
   const filledRequiredFields = requiredFieldKeys.filter((key) => {
     const value = formData[key];
     return typeof value === 'string' && value.trim() !== '';
   }).length;
   const completionPercentage = Math.min(
     100,
-    Math.round(
-      ((filledRequiredFields + (formData.availability.length ? 1 : 0) + (formData.agreedToTerms ? 1 : 0)) /
-        (requiredFieldKeys.length + 2)) *
-        100,
-    ),
+    Math.round((filledRequiredFields / requiredFieldKeys.length) * 100),
   );
 
   // Fetch clubs from API
@@ -154,39 +152,43 @@ function StudentExplorePage() {
   };
 
   const isFormValid = () => {
+    // Only validate fields required by API
     return formData.fullName.trim() !== '' &&
-           formData.studentId.trim() !== '' &&
            formData.email.trim() !== '' &&
            formData.phone.trim() !== '' &&
-           formData.major.trim() !== '' &&
-           formData.motivation.trim() !== '' &&
-           formData.availability.length > 0 &&
-           formData.agreedToTerms;
+           formData.motivation.trim() !== '';
   };
 
   const confirmRegistration = async () => {
-    if (!isFormValid()) {
+    if (!isFormValid() || !selectedClub) {
       alert('Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
 
     setIsRegistering(true);
-    // Simulate API call with form data
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    console.log('Registration data:', {
-      club: selectedClub?.name,
-      ...formData
-    });
-    
-    setIsRegistering(false);
-    setRegistrationSuccess(true);
-    
-    // Reset after 3 seconds
-    setTimeout(() => {
-      setSelectedClub(null);
-      setRegistrationSuccess(false);
-    }, 3000);
+    try {
+      // Call API to create membership request
+      await membershipService.createStudentRequest({
+        clubId: parseInt(selectedClub.id),
+        reason: formData.motivation,
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+      });
+      
+      setRegistrationSuccess(true);
+      
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setSelectedClub(null);
+        setRegistrationSuccess(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting membership request:', error);
+      alert('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   return (
@@ -549,16 +551,6 @@ function StudentExplorePage() {
                                 value={formData.phone}
                                 onChange={(e) => handleFormChange('phone', e.target.value)}
                                 placeholder="0912345678"
-                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                              />
-                            </div>
-                            <div>
-                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-600">Chuyên ngành *</label>
-                              <input
-                                type="text"
-                                value={formData.major}
-                                onChange={(e) => handleFormChange('major', e.target.value)}
-                                placeholder="Software Engineering"
                                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                               />
                             </div>

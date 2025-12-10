@@ -3,6 +3,8 @@ import { MEMBERSHIP_ENDPOINTS } from '../config/constants';
 import type {
   Membership,
   CreateMembershipRequest,
+  StudentMembershipRequest,
+  StudentMembershipRequestResponse,
 } from '../types/membership.types';
 
 /**
@@ -59,6 +61,20 @@ export const membershipService = {
    */
   async reject(id: number | string): Promise<Membership> {
     return httpClient.post<Membership>(MEMBERSHIP_ENDPOINTS.REJECT(id));
+  },
+
+  /**
+   * Student: Create membership request
+   */
+  async createStudentRequest(data: StudentMembershipRequest): Promise<void> {
+    return httpClient.post<void>(MEMBERSHIP_ENDPOINTS.STUDENT_REQUEST, data);
+  },
+
+  /**
+   * Student: Get all membership requests
+   */
+  async getStudentRequests(): Promise<StudentMembershipRequestResponse[]> {
+    return httpClient.get<StudentMembershipRequestResponse[]>(MEMBERSHIP_ENDPOINTS.STUDENT_REQUESTS);
   },
 };
 
