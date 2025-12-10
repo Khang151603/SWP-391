@@ -564,7 +564,6 @@ function StudentExplorePage() {
                             </div>
                           </div>
                         </div>
-
                         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                           <div className="mt-4 space-y-4">
                             <div>

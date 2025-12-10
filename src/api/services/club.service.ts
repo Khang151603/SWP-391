@@ -9,6 +9,7 @@ import type {
   ClubMember,
   CreateLeaderRequest,
   CreateLeaderClubRequest,
+  UpdateLeaderClubRequest,
   LeaderRequest,
 } from '../types/club.types';
 
