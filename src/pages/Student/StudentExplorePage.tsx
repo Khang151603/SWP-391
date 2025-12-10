@@ -197,7 +197,6 @@ function StudentExplorePage() {
       subtitle="Tìm kiếm, so sánh và đăng ký CLB phù hợp với mục tiêu phát triển của bạn."
     >
       <div className="space-y-6">
-  
         {/* Layout 2 cột: Bộ lọc + Kết quả */}
         <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
           {/* Cột trái: Bộ lọc */}

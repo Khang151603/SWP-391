@@ -80,8 +80,8 @@ interface FormFieldProps {
 
 const FormField = ({ id, label, required, placeholder, value, onChange, disabled }: FormFieldProps) => (
   <div className="space-y-2">
-    <label htmlFor={id} className="block text-sm font-medium text-slate-300">
-      {label} {required && <span className="text-red-400">*</span>}
+    <label htmlFor={id} className="block text-sm font-medium text-slate-700">
+      {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
       <textarea
@@ -94,7 +94,7 @@ const FormField = ({ id, label, required, placeholder, value, onChange, disabled
         rows={5}
         maxLength={500}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-slate-600 bg-slate-800/50 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-blue-500 focus:bg-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition"
       />
       <div className="absolute bottom-2 right-3 text-xs text-slate-500">
         {value.length}/500
@@ -199,32 +199,38 @@ function StudentBecomeLeaderPage() {
       title="Yêu cầu trở thành Club Leader"
       subtitle="Gửi đơn ứng tuyển để trở thành người quản lý câu lạc bộ"
     >
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Simple Header */}
-        <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
-          <h1 className="text-2xl font-bold text-white mb-2">
-            Đăng ký trở thành Club Leader
-          </h1>
-          <p className="text-slate-400">
-            Điền lý do của bạn vào form bên dưới để gửi yêu cầu. Yêu cầu sẽ được xem xét bởi ban quản trị hệ thống.
-          </p>
+      <div className="space-y-6">
+        {/* Header Section */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="space-y-2">
+            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Đăng ký trở thành Club Leader</p>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Gửi yêu cầu ứng tuyển
+            </h2>
+            <p className="text-sm text-slate-600">
+              Điền lý do của bạn vào form bên dưới để gửi yêu cầu. Yêu cầu sẽ được xem xét bởi ban quản trị hệ thống.
+            </p>
+          </div>
         </div>
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Form Section */}
-          <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
-            <h2 className="text-lg font-semibold text-white mb-4">Gửi yêu cầu mới</h2>
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-slate-900">Gửi yêu cầu mới</h2>
+              <p className="mt-1 text-sm text-slate-600">Điền form bên dưới để gửi yêu cầu trở thành Club Leader</p>
+            </div>
             {submitSuccess ? (
               <div className="text-center py-12">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                   <Icons.CheckCircle />
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-white">Yêu cầu đã được gửi thành công!</h3>
-                <p className="mb-4 text-sm text-slate-400">
+                <h3 className="mb-2 text-xl font-bold text-slate-900">Yêu cầu đã được gửi thành công!</h3>
+                <p className="mb-4 text-sm text-slate-600">
                   Yêu cầu của bạn đang được xem xét. Chúng tôi sẽ thông báo kết quả qua email.
                 </p>
-                <div className="inline-flex items-center gap-2 rounded-lg bg-green-500/10 px-4 py-2 text-sm text-green-400">
+                <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2 text-sm text-emerald-700">
                   <Icons.Clock />
                   Thời gian xử lý: 3-5 ngày làm việc
                 </div>
@@ -233,15 +239,15 @@ function StudentBecomeLeaderPage() {
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Alert Messages */}
                 {errorMessage && (
-                  <div className="rounded-lg border border-red-500/50 bg-red-500/10 p-4">
+                  <div className="rounded-xl border border-red-300 bg-red-50 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-red-400">
+                      <div className="mt-0.5 text-red-600">
                         <Icons.X />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-red-400">{errorMessage}</p>
+                        <p className="text-sm font-medium text-red-700">{errorMessage}</p>
                         {isClubLeader && (
-                          <p className="mt-1 text-xs text-red-300">
+                          <p className="mt-1 text-xs text-red-600">
                             Vui lòng sử dụng tài khoản Club Leader để quản lý câu lạc bộ của bạn.
                           </p>
                         )}
@@ -251,16 +257,16 @@ function StudentBecomeLeaderPage() {
                 )}
 
                 {isClubLeader && !errorMessage && (
-                  <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 p-4">
+                  <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
                     <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-amber-400">
+                      <div className="mt-0.5 text-amber-600">
                         <Icons.Info />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-amber-400">
+                        <p className="text-sm font-medium text-amber-700">
                           Bạn đã là Club Leader
                         </p>
-                        <p className="mt-1 text-xs text-amber-300">
+                        <p className="mt-1 text-xs text-amber-600">
                           Bạn đang sở hữu quyền quản lý câu lạc bộ. Vui lòng sử dụng tài khoản Club Leader để quản lý.
                         </p>
                       </div>
@@ -283,7 +289,7 @@ function StudentBecomeLeaderPage() {
                 ))}
 
                 {/* Submit Buttons */}
-                <div className="flex flex-col-reverse gap-3 border-t border-slate-700 pt-5 sm:flex-row sm:justify-end">
+                <div className="flex flex-col-reverse gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:justify-end">
                   <Button 
                     type="button" 
                     variant="secondary" 
@@ -317,101 +323,116 @@ function StudentBecomeLeaderPage() {
           </div>
 
           {/* Right Column - My Requests Table Section */}
-          <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Yêu cầu của tôi</h2>
-              <span className="rounded-full bg-slate-700 px-2.5 py-1 text-xs font-medium text-slate-300">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Yêu cầu của tôi</h2>
+                <p className="mt-1 text-sm text-slate-600">Lịch sử các yêu cầu bạn đã gửi</p>
+              </div>
+              <span className="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
                 {myRequests.length} {myRequests.length === 1 ? 'yêu cầu' : 'yêu cầu'}
               </span>
             </div>
             {myRequests.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                        STT
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                        Ngày gửi
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                        Lý do
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                        Trạng thái
-                      </th>
-                      <th className="px-3 py-2 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                        Ghi chú
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-700">
-                    {myRequests.map((request, index) => {
-                      const statusConfig: Record<string, {
-                        textColor: string;
-                        bgColor: string;
-                        label: string;
-                      }> = {
-                        pending: {
-                          textColor: 'text-yellow-400',
-                          bgColor: 'bg-yellow-500/10',
-                          label: 'Đang chờ',
-                        },
-                        approved: {
-                          textColor: 'text-green-400',
-                          bgColor: 'bg-green-500/10',
-                          label: 'Đã duyệt',
-                        },
-                        rejected: {
-                          textColor: 'text-red-400',
-                          bgColor: 'bg-red-500/10',
-                          label: 'Đã từ chối',
-                        },
-                      };
-                      const status = request.status?.toLowerCase() || 'pending';
-                      const config = statusConfig[status] || statusConfig.pending;
-                      return (
-                        <tr key={request.id} className="hover:bg-slate-800/50 transition-colors">
-                          <td className="px-3 py-2 text-xs text-slate-300">
-                            {index + 1}
-                          </td>
-                          <td className="px-3 py-2 text-xs text-slate-300">
-                            {new Date(request.requestDate).toLocaleString('vi-VN', {
-                              day: '2-digit',
-                              month: '2-digit',
-                              year: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
-                          </td>
-                          <td className="px-3 py-2 text-xs text-white max-w-[120px]">
-                            <div className="line-clamp-2">{request.reason}</div>
-                          </td>
-                          <td className="px-3 py-2">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${config.bgColor} ${config.textColor}`}>
-                              {config.label}
-                            </span>
-                          </td>
-                          <td className="px-3 py-2 text-xs text-slate-400 max-w-[120px]">
-                            {request.note ? (
-                              <div className="line-clamp-2">{request.note}</div>
-                            ) : (
-                              <span className="text-slate-600">-</span>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="overflow-hidden rounded-xl border border-slate-200">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          STT
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Ngày gửi
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Lý do
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Trạng thái
+                        </th>
+                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
+                          Ghi chú
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200 bg-white">
+                      {myRequests.map((request, index) => {
+                        const statusConfig: Record<string, {
+                          textColor: string;
+                          bgColor: string;
+                          label: string;
+                        }> = {
+                          pending: {
+                            textColor: 'text-yellow-800',
+                            bgColor: 'bg-yellow-100 border-yellow-300',
+                            label: 'Đang chờ',
+                          },
+                          approved: {
+                            textColor: 'text-emerald-800',
+                            bgColor: 'bg-emerald-100 border-emerald-300',
+                            label: 'Đã duyệt',
+                          },
+                          rejected: {
+                            textColor: 'text-red-800',
+                            bgColor: 'bg-red-100 border-red-300',
+                            label: 'Đã từ chối',
+                          },
+                        };
+                        const status = request.status?.toLowerCase() || 'pending';
+                        const config = statusConfig[status] || statusConfig.pending;
+                        return (
+                          <tr key={request.id} className="transition-colors hover:bg-slate-50">
+                            <td className="whitespace-nowrap px-6 py-4">
+                              <div className="text-sm font-medium text-slate-900">{index + 1}</div>
+                            </td>
+                            <td className="whitespace-nowrap px-6 py-4">
+                              <div className="text-sm text-slate-900">
+                                {new Date(request.requestDate).toLocaleDateString('vi-VN', {
+                                  year: 'numeric',
+                                  month: '2-digit',
+                                  day: '2-digit',
+                                })}
+                              </div>
+                              <div className="text-xs text-slate-500">
+                                {new Date(request.requestDate).toLocaleTimeString('vi-VN', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="max-w-xs text-sm text-slate-700">
+                                <p className="line-clamp-2">{request.reason}</p>
+                              </div>
+                            </td>
+                            <td className="whitespace-nowrap px-6 py-4">
+                              <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${config.bgColor} ${config.textColor}`}>
+                                {config.label}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="max-w-xs text-sm text-slate-700">
+                                {request.note ? (
+                                  <p className="line-clamp-2">{request.note}</p>
+                                ) : (
+                                  <span className="text-slate-400">—</span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             ) : (
-              <div className="py-12 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-700/50">
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-12 text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-200 text-slate-500">
                   <Icons.Info />
                 </div>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-600">
                   Bạn chưa có yêu cầu nào. Hãy gửi yêu cầu mới ở form bên cạnh.
                 </p>
               </div>

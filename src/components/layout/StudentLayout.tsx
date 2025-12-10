@@ -16,8 +16,9 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { label: 'Tổng quan', path: '/student'},
-  { label: 'CLB của tôi', path: '/student/clubs' },
+  { label: 'CLB đang tham gia', path: '/student/clubs' },
   { label: 'Khám phá CLB', path: '/student/explore' },
+  { label: 'Yêu cầu tham gia CLB', path: '/student/membership-requests' },
   { label: 'Hoạt động', path: '/student/activities' },
   { label: 'Hoạt động của tôi', path: '/student/my-activities' },
   { label: 'Tài chính', path: '/student/fees' },

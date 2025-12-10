@@ -20,7 +20,7 @@ function StudentClubsPage() {
 
   return (
     <StudentLayout
-      title="CLB của tôi"
+      title="CLB đang tham gia"
     >
       <div className="space-y-8">
         {/* Top header & actions */}
