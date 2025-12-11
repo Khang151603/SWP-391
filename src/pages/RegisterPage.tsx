@@ -9,6 +9,7 @@ function RegisterPage() {
     username: '',
     fullName: '',
     email: '',
+    phone: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -100,6 +101,23 @@ function RegisterPage() {
             type="email"
             placeholder="string@gmail.com"
             value={formData.email}
+            onChange={handleChange}
+            className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            required
+          />
+        </div>
+
+        {/* Phone */}
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
+            Số điện thoại
+          </label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            placeholder="0123456789"
+            value={formData.phone}
             onChange={handleChange}
             className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             required

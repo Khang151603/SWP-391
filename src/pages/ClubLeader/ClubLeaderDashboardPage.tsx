@@ -1,10 +1,10 @@
 import LeaderLayout from '../../components/layout/LeaderLayout';
-import { activityPipeline, memberRoster, pendingApplications } from './leaderData';
 
 function ClubLeaderDashboardPage() {
-  const pendingCount = pendingApplications.length;
-  const upcomingActivities = activityPipeline.length;
-  const totalMembers = memberRoster.length;
+  // These will be loaded from API in future updates
+  const pendingCount = 0;
+  const upcomingActivities = 0;
+  const totalMembers = 0;
 
   return (
     <LeaderLayout

@@ -47,41 +47,6 @@ export const memberRoles = ['Thành viên', 'Leader', 'Phó Leader', 'Trưởng 
 
 export const memberStatuses = ['Active', 'Inactive', 'Pending', 'Offboarded'];
 
-export const memberRoster = [
-  {
-    name: 'Vũ Đức Anh',
-    studentId: 'SE150999',
-    joinedAt: '08/2023',
-    role: 'Leader',
-    department: 'Điều hành',
-    status: 'Active',
-  },
-  {
-    name: 'Bùi Thảo Chi',
-    studentId: 'SE151045',
-    joinedAt: '03/2024',
-    role: 'Phó Leader',
-    department: 'Nội dung',
-    status: 'Active',
-  },
-  {
-    name: 'Ngô Duy Khánh',
-    studentId: 'SE151078',
-    joinedAt: '01/2024',
-    role: 'Trưởng ban Sự kiện',
-    department: 'Sự kiện',
-    status: 'Active',
-  },
-  {
-    name: 'Trần Ngọc Ánh',
-    studentId: 'SE151120',
-    joinedAt: '05/2024',
-    role: 'Thành viên',
-    department: 'Truyền thông',
-    status: 'Pending',
-  },
-];
-
 export const activityPipeline = [
   {
     title: 'Orientation 2025',

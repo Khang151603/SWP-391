@@ -62,3 +62,19 @@ export interface LeaderApproveRejectRequest {
   note: string;
 }
 
+// Leader membership management types
+export interface ClubMemberDto {
+  membershipId: number;
+  accountId: number;
+  clubId: number;
+  fullName: string | null;
+  email: string | null;
+  phone: string | null;
+  joinDate: string | null;
+  status: string;
+}
+
+export interface LeaderDecisionDto {
+  note?: string | null;
+}
+

@@ -63,8 +63,13 @@ export const MEMBERSHIP_ENDPOINTS = {
   STUDENT_REQUESTS: '/api/student/membership/requests',
   // Leader membership request endpoints
   LEADER_PENDING: '/api/leader/membership/pending',
+  LEADER_MEMBERS: '/api/leader/membership/members',
+  LEADER_CLUB_MEMBERS: (clubId: number | string) => `/api/leader/membership/clubs/${clubId}/members`,
   LEADER_APPROVE: (id: number | string) => `/api/leader/membership/${id}/approve`,
   LEADER_REJECT: (id: number | string) => `/api/leader/membership/${id}/reject`,
+  LEADER_LOCK_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}/lock`,
+  LEADER_UNLOCK_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}/unlock`,
+  LEADER_DELETE_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}`,
 } as const;
 
 // Finance Endpoints
