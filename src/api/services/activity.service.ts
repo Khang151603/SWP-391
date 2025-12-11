@@ -4,6 +4,7 @@ import type {
   Activity,
   CreateActivityRequest,
   UpdateActivityRequest,
+  StudentActivity,
 } from '../types/activity.types';
 
 /**
@@ -67,6 +68,34 @@ export const activityService = {
    */
   async unregister(id: number | string): Promise<void> {
     return httpClient.post<void>(ACTIVITY_ENDPOINTS.UNREGISTER(id));
+  },
+
+  /**
+   * Student: Get all activities
+   */
+  async getStudentViewAll(): Promise<StudentActivity[]> {
+    return httpClient.get<StudentActivity[]>(ACTIVITY_ENDPOINTS.STUDENT_VIEW_ALL);
+  },
+
+  /**
+   * Student: Get activities by club
+   */
+  async getStudentViewByClub(clubId: number | string): Promise<StudentActivity[]> {
+    return httpClient.get<StudentActivity[]>(ACTIVITY_ENDPOINTS.STUDENT_VIEW_CLUB(clubId));
+  },
+
+  /**
+   * Student: Register for activity
+   */
+  async registerStudent(id: number | string): Promise<void> {
+    return httpClient.post<void>(ACTIVITY_ENDPOINTS.STUDENT_REGISTER(id));
+  },
+
+  /**
+   * Student: Get activities for registration (activities student has registered)
+   */
+  async getStudentForRegistration(): Promise<StudentActivity[]> {
+    return httpClient.get<StudentActivity[]>(ACTIVITY_ENDPOINTS.STUDENT_FOR_REGISTRATION);
   },
 };
 

@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
-import { memberStatuses } from './leaderData';
 import { membershipService } from '../../api/services/membership.service';
 import type { LeaderPendingMembershipRequest, ClubMemberDto } from '../../api/types/membership.types';
 
@@ -26,7 +25,6 @@ function ClubLeaderMembersPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [pendingApplications, setPendingApplications] = useState<LeaderPendingMembershipRequest[]>([]);
   const [members, setMembers] = useState<ClubMemberDto[]>([]);
-  const [approvedRequests, setApprovedRequests] = useState<LeaderPendingMembershipRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -217,15 +215,15 @@ function ClubLeaderMembersPage() {
       
       handleCloseModal();
     } catch (err) {
-      const actionNames: Record<ActionType, string> = {
+      const actionNames: Record<Exclude<ActionType, null>, string> = {
         approve: 'chấp nhận',
         reject: 'từ chối',
         lock: 'khóa',
         unlock: 'mở khóa',
         delete: 'xóa',
-        null: '',
       };
-      setError(err instanceof Error ? err.message : `Không thể ${actionNames[actionType]} thành viên`);
+      const actionName = actionType ? actionNames[actionType] : 'thực hiện hành động';
+      setError(err instanceof Error ? err.message : `Không thể ${actionName} thành viên`);
       console.error(`Error ${actionType}ing:`, err);
     } finally {
       setIsProcessing(false);

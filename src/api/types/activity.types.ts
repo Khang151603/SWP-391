@@ -30,3 +30,20 @@ export interface UpdateActivityRequest {
   status?: Activity['status'];
 }
 
+// Student activity view types
+export interface StudentActivity {
+  id: number;
+  clubId: number;
+  clubName?: string; // Optional, will be fetched from clubId if not provided
+  title: string;
+  description: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  status: string;
+  category?: string;
+  registeredCount?: number;
+  maxParticipants?: number;
+  isRegistered?: boolean;
+}
+

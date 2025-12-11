@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { Button } from '../../components/ui/Button';
 import { clubService } from '../../api/services/club.service';
-import { handleApiError } from '../../api/utils/errorHandler';
+import { handleApiError, ApiError } from '../../api/utils/errorHandler';
 import { useAppContext } from '../../context/AppContext';
 import type { LeaderRequest } from '../../api/types/club.types';
 
@@ -171,8 +171,14 @@ function StudentBecomeLeaderPage() {
         const requests = await clubService.getMyLeaderRequests();
         setMyRequests(requests);
       } catch (error) {
+        // Handle 404 gracefully - if endpoint doesn't exist or no requests found, treat as empty
+        if (error instanceof ApiError && error.status === 404) {
+          setMyRequests([]);
+          return;
+        }
+        // For other errors, just log but don't show to user
         console.error('Failed to fetch leader requests:', error);
-        // Don't show error to user, just log it
+        setMyRequests([]);
       }
     };
 
@@ -187,7 +193,14 @@ function StudentBecomeLeaderPage() {
           const requests = await clubService.getMyLeaderRequests();
           setMyRequests(requests);
         } catch (error) {
+          // Handle 404 gracefully - if endpoint doesn't exist or no requests found, treat as empty
+          if (error instanceof ApiError && error.status === 404) {
+            setMyRequests([]);
+            return;
+          }
+          // For other errors, just log but don't show to user
           console.error('Failed to fetch leader requests:', error);
+          setMyRequests([]);
         }
       };
       fetchMyRequests();
@@ -199,20 +212,7 @@ function StudentBecomeLeaderPage() {
       title="Yêu cầu trở thành Club Leader"
       subtitle="Gửi đơn ứng tuyển để trở thành người quản lý câu lạc bộ"
     >
-      <div className="space-y-6">
-        {/* Header Section */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="space-y-2">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Đăng ký trở thành Club Leader</p>
-            <h2 className="text-2xl font-bold text-slate-900">
-              Gửi yêu cầu ứng tuyển
-            </h2>
-            <p className="text-sm text-slate-600">
-              Điền lý do của bạn vào form bên dưới để gửi yêu cầu. Yêu cầu sẽ được xem xét bởi ban quản trị hệ thống.
-            </p>
-          </div>
-        </div>
-
+      <div className="space-y-8 overflow-x-hidden">
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left Column - Form Section */}
@@ -335,8 +335,8 @@ function StudentBecomeLeaderPage() {
             </div>
             {myRequests.length > 0 ? (
               <div className="overflow-hidden rounded-xl border border-slate-200">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
+                <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  <table className="w-full min-w-[600px]">
                     <thead className="bg-slate-50">
                       <tr>
                         <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">

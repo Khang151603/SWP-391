@@ -9,6 +9,7 @@ import type {
   LeaderApproveRejectRequest,
   ClubMemberDto,
   LeaderDecisionDto,
+  StudentMyClub,
 } from '../types/membership.types';
 
 /**
@@ -79,6 +80,13 @@ export const membershipService = {
    */
   async getStudentRequests(): Promise<StudentMembershipRequestResponse[]> {
     return httpClient.get<StudentMembershipRequestResponse[]>(MEMBERSHIP_ENDPOINTS.STUDENT_REQUESTS);
+  },
+
+  /**
+   * Student: Get my clubs (clubs student is currently a member of)
+   */
+  async getStudentMyClubs(): Promise<StudentMyClub[]> {
+    return httpClient.get<StudentMyClub[]>(MEMBERSHIP_ENDPOINTS.STUDENT_MY_CLUBS);
   },
 
   /**

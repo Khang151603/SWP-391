@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { membershipService } from '../../api/services/membership.service';
+import { paymentService } from '../../api/services/payment.service';
 import type { StudentMembershipRequestResponse } from '../../api/types/membership.types';
 
 function StudentMembershipRequestsPage() {
   const [membershipRequests, setMembershipRequests] = useState<StudentMembershipRequestResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [processingPayment, setProcessingPayment] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchMembershipRequests = async () => {
@@ -24,12 +26,26 @@ function StudentMembershipRequestsPage() {
     };
 
     fetchMembershipRequests();
+
+    // Check for payment status in URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    if (paymentStatus === 'success') {
+      // Refresh data after successful payment
+      setTimeout(() => {
+        fetchMembershipRequests();
+        // Remove query params from URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }, 1000);
+    }
   }, []);
 
   const getStatusColor = (status: string) => {
     const statusColors: Record<string, string> = {
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
       approved: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+      approved_pending_payment: 'bg-orange-100 text-orange-800 border-orange-300',
+      paid: 'bg-emerald-100 text-emerald-800 border-emerald-300',
       rejected: 'bg-red-100 text-red-800 border-red-300',
     };
     return statusColors[status.toLowerCase()] || 'bg-slate-100 text-slate-800 border-slate-300';
@@ -40,8 +56,85 @@ function StudentMembershipRequestsPage() {
       pending: 'Đang chờ',
       approved: 'Đã chấp nhận',
       rejected: 'Đã từ chối',
+      approved_pending_payment: 'Chờ thanh toán',
+      paid: 'Đã thanh toán',
     };
     return statusLabels[status.toLowerCase()] || status;
+  };
+
+  // Xác định trạng thái thanh toán
+  const getPaymentStatus = (request: StudentMembershipRequestResponse): 'paid' | 'approve_pending_payment' | 'unpaid' => {
+    const status = request.status.toLowerCase();
+    
+    // paid: đã thanh toán - status là "paid" hoặc (status là "approved" và có paymentId)
+    if (status === 'paid' || (status === 'approved' && request.paymentId !== null && request.paymentId !== undefined)) {
+      return 'paid';
+    }
+    
+    // approve_pending_payment: đã duyệt, chờ thanh toán - status là approved_pending_payment
+    if (status === 'approved_pending_payment') {
+      return 'approve_pending_payment';
+    }
+    
+    // unpaid: chưa thanh toán - pending hoặc các trạng thái khác chưa có paymentId
+    return 'unpaid';
+  };
+
+  const handlePayment = async (request: StudentMembershipRequestResponse) => {
+    if (!request.amount || request.amount <= 0) {
+      return;
+    }
+
+    try {
+      setProcessingPayment(request.id);
+      const paymentResponse = await paymentService.createMembershipPayment({
+        membershipRequestId: request.id,
+        paymentId: request.paymentId,
+        amount: request.amount,
+        clubName: request.clubName,
+      });
+
+      // Handle both string URL and object response
+      let checkoutUrl: string | null = null;
+      
+      if (typeof paymentResponse === 'string') {
+        // Response is a direct URL string
+        checkoutUrl = paymentResponse;
+      } else if (paymentResponse.error === 0 && paymentResponse.data?.checkoutUrl) {
+        // Response is an object with checkoutUrl
+        checkoutUrl = paymentResponse.data.checkoutUrl;
+      }
+      
+      if (checkoutUrl) {
+        // Redirect to PayOS checkout page
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error(
+          typeof paymentResponse === 'object' 
+            ? paymentResponse.message || 'Không thể tạo link thanh toán'
+            : 'Không thể tạo link thanh toán'
+        );
+      }
+    } catch (err) {
+      console.error('Error creating payment:', err);
+      alert(err instanceof Error ? err.message : 'Không thể tạo link thanh toán. Vui lòng thử lại sau.');
+      setProcessingPayment(null);
+    }
+  };
+
+  const canMakePayment = (request: StudentMembershipRequestResponse): boolean => {
+    // Chỉ hiển thị nút thanh toán khi status là approve_pending_payment
+    const status = request.status.toLowerCase();
+    return (
+      status === 'approved_pending_payment' &&
+      request.amount !== null &&
+      request.amount > 0
+    );
+  };
+
+  const isPaymentCompleted = (request: StudentMembershipRequestResponse): boolean => {
+    // Đã thanh toán nếu payment status là paid
+    return getPaymentStatus(request) === 'paid';
   };
 
   return (
@@ -49,7 +142,7 @@ function StudentMembershipRequestsPage() {
       title="Yêu cầu tham gia CLB"
       subtitle="Xem và theo dõi trạng thái các yêu cầu tham gia CLB của bạn"
     >
-      <div className="space-y-6">
+      <div className="space-y-8">
         {loading ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
             <div className="mx-auto max-w-md space-y-3">
@@ -119,7 +212,7 @@ function StudentMembershipRequestsPage() {
                         Phí tham gia
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                        Mã thanh toán
+                        Thao tác
                       </th>
                     </tr>
                   </thead>
@@ -169,13 +262,41 @@ function StudentMembershipRequestsPage() {
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
-                          <div className="text-sm text-slate-900">
-                            {request.paymentId ? (
-                              <span className="font-mono">#{request.paymentId}</span>
-                            ) : (
-                              <span className="text-slate-400">—</span>
-                            )}
-                          </div>
+                          {isPaymentCompleted(request) ? (
+                            <span className="text-xs text-slate-400">—</span>
+                          ) : canMakePayment(request) ? (
+                            <button
+                              onClick={() => handlePayment(request)}
+                              disabled={processingPayment === request.id}
+                              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              {processingPayment === request.id ? (
+                                <>
+                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                  <span>Đang xử lý...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <svg
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                    />
+                                  </svg>
+                                  <span>Thanh toán</span>
+                                </>
+                              )}
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-400">—</span>
+                          )}
                         </td>
                       </tr>
                     ))}

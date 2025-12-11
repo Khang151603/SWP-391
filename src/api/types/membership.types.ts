@@ -78,3 +78,11 @@ export interface LeaderDecisionDto {
   note?: string | null;
 }
 
+// Student: My clubs (clubs student is currently a member of)
+export interface StudentMyClub {
+  clubId: number;
+  clubName: string;
+  joinDate: string;
+  status: string;
+}
+

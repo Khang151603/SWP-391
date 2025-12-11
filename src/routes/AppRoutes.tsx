@@ -10,14 +10,12 @@ import ClubLeaderFinancePage from '../pages/ClubLeader/ClubLeaderFinancePage';
 import ClubLeaderInfoPage from '../pages/ClubLeader/ClubLeaderInfoPage';
 import ClubLeaderMembersPage from '../pages/ClubLeader/ClubLeaderMembersPage';
 import ClubLeaderReportsPage from '../pages/ClubLeader/ClubLeaderReportsPage';
-import ClubDetailPage from '../pages/Student/ClubDetailPage';
 import StudentActivitiesPage from '../pages/Student/StudentActivitiesPage';
 import StudentMyActivitiesPage from '../pages/Student/StudentMyActivitiesPage';
 import StudentClubsPage from '../pages/Student/StudentClubsPage';
 import StudentDashboardPage from '../pages/Student/StudentDashboardPage';
 import StudentExplorePage from '../pages/Student/StudentExplorePage';
 import StudentExploreDetailPage from '../pages/Student/StudentExploreDetailPage';
-import StudentFeesPage from '../pages/Student/StudentFeesPage';
 import StudentBecomeLeaderPage from '../pages/Student/StudentBecomeLeaderPage';
 import StudentMembershipRequestsPage from '../pages/Student/StudentMembershipRequestsPage';
 
@@ -90,14 +88,6 @@ function AppRoutes() {
           } 
         />
         <Route 
-          path="/student/fees" 
-          element={
-            <ProtectedRoute requiredRole="student">
-              <StudentFeesPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
           path="/student/become-leader" 
           element={
             <ProtectedRoute requiredRole="student">
@@ -110,14 +100,6 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="student">
               <StudentMembershipRequestsPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/student/clubs/:clubId" 
-          element={
-            <ProtectedRoute requiredRole="student">
-              <ClubDetailPage />
             </ProtectedRoute>
           } 
         />

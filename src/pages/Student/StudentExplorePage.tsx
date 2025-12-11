@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { Dialog } from '../../components/ui/Dialog';
 import { clubService } from '../../api/services/club.service';
@@ -50,6 +51,7 @@ function ClubAvatar({ imageUrl, name, size = 'md' }: { imageUrl?: string | null;
 }
 
 function StudentExplorePage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [clubs, setClubs] = useState<DisplayClub[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +59,7 @@ function StudentExplorePage() {
   const [selectedClub, setSelectedClub] = useState<DisplayClub | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
   // Registration form data
   const [formData, setFormData] = useState({
@@ -128,7 +131,22 @@ function StudentExplorePage() {
     fetchClubs();
   }, []);
 
-  const filteredClubs = clubs;
+  // Update search query when URL params change
+  useEffect(() => {
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
+  }, [searchParams]);
+
+  const filteredClubs = clubs.filter((club) => {
+    if (!searchQuery.trim()) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      club.name.toLowerCase().includes(query) ||
+      club.description.toLowerCase().includes(query)
+    );
+  });
 
   const handleRegister = (club: DisplayClub) => {
     setSelectedClub(club);
@@ -196,12 +214,34 @@ function StudentExplorePage() {
       title="Khám phá CLB"
       subtitle="Tìm kiếm, so sánh và đăng ký CLB phù hợp với mục tiêu phát triển của bạn."
     >
-      <div className="space-y-6">
-        {/* Layout 2 cột: Bộ lọc + Kết quả */}
-        <div className="grid gap-6 lg:grid-cols-[320px,1fr]">
-          {/* Cột trái: Bộ lọc */}
-        
+      <div className="space-y-8">
+        {/* Search Bar */}
+        {searchQuery && (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span className="text-sm text-blue-700">
+                  Đang tìm kiếm: <span className="font-semibold">"{searchQuery}"</span>
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSearchParams({});
+                }}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Xóa bộ lọc
+              </button>
+            </div>
+          </div>
+        )}
 
+        {/* Layout 2 cột: Bộ lọc + Kết quả */}
+        <div className="grid gap-6">
           {/* Cột phải: Kết quả & chế độ xem */}
           <section className="space-y-4">
             {/* Header kết quả + chế độ xem */}
@@ -211,7 +251,7 @@ function StudentExplorePage() {
                 <p className="mt-1 text-sm text-slate-600">
                   Tìm thấy{' '}
                   <span className="font-semibold text-slate-900">{filteredClubs.length}</span>{' '}
-                  CLB theo bộ lọc hiện tại.
+                  CLB {searchQuery ? `cho "${searchQuery}"` : 'có sẵn'}.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">

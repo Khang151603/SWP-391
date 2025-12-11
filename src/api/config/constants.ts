@@ -38,6 +38,11 @@ export const ACTIVITY_ENDPOINTS = {
   GET_BY_CLUB: (clubId: number | string) => `/api/Activities/club/${clubId}`,
   REGISTER: (id: number | string) => `/api/Activities/${id}/register`,
   UNREGISTER: (id: number | string) => `/api/Activities/${id}/unregister`,
+  // Student activity endpoints
+  STUDENT_VIEW_ALL: '/api/student/activities/view-all',
+  STUDENT_VIEW_CLUB: (clubId: number | string) => `/api/student/activities/view-club/${clubId}`,
+  STUDENT_REGISTER: (id: number | string) => `/api/student/activities/${id}/register`,
+  STUDENT_FOR_REGISTRATION: '/api/student/activities/for-registration',
 } as const;
 
 // User/Account Endpoints
@@ -61,6 +66,7 @@ export const MEMBERSHIP_ENDPOINTS = {
   // Student membership request endpoints
   STUDENT_REQUEST: '/api/student/membership/request',
   STUDENT_REQUESTS: '/api/student/membership/requests',
+  STUDENT_MY_CLUBS: '/api/student/membership/my-clubs',
   // Leader membership request endpoints
   LEADER_PENDING: '/api/leader/membership/pending',
   LEADER_MEMBERS: '/api/leader/membership/members',

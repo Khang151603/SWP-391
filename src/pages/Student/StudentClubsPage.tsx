@@ -1,51 +1,79 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import StudentLayout from '../../components/layout/StudentLayout';
-import { managedClubs } from './studentData';
+import { membershipService } from '../../api/services/membership.service';
+import { clubService } from '../../api/services/club.service';
+import type { StudentMyClub } from '../../api/types/membership.types';
+import type { ClubListItem } from '../../api/types/club.types';
+
+interface ClubWithDetails extends StudentMyClub {
+  clubDetails?: ClubListItem;
+}
 
 function StudentClubsPage() {
   const [search, setSearch] = useState('');
+  const [clubs, setClubs] = useState<ClubWithDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchMyClubs = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Get list of clubs student is member of
+        const myClubs = await membershipService.getStudentMyClubs();
+        
+        // Fetch detailed information for each club using /api/clubs/{id}
+        const clubsWithDetails = await Promise.all(
+          myClubs.map(async (club) => {
+            try {
+              const clubDetails = await clubService.getClubDetailsById(club.clubId);
+              return {
+                ...club,
+                clubDetails,
+              };
+            } catch (err) {
+              console.error(`Error fetching club ${club.clubId}:`, err);
+              // Return club without details if fetch fails
+              return club;
+            }
+          })
+        );
+        
+        setClubs(clubsWithDetails);
+      } catch (err) {
+        console.error('Error fetching my clubs:', err);
+        setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMyClubs();
+  }, []);
 
   const filteredClubs = useMemo(() => {
-    return managedClubs.filter((club) => {
+    return clubs.filter((club) => {
       const matchSearch =
         !search ||
-        club.name.toLowerCase().includes(search.toLowerCase());
+        club.clubName.toLowerCase().includes(search.toLowerCase()) ||
+        club.clubDetails?.name.toLowerCase().includes(search.toLowerCase());
 
       return matchSearch;
     });
-  }, [search]);
+  }, [clubs, search]);
 
-  const hasNoClub = managedClubs.length === 0;
+  const hasNoClub = clubs.length === 0;
 
   return (
     <StudentLayout
       title="CLB đang tham gia"
+      subtitle="Quản lý các câu lạc bộ bạn đang tham gia"
     >
       <div className="space-y-8">
-        {/* Top header & actions */}
-        <div className="flex flex-col gap-4 border-b border-slate-200 pb-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Tổng quan
-            </p>
-            <h2 className="mt-1 text-2xl font-bold text-slate-900 sm:text-3xl">
-              Câu lạc bộ của bạn
-            </h2>
-          </div>
-
-          <div className="flex flex-wrap gap-3">  
-            <Link
-              to="/student/explore"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-              Khám phá CLB mới
-            </Link>
-          </div>
-        </div>
+    
         {/* Controls: search + filter */}
         <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 items-center gap-3 rounded-xl border border-slate-300 bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500">
@@ -62,7 +90,27 @@ function StudentClubsPage() {
         </div>
 
         {/* Clubs list + empty states */}
-        {hasNoClub ? (
+        {loading ? (
+          <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
+            <div className="mx-auto max-w-md space-y-3">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+              <p className="text-sm text-slate-600">Đang tải danh sách CLB...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="rounded-2xl border border-red-300 bg-red-50 p-10 text-center shadow-sm">
+            <div className="mx-auto max-w-md space-y-3">
+              <h4 className="text-lg font-semibold text-red-700">Lỗi tải dữ liệu</h4>
+              <p className="text-sm text-slate-600">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-4 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                Thử lại
+              </button>
+            </div>
+          </div>
+        ) : hasNoClub ? (
           <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
             <div className="mx-auto max-w-md">
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-100">
@@ -106,34 +154,64 @@ function StudentClubsPage() {
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
-            {filteredClubs.map((club) => (
-              <div
-                key={club.name}
-                className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-              >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  {/* Club Info */}
-                  <div className="flex flex-1 items-start gap-4">
-                    <div className="mt-1 rounded-2xl bg-blue-100 p-3">
-                      <svg className="h-7 w-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                        />
-                      </svg>
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">{club.name}</h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredClubs.map((club) => {
+              const clubName = club.clubDetails?.name || club.clubName;
+              const clubDescription = club.clubDetails?.description || '';
+              const memberCount = club.clubDetails?.memberCount;
+              const membershipFee = club.clubDetails?.membershipFee;
+              const imageUrl = club.clubDetails?.imageClubsUrl;
+              
+              return (
+                <div
+                  key={club.clubId}
+                  className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                >
+                  {/* Club Image */}
+                  <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-blue-100 to-blue-50">
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={clubName}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <svg className="h-12 w-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          />
+                        </svg>
                       </div>
+                    )}
+                    {/* Status Badge */}
+                    <div className="absolute right-2 top-2">
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm ${
+                        club.status === 'active' 
+                          ? 'bg-emerald-500 text-white' 
+                          : 'bg-slate-500 text-white'
+                      }`}>
+                        {club.status === 'active' ? 'Đang hoạt động' : club.status}
+                      </span>
+                    </div>
+                  </div>
 
-                      <div className="flex flex-wrap gap-4 text-sm text-slate-600">
-                        <span className="flex items-center gap-1.5">
-                          <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {/* Club Content */}
+                  <div className="p-4">
+                    <h3 className="mb-1.5 text-lg font-bold text-slate-900 line-clamp-1">{clubName}</h3>
+                    
+                    {clubDescription && (
+                      <p className="mb-3 text-xs text-slate-600 line-clamp-2">{clubDescription}</p>
+                    )}
+
+                    {/* Club Stats */}
+                    <div className="space-y-1.5 border-t border-slate-100 pt-3">
+                      {memberCount !== undefined && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <svg className="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                               strokeLinecap="round"
                               strokeLinejoin="round"
@@ -141,28 +219,41 @@ function StudentClubsPage() {
                               d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                             />
                           </svg>
-                          <span className="font-medium text-slate-900">{club.members}</span>
+                          <span className="font-medium text-slate-900">{memberCount}</span>
                           <span className="text-slate-500">thành viên</span>
+                        </div>
+                      )}
+                      
+                      {membershipFee !== undefined && membershipFee > 0 && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                          <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="font-semibold text-emerald-700">
+                            {membershipFee.toLocaleString('vi-VN')}đ
+                          </span>
+                          <span className="text-slate-500">phí thành viên</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                        <svg className="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-slate-500">Tham gia:</span>
+                        <span className="font-medium text-slate-900">
+                          {new Date(club.joinDate).toLocaleDateString('vi-VN', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                          })}
                         </span>
                       </div>
                     </div>
                   </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-3">
-                    <Link
-                      to={`/student/clubs/${club.name.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:border-blue-500 hover:bg-blue-50 hover:text-blue-700"
-                    >
-                      Xem chi tiết
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </Link>
-                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -171,6 +262,3 @@ function StudentClubsPage() {
 }
 
 export default StudentClubsPage;
-
-
-

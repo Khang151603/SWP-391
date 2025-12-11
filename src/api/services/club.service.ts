@@ -46,6 +46,13 @@ export const clubService = {
   },
 
   /**
+   * Get club details by ID (using /api/clubs/{id} endpoint)
+   */
+  async getClubDetailsById(id: number | string): Promise<ClubListItem> {
+    return httpClient.get<ClubListItem>(CLUB_ENDPOINTS.LEADER_CLUB_BY_ID(id));
+  },
+
+  /**
    * Create a new club
    */
   async create(data: CreateClubRequest): Promise<Club> {
