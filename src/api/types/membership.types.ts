@@ -44,3 +44,21 @@ export interface StudentMembershipRequestResponse {
   amount: number | null;
 }
 
+// Leader pending membership request types
+export interface LeaderPendingMembershipRequest {
+  id: number;
+  accountId: number;
+  clubId: number;
+  status: string;
+  note: string;
+  requestDate: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  reason: string;
+}
+
+export interface LeaderApproveRejectRequest {
+  note: string;
+}
+

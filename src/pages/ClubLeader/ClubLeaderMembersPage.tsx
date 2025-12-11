@@ -1,14 +1,116 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
-import { memberRoster, memberStatuses, pendingApplications } from './leaderData';
+import { memberRoster, memberStatuses } from './leaderData';
+import { membershipService } from '../../api/services/membership.service';
+import type { LeaderPendingMembershipRequest } from '../../api/types/membership.types';
+
+type ActionType = 'approve' | 'reject' | null;
+
+interface SelectedApplication {
+  id: number;
+  name: string;
+  studentId: string;
+}
 
 function ClubLeaderMembersPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [pendingApplications, setPendingApplications] = useState<LeaderPendingMembershipRequest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Modal state for approve/reject
+  const [selectedApplication, setSelectedApplication] = useState<SelectedApplication | null>(null);
+  const [actionType, setActionType] = useState<ActionType>(null);
+  const [note, setNote] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Fetch pending membership requests
+  const fetchPendingRequests = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await membershipService.getLeaderPendingRequests();
+      setPendingApplications(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể tải danh sách đơn đăng ký');
+      console.error('Error fetching pending requests:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingRequests();
+  }, []);
+
+  // Format date from ISO string to DD/MM/YYYY
+  const formatDate = (dateString: string): string => {
+    try {
+      const date = new Date(dateString);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return dateString;
+    }
+  };
+
+  // Map API data to UI format
+  const mappedPendingApplications = useMemo(() => {
+    return pendingApplications.map((app) => ({
+      id: app.id,
+      name: app.fullName,
+      studentId: String(app.accountId), // Using accountId as studentId for now
+      submittedAt: formatDate(app.requestDate),
+      note: app.note || app.reason || '',
+      email: app.email,
+      phone: app.phone,
+      accountId: app.accountId,
+      clubId: app.clubId,
+    }));
+  }, [pendingApplications]);
 
   const totalMembers = memberRoster.length;
   const activeMembers = memberRoster.filter((m) => m.status === 'Active').length;
   const pendingCount = pendingApplications.length;
+
+  // Handle approve/reject actions
+  const handleOpenModal = (application: { id: number; name: string; studentId: string }, type: 'approve' | 'reject') => {
+    setSelectedApplication(application);
+    setActionType(type);
+    setNote('');
+  };
+
+  const handleCloseModal = () => {
+    setSelectedApplication(null);
+    setActionType(null);
+    setNote('');
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedApplication || !actionType) return;
+
+    try {
+      setIsProcessing(true);
+      
+      if (actionType === 'approve') {
+        await membershipService.approveLeaderRequest(selectedApplication.id, { note });
+      } else {
+        await membershipService.rejectLeaderRequest(selectedApplication.id, { note });
+      }
+
+      // Refresh the list
+      await fetchPendingRequests();
+      handleCloseModal();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Không thể ${actionType === 'approve' ? 'chấp nhận' : 'từ chối'} đơn đăng ký`);
+      console.error(`Error ${actionType}ing request:`, err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const filteredMembers = useMemo(
     () =>
@@ -64,46 +166,66 @@ function ClubLeaderMembersPage() {
             </div>
           </div>
 
-          <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
-                <tr>
-                  <th className="px-4 py-3">Ứng viên</th>
-                  <th className="px-4 py-3">Mã SV</th>
-                  <th className="px-4 py-3">Ngày nộp</th>
-                  <th className="px-4 py-3">Ghi chú</th>
-                  <th className="px-4 py-3 text-right">Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pendingApplications.map((application) => (
-                  <tr key={application.studentId} className="border-t border-slate-200 hover:bg-slate-50">
-                    <td className="px-4 py-3">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-semibold text-slate-900">{application.name}</span>
-                        <span className="text-[0.72rem] text-slate-500">Nộp {application.submittedAt}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-slate-700">{application.studentId}</td>
-                    <td className="px-4 py-3 text-slate-700">{application.submittedAt}</td>
-                    <td className="px-4 py-3 max-w-xs">
-                      <p className="text-[0.85rem] text-slate-600 line-clamp-2">{application.note}</p>
-                    </td>
-                    <td className="px-4 py-3 text-right text-[0.85rem]">
-                      <div className="flex flex-wrap justify-end gap-2">
-                        <button className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors">
-                          Approve
-                        </button>
-                        <button className="rounded-lg border border-red-300 bg-red-50 px-3 py-1 font-semibold text-red-700 hover:bg-red-100 transition-colors">
-                          Reject
-                        </button>
-                      </div>
-                    </td>
+          {isLoading ? (
+            <div className="mt-5 flex items-center justify-center py-8">
+              <p className="text-slate-500">Đang tải...</p>
+            </div>
+          ) : error ? (
+            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-4">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          ) : mappedPendingApplications.length === 0 ? (
+            <div className="mt-5 flex items-center justify-center py-8">
+              <p className="text-slate-500">Không có đơn đăng ký nào đang chờ duyệt</p>
+            </div>
+          ) : (
+            <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
+                  <tr>
+                    <th className="px-4 py-3">Ứng viên</th>
+                    <th className="px-4 py-3">Mã SV</th>
+                    <th className="px-4 py-3">Ngày nộp</th>
+                    <th className="px-4 py-3">Ghi chú</th>
+                    <th className="px-4 py-3 text-right">Hành động</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {mappedPendingApplications.map((application) => (
+                    <tr key={application.id} className="border-t border-slate-200 hover:bg-slate-50">
+                      <td className="px-4 py-3">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-slate-900">{application.name}</span>
+                          <span className="text-[0.72rem] text-slate-500">Nộp {application.submittedAt}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-700">{application.studentId}</td>
+                      <td className="px-4 py-3 text-slate-700">{application.submittedAt}</td>
+                      <td className="px-4 py-3 max-w-xs">
+                        <p className="text-[0.85rem] text-slate-600 line-clamp-2">{application.note}</p>
+                      </td>
+                      <td className="px-4 py-3 text-right text-[0.85rem]">
+                        <div className="flex flex-wrap justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenModal(application, 'approve')}
+                            className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-1 font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleOpenModal(application, 'reject')}
+                            className="rounded-lg border border-red-300 bg-red-50 px-3 py-1 font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </section>
 
         {/* Members table */}
@@ -177,6 +299,59 @@ function ClubLeaderMembersPage() {
           </div>
         </section>
       </div>
+
+      {/* Approve/Reject Modal */}
+      {selectedApplication && actionType && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseModal} />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="mb-6">
+              <h3 className="text-xl font-bold text-slate-900">
+                {actionType === 'approve' ? 'Chấp nhận đơn đăng ký' : 'Từ chối đơn đăng ký'}
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                {actionType === 'approve' ? 'Bạn có chắc chắn muốn chấp nhận đơn đăng ký của' : 'Bạn có chắc chắn muốn từ chối đơn đăng ký của'}{' '}
+                <span className="font-semibold">{selectedApplication.name}</span>?
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <label htmlFor="note" className="mb-2 block text-sm font-medium text-slate-700">
+                Ghi chú {actionType === 'approve' ? '(tùy chọn)' : ''}
+              </label>
+              <textarea
+                id="note"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                placeholder={actionType === 'approve' ? 'Nhập ghi chú (nếu có)...' : 'Nhập lý do từ chối...'}
+                rows={4}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCloseModal}
+                disabled={isProcessing}
+                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isProcessing || (actionType === 'reject' && !note.trim())}
+                className={`flex-1 rounded-lg px-4 py-2 font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  actionType === 'approve'
+                    ? 'bg-emerald-600 hover:bg-emerald-700'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {isProcessing ? 'Đang xử lý...' : actionType === 'approve' ? 'Chấp nhận' : 'Từ chối'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </LeaderLayout>
   );
 }

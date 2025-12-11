@@ -5,6 +5,8 @@ import type {
   CreateMembershipRequest,
   StudentMembershipRequest,
   StudentMembershipRequestResponse,
+  LeaderPendingMembershipRequest,
+  LeaderApproveRejectRequest,
 } from '../types/membership.types';
 
 /**
@@ -75,6 +77,27 @@ export const membershipService = {
    */
   async getStudentRequests(): Promise<StudentMembershipRequestResponse[]> {
     return httpClient.get<StudentMembershipRequestResponse[]>(MEMBERSHIP_ENDPOINTS.STUDENT_REQUESTS);
+  },
+
+  /**
+   * Leader: Get pending membership requests
+   */
+  async getLeaderPendingRequests(): Promise<LeaderPendingMembershipRequest[]> {
+    return httpClient.get<LeaderPendingMembershipRequest[]>(MEMBERSHIP_ENDPOINTS.LEADER_PENDING);
+  },
+
+  /**
+   * Leader: Approve membership request
+   */
+  async approveLeaderRequest(id: number | string, data: LeaderApproveRejectRequest): Promise<void> {
+    return httpClient.post<void>(MEMBERSHIP_ENDPOINTS.LEADER_APPROVE(id), data);
+  },
+
+  /**
+   * Leader: Reject membership request
+   */
+  async rejectLeaderRequest(id: number | string, data: LeaderApproveRejectRequest): Promise<void> {
+    return httpClient.post<void>(MEMBERSHIP_ENDPOINTS.LEADER_REJECT(id), data);
   },
 };
 
