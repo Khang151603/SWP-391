@@ -1,12 +1,8 @@
 import { httpClient } from '../config/client';
 import { CLUB_ENDPOINTS } from '../config/constants';
 import type {
-  Club,
   ClubListItem,
   LeaderClubListItem,
-  CreateClubRequest,
-  UpdateClubRequest,
-  ClubMember,
   CreateLeaderRequest,
   CreateLeaderClubRequest,
   UpdateLeaderClubRequest,
@@ -18,13 +14,6 @@ import type {
  */
 export const clubService = {
   /**
-   * Get all clubs
-   */
-  async getAll(): Promise<Club[]> {
-    return httpClient.get<Club[]>(CLUB_ENDPOINTS.GET_ALL);
-  },
-
-  /**
    * Get all clubs list (for student explore page)
    */
   async getAllClubs(): Promise<ClubListItem[]> {
@@ -32,52 +21,10 @@ export const clubService = {
   },
 
   /**
-   * Get clubs of current leader
-   */
-  async getMyClubs(): Promise<ClubListItem[]> {
-    return httpClient.get<ClubListItem[]>(CLUB_ENDPOINTS.GET_MY_CLUBS);
-  },
-
-  /**
-   * Get club by ID
-   */
-  async getById(id: number | string): Promise<Club> {
-    return httpClient.get<Club>(CLUB_ENDPOINTS.GET_BY_ID(id));
-  },
-
-  /**
    * Get club details by ID (using /api/clubs/{id} endpoint)
    */
   async getClubDetailsById(id: number | string): Promise<ClubListItem> {
     return httpClient.get<ClubListItem>(CLUB_ENDPOINTS.LEADER_CLUB_BY_ID(id));
-  },
-
-  /**
-   * Create a new club
-   */
-  async create(data: CreateClubRequest): Promise<Club> {
-    return httpClient.post<Club>(CLUB_ENDPOINTS.CREATE, data);
-  },
-
-  /**
-   * Update club
-   */
-  async update(id: number | string, data: UpdateClubRequest): Promise<Club> {
-    return httpClient.put<Club>(CLUB_ENDPOINTS.UPDATE(id), data);
-  },
-
-  /**
-   * Delete club
-   */
-  async delete(id: number | string): Promise<void> {
-    return httpClient.delete<void>(CLUB_ENDPOINTS.DELETE(id));
-  },
-
-  /**
-   * Get club members
-   */
-  async getMembers(id: number | string): Promise<ClubMember[]> {
-    return httpClient.get<ClubMember[]>(CLUB_ENDPOINTS.GET_MEMBERS(id));
   },
 
   /**
