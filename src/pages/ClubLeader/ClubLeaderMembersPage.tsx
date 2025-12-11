@@ -10,6 +10,10 @@ interface SelectedApplication {
   id: number;
   name: string;
   studentId: string;
+  accountId?: number;
+  clubId?: number;
+  email?: string;
+  phone?: string;
 }
 
 interface SelectedMember {
@@ -160,6 +164,13 @@ function ClubLeaderMembersPage() {
       setIsProcessing(true);
       setError(null);
       
+      // For approve action, save the application info BEFORE calling API
+      // because after approve, it will be removed from pendingApplications
+      let approvedAppInfo: LeaderPendingMembershipRequest | null = null;
+      if (actionType === 'approve' && selectedApplication) {
+        approvedAppInfo = pendingApplications.find(app => app.id === selectedApplication.id) || null;
+      }
+      
       if (actionType === 'approve' && selectedApplication) {
         await membershipService.approveLeaderRequest(selectedApplication.id, { note });
       } else if (actionType === 'reject' && selectedApplication) {
@@ -172,33 +183,37 @@ function ClubLeaderMembersPage() {
         await membershipService.deleteMember(selectedMember.membershipId, note || null);
       }
 
+      // If approve, add the approved request as a temporary member immediately
+      // Note: Backend sets status to "approved_pending_payment" but doesn't create membership until payment
+      // So we'll add it to the members list temporarily to show it right away
+      if (actionType === 'approve' && approvedAppInfo) {
+        // Create a temporary member entry from the approved request
+        const tempMember: ClubMemberDto = {
+          membershipId: approvedAppInfo.id, // Use request ID as temporary membership ID
+          accountId: approvedAppInfo.accountId,
+          clubId: approvedAppInfo.clubId,
+          fullName: approvedAppInfo.fullName || `Account #${approvedAppInfo.accountId}`,
+          email: approvedAppInfo.email || null,
+          phone: approvedAppInfo.phone || null,
+          joinDate: new Date().toISOString().split('T')[0],
+          status: 'approved_pending_payment',
+        };
+        // Add to members list immediately (before reload)
+        setMembers(prev => {
+          // Check if already exists (by accountId and clubId)
+          const exists = prev.some(m => m.accountId === tempMember.accountId && m.clubId === tempMember.clubId);
+          if (!exists) {
+            console.log('Adding temporary member after approve:', tempMember);
+            return [...prev, tempMember];
+          }
+          return prev;
+        });
+      }
+      
       // Refresh the lists - especially important after approve to show new member
       // After approve, the new member should appear in the members list
       // After reject, the request should be removed from pending list
-      
-      // For approve action, wait a bit for backend to process, then reload
-      if (actionType === 'approve') {
-        // Wait 500ms for backend to process the approval and create membership
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-      
-      // Reload both lists
       await Promise.all([fetchPendingRequests(), fetchMembers()]);
-      
-      // If approve, check if members were added
-      // Note: Backend may need time to create membership, or membership is created after payment
-      if (actionType === 'approve') {
-        console.log('After approve - members count:', members.length);
-        // Retry fetching members a few times with delays
-        for (let i = 0; i < 3; i++) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          await fetchMembers();
-          if (members.length > 0) {
-            console.log('Members found after retry:', members.length);
-            break;
-          }
-        }
-      }
       
       handleCloseModal();
     } catch (err) {
