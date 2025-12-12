@@ -68,6 +68,28 @@ function ClubLeaderActivitiesPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const getDatePart = (value: string) => {
+    if (!value) return '';
+    const d = new Date(value);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  const getTimePart = (value: string) => {
+    if (!value) return '';
+    const d = new Date(value);
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${h}:${min}`;
+  };
+
+  const combineDateTime = (date: string, time: string) => {
+    if (!date || !time) return '';
+    return `${date}T${time}:00`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
@@ -279,26 +301,65 @@ function ClubLeaderActivitiesPage() {
 
                 <label className="text-sm text-slate-800">
                   Thời gian bắt đầu
-                  <input
-                    type="datetime-local"
-                    value={form.startTime ? form.startTime.slice(0, 16) : ''}
-                    onChange={(e) => handleChange('startTime', e.target.value ? new Date(e.target.value).toISOString() : '')}
-                    className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
-                    required
-                  />
-                  <p className="mt-1 text-xs text-slate-500">Đặt sớm hơn thời gian kết thúc.</p>
+                  <div className="mt-2 grid grid-cols-[1.3fr_1fr] gap-2">
+                    <input
+                      lang="vi-VN"
+                      type="date"
+                      value={getDatePart(form.startTime)}
+                      onChange={(e) => {
+                        const datePart = e.target.value;
+                        const timePart = getTimePart(form.startTime) || '00:00';
+                        handleChange('startTime', combineDateTime(datePart, timePart));
+                      }}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                      required
+                    />
+                    <input
+                      lang="vi-VN"
+                      type="time"
+                      value={getTimePart(form.startTime)}
+                      onChange={(e) => {
+                        const timePart = e.target.value;
+                        const datePart = getDatePart(form.startTime);
+                        handleChange('startTime', combineDateTime(datePart, timePart));
+                      }}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Ngày/tháng/năm giờ:phút (giờ VN).</p>
                 </label>
 
                 <label className="text-sm text-slate-800">
                   Thời gian kết thúc
-                  <input
-                    type="datetime-local"
-                    value={form.endTime ? form.endTime.slice(0, 16) : ''}
-                    min={form.startTime ? form.startTime.slice(0, 16) : undefined}
-                    onChange={(e) => handleChange('endTime', e.target.value ? new Date(e.target.value).toISOString() : '')}
-                    className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
-                    required
-                  />
+                  <div className="mt-2 grid grid-cols-[1.3fr_1fr] gap-2">
+                    <input
+                      lang="vi-VN"
+                      type="date"
+                      value={getDatePart(form.endTime)}
+                      min={getDatePart(form.startTime) || undefined}
+                      onChange={(e) => {
+                        const datePart = e.target.value;
+                        const timePart = getTimePart(form.endTime) || '00:00';
+                        handleChange('endTime', combineDateTime(datePart, timePart));
+                      }}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                      required
+                    />
+                    <input
+                      lang="vi-VN"
+                      type="time"
+                      value={getTimePart(form.endTime)}
+                      onChange={(e) => {
+                        const timePart = e.target.value;
+                        const datePart = getDatePart(form.endTime);
+                        handleChange('endTime', combineDateTime(datePart, timePart));
+                      }}
+                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-500">Ngày/tháng/năm giờ:phút (giờ VN).</p>
                 </label>
 
                 <label className="text-sm text-slate-800 md:col-span-2">

@@ -40,26 +40,60 @@ function StudentMembershipRequestsPage() {
     }
   }, []);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (request: StudentMembershipRequestResponse) => {
+    const status = getNormalizedStatus(request);
     const statusColors: Record<string, string> = {
       pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
       approved: 'bg-emerald-100 text-emerald-800 border-emerald-300',
       approved_pending_payment: 'bg-orange-100 text-orange-800 border-orange-300',
       paid: 'bg-emerald-100 text-emerald-800 border-emerald-300',
       rejected: 'bg-red-100 text-red-800 border-red-300',
+      'awaiting payment': 'bg-orange-100 text-orange-800 border-orange-300',
+      reject: 'bg-red-100 text-red-800 border-red-300',
     };
     return statusColors[status.toLowerCase()] || 'bg-slate-100 text-slate-800 border-slate-300';
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (request: StudentMembershipRequestResponse) => {
+    const status = getNormalizedStatus(request);
     const statusLabels: Record<string, string> = {
       pending: 'Đang chờ',
       approved: 'Đã chấp nhận',
       rejected: 'Đã từ chối',
       approved_pending_payment: 'Chờ thanh toán',
       paid: 'Đã thanh toán',
+      'awaiting payment': 'Chờ thanh toán',
+      reject: 'Đã từ chối',
     };
     return statusLabels[status.toLowerCase()] || status;
+  };
+
+  // Normalize status based on backend logic
+  const getNormalizedStatus = (request: StudentMembershipRequestResponse): string => {
+    const status = request.status.toLowerCase();
+    
+    // Nếu status = "pending" nhưng có paymentId → đã approve, đang chờ thanh toán
+    if (status === 'pending' && request.paymentId !== null && request.paymentId !== undefined) {
+      return 'approved_pending_payment';
+    }
+    
+    // Nếu status = "paid" → đã thanh toán
+    if (status === 'paid') {
+      return 'paid';
+    }
+    
+    // Nếu status = "reject" hoặc "rejected" → đã từ chối
+    if (status === 'reject' || status === 'rejected') {
+      return 'rejected';
+    }
+    
+    // Nếu status = "awaiting payment" → chờ thanh toán
+    if (status === 'awaiting payment') {
+      return 'approved_pending_payment';
+    }
+    
+    // Các trạng thái khác giữ nguyên
+    return request.status;
   };
 
   // Xác định trạng thái thanh toán
@@ -123,10 +157,10 @@ function StudentMembershipRequestsPage() {
   };
 
   const canMakePayment = (request: StudentMembershipRequestResponse): boolean => {
-    // Chỉ hiển thị nút thanh toán khi status là approve_pending_payment
-    const status = request.status.toLowerCase();
+    // Chỉ hiển thị nút thanh toán khi đã approve và đang chờ thanh toán
+    const normalizedStatus = getNormalizedStatus(request).toLowerCase();
     return (
-      status === 'approved_pending_payment' &&
+      normalizedStatus === 'approved_pending_payment' &&
       request.amount !== null &&
       request.amount > 0
     );
@@ -226,8 +260,8 @@ function StudentMembershipRequestsPage() {
                           <div className="text-sm font-semibold text-slate-900">{request.clubName}</div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
-                          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(request.status)}`}>
-                            {getStatusLabel(request.status)}
+                          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(request)}`}>
+                            {getStatusLabel(request)}
                           </span>
                         </td>
                         <td className="px-6 py-4">

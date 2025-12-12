@@ -1,11 +1,11 @@
 import type {
   PayOSCreatePaymentRequest,
-  PayOSPaymentResponse,
-  MembershipPaymentRequest,
+    PayOSPaymentResponse,
+    MembershipPaymentRequest,
 } from '../types/payment.types';
 
 // PayOS API Base URL
-const PAYOS_API_BASE_URL = 'https://ximena-unaccountable-carmelina.ngrok-free.dev';
+const PAYOS_API_BASE_URL = 'https://garnett-inappetent-veda.ngrok-free.dev';
 
 /**
  * Payment Service

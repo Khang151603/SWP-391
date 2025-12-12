@@ -10,8 +10,6 @@ export { clubService } from './services/club.service';
 export { activityService } from './services/activity.service';
 export { userService } from './services/user.service';
 export { membershipService } from './services/membership.service';
-export { financeService } from './services/finance.service';
-export { reportService } from './services/report.service';
 export { paymentService } from './services/payment.service';
 
 // Types
@@ -20,7 +18,5 @@ export * from './types/club.types';
 export * from './types/activity.types';
 export * from './types/user.types';
 export * from './types/membership.types';
-export * from './types/finance.types';
-export * from './types/report.types';
 export * from './types/payment.types';
 

@@ -74,58 +74,5 @@ export const activityPipeline = [
   },
 ];
 
-export const financeOverview = [
-  { label: 'Tổng thu tháng 11', value: '18.450.000đ', trend: '+12% so với T10' },
-  { label: 'Công nợ hiện tại', value: '3.150.000đ', trend: '8 thành viên chưa đóng' },
-  { label: 'Quỹ dự phòng', value: '9.800.000đ', trend: 'Đã khóa sổ đến 30/11' },
-];
-
-export const feeTracking = [
-  {
-    member: 'Nguyễn Hải Đăng',
-    activity: 'Media Cup 2025',
-    amount: '250.000đ',
-    dueDate: '05/12',
-    status: 'Đã đóng',
-  },
-  {
-    member: 'Lê Thảo My',
-    activity: 'Media Cup 2025',
-    amount: '250.000đ',
-    dueDate: '05/12',
-    status: 'Chưa đóng',
-  },
-  {
-    member: 'Team Nội dung',
-    activity: 'Quỹ thường niên',
-    amount: '1.500.000đ',
-    dueDate: '10/12',
-    status: 'Đang xử lý',
-  },
-];
-
-export const reportHighlights = [
-  {
-    title: 'Tăng trưởng thành viên',
-    value: '+18%',
-    detail: 'Tuyển mới 12/20 mục tiêu quý IV',
-  },
-  {
-    title: 'Tỷ lệ tham gia hoạt động',
-    value: '87%',
-    detail: 'Tăng 9% nhờ chiến dịch mentoring',
-  },
-  {
-    title: 'Tổng thu hoạt động',
-    value: '42.600.000đ',
-    detail: 'Gồm Media Cup, Workshop Storytelling',
-  },
-];
-
-export const exportTemplates = [
-  { name: 'Báo cáo thành viên chi tiết', description: 'Xuất danh sách thành viên + KPI, trạng thái' },
-  { name: 'Dòng tiền hoạt động', description: 'Theo dõi thu chi, công nợ theo sự kiện' },
-  { name: 'Biên bản hoạt động', description: 'Checklist nội dung, nhân sự, KPI cho từng sự kiện' },
-];
 
 

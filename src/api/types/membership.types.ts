@@ -42,6 +42,7 @@ export interface StudentMembershipRequestResponse {
   requestDate: string;
   paymentId: number | null;
   amount: number | null;
+  orderCode?: number;
 }
 
 // Leader pending membership request types

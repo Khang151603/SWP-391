@@ -4,37 +4,51 @@ import { activityService } from '../../api/services/activity.service';
 import { clubService } from '../../api/services/club.service';
 import type { StudentActivity } from '../../api/types/activity.types';
 
-type ActivityStatus = 'upcoming' | 'ongoing' | 'completed';
-
 interface MyActivity extends StudentActivity {
-  displayStatus: ActivityStatus;
-  role?: string;
+  clubName?: string;
 }
-
-const statusConfig: Record<ActivityStatus, { label: string; color: string; dotColor: string }> = {
-  upcoming: {
-    label: 'Sắp diễn ra',
-    color: 'bg-blue-50 text-blue-700 border-blue-200',
-    dotColor: 'bg-blue-600',
-  },
-  ongoing: {
-    label: 'Đang diễn ra',
-    color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    dotColor: 'bg-emerald-600',
-  },
-  completed: {
-    label: 'Hoàn thành',
-    color: 'bg-slate-100 text-slate-600 border-slate-300',
-    dotColor: 'bg-slate-500',
-  },
-};
 
 function StudentMyActivitiesPage() {
   const [activities, setActivities] = useState<MyActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'all' | 'upcoming' | 'ongoing' | 'completed'>('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const getStatusConfig = (status: string) => {
+    const statusLower = status.toLowerCase();
+    const configs: Record<string, { label: string; color: string; dotColor: string }> = {
+      active: {
+        label: 'Đang hoạt động',
+        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        dotColor: 'bg-emerald-600',
+      },
+      inactive: {
+        label: 'Không hoạt động',
+        color: 'bg-slate-100 text-slate-600 border-slate-300',
+        dotColor: 'bg-slate-500',
+      },
+      unactive: {
+        label: 'Không hoạt động',
+        color: 'bg-slate-100 text-slate-600 border-slate-300',
+        dotColor: 'bg-slate-500',
+      },
+      pending: {
+        label: 'Chờ duyệt',
+        color: 'bg-yellow-50 text-yellow-700 border-yellow-200',
+        dotColor: 'bg-yellow-600',
+      },
+      cancelled: {
+        label: 'Đã hủy',
+        color: 'bg-red-50 text-red-700 border-red-200',
+        dotColor: 'bg-red-600',
+      },
+    };
+    return configs[statusLower] || {
+      label: status,
+      color: 'bg-slate-100 text-slate-600 border-slate-300',
+      dotColor: 'bg-slate-500',
+    };
+  };
 
   useEffect(() => {
     const fetchMyActivities = async () => {
@@ -43,7 +57,7 @@ function StudentMyActivitiesPage() {
         setError(null);
         const data = await activityService.getStudentForRegistration();
         
-        // Fetch club names and determine activity status
+        // Fetch club names
         const activitiesWithDetails = await Promise.all(
           data.map(async (activity) => {
             // Fetch club name if not provided
@@ -58,22 +72,9 @@ function StudentMyActivitiesPage() {
               }
             }
 
-            // Determine activity status based on current time
-            const now = new Date();
-            const startTime = new Date(activity.startTime);
-            const endTime = new Date(activity.endTime);
-            
-            let displayStatus: ActivityStatus = 'upcoming';
-            if (now >= startTime && now <= endTime) {
-              displayStatus = 'ongoing';
-            } else if (now > endTime) {
-              displayStatus = 'completed';
-            }
-
             return {
               ...activity,
               clubName,
-              displayStatus,
             };
           })
         );
@@ -92,24 +93,16 @@ function StudentMyActivitiesPage() {
 
   const filteredActivities = useMemo(() => {
     return activities.filter((activity) => {
-      const matchesTab = activeTab === 'all' || activity.displayStatus === activeTab;
       const matchesSearch =
         !searchTerm ||
         activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (activity.clubName && activity.clubName.toLowerCase().includes(searchTerm.toLowerCase())) ||
         activity.description.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesTab && matchesSearch;
+      return matchesSearch;
     });
-  }, [activities, activeTab, searchTerm]);
+  }, [activities, searchTerm]);
 
-  const stats = useMemo(() => {
-    return {
-      total: activities.length,
-      upcoming: activities.filter((a) => a.displayStatus === 'upcoming').length,
-      ongoing: activities.filter((a) => a.displayStatus === 'ongoing').length,
-      completed: activities.filter((a) => a.displayStatus === 'completed').length,
-    };
-  }, [activities]);
+
 
   const formatDateTime = (dateTime: string) => {
     const date = new Date(dateTime);
@@ -129,25 +122,9 @@ function StudentMyActivitiesPage() {
   return (
     <StudentLayout title="Hoạt động của tôi" subtitle="Quản lý các hoạt động bạn đang tham gia">
       <div className="space-y-8 overflow-x-hidden">
-        {/* Stats Overview */}
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm text-slate-600">Sắp diễn ra</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{stats.upcoming}</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm text-slate-600">Đang diễn ra</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{stats.ongoing}</p>
-          </div>
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-sm text-slate-600">Hoàn thành</p>
-            <p className="mt-1 text-2xl font-bold text-slate-900">{stats.completed}</p>
-          </div>
-        </div>
-
-        {/* Search & Filter */}
-        <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative flex-1 sm:max-w-md">
+        {/* Search */}
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="relative">
             <svg
               className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"
               fill="none"
@@ -163,49 +140,6 @@ function StudentMyActivitiesPage() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-slate-900 placeholder-slate-400 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                activeTab === 'all'
-                  ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                  : 'border border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'
-              }`}
-            >
-              Tất cả ({stats.total})
-            </button>
-            <button
-              onClick={() => setActiveTab('upcoming')}
-              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                activeTab === 'upcoming'
-                  ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                  : 'border border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'
-              }`}
-            >
-              Sắp diễn ra ({stats.upcoming})
-            </button>
-            <button
-              onClick={() => setActiveTab('ongoing')}
-              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                activeTab === 'ongoing'
-                  ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                  : 'border border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'
-              }`}
-            >
-              Đang diễn ra ({stats.ongoing})
-            </button>
-            <button
-              onClick={() => setActiveTab('completed')}
-              className={`rounded-xl px-4 py-2.5 text-sm font-medium transition ${
-                activeTab === 'completed'
-                  ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
-                  : 'border border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'
-              }`}
-            >
-              Hoàn thành ({stats.completed})
-            </button>
           </div>
         </div>
 
@@ -245,8 +179,8 @@ function StudentMyActivitiesPage() {
               </div>
               <h4 className="text-lg font-semibold text-slate-900">Không tìm thấy hoạt động</h4>
               <p className="text-sm text-slate-600">
-                {searchTerm || activeTab !== 'all'
-                  ? 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm'
+                {searchTerm
+                  ? 'Thử thay đổi từ khóa tìm kiếm'
                   : 'Bạn chưa đăng ký tham gia hoạt động nào'}
               </p>
             </div>
@@ -256,7 +190,7 @@ function StudentMyActivitiesPage() {
             {filteredActivities.map((activity) => {
               const startDateTime = formatDateTime(activity.startTime);
               const endDateTime = formatDateTime(activity.endTime);
-              const config = statusConfig[activity.displayStatus];
+              const statusConfig = getStatusConfig(activity.status || 'active');
 
               return (
                 <div
@@ -266,9 +200,9 @@ function StudentMyActivitiesPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${config.color}`}>
-                          <div className={`h-1.5 w-1.5 rounded-full ${config.dotColor}`}></div>
-                          {config.label}
+                        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusConfig.color}`}>
+                          <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor}`}></div>
+                          {statusConfig.label}
                         </span>
                         {activity.category && (
                           <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs text-blue-700 border border-blue-200">

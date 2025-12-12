@@ -55,20 +55,4 @@ export const MEMBERSHIP_ENDPOINTS = {
   LEADER_DELETE_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}`,
 } as const;
 
-// Finance Endpoints
-export const FINANCE_ENDPOINTS = {
-  GET_CLUB_FINANCES: (clubId: number | string) => `/api/Finance/club/${clubId}`,
-  CREATE_TRANSACTION: '/api/Finance',
-  GET_REPORT: (clubId: number | string) => `/api/Finance/club/${clubId}/report`,
-} as const;
-
-// Report Endpoints - Currently not used in the application
-// export const REPORT_ENDPOINTS = {
-//   GET_ALL: '/api/Report',
-//   GET_BY_ID: (id: number | string) => `/api/Report/${id}`,
-//   CREATE: '/api/Report',
-//   UPDATE: (id: number | string) => `/api/Report/${id}`,
-//   DELETE: (id: number | string) => `/api/Report/${id}`,
-//   GET_BY_CLUB: (clubId: number | string) => `/api/Report/club/${clubId}`,
-// } as const;
 

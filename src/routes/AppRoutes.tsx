@@ -6,10 +6,8 @@ import RoleSelectionPage from '../pages/RoleSelectionPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ClubLeaderActivitiesPage from '../pages/ClubLeader/ClubLeaderActivitiesPage';
 import ClubLeaderDashboardPage from '../pages/ClubLeader/ClubLeaderDashboardPage';
-import ClubLeaderFinancePage from '../pages/ClubLeader/ClubLeaderFinancePage';
 import ClubLeaderInfoPage from '../pages/ClubLeader/ClubLeaderInfoPage';
 import ClubLeaderMembersPage from '../pages/ClubLeader/ClubLeaderMembersPage';
-import ClubLeaderReportsPage from '../pages/ClubLeader/ClubLeaderReportsPage';
 import StudentActivitiesPage from '../pages/Student/StudentActivitiesPage';
 import StudentMyActivitiesPage from '../pages/Student/StudentMyActivitiesPage';
 import StudentClubsPage from '../pages/Student/StudentClubsPage';
@@ -134,22 +132,6 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="clubleader">
               <ClubLeaderActivitiesPage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/leader/finance" 
-          element={
-            <ProtectedRoute requiredRole="clubleader">
-              <ClubLeaderFinancePage />
-            </ProtectedRoute>
-          } 
-        />
-        <Route 
-          path="/leader/reports" 
-          element={
-            <ProtectedRoute requiredRole="clubleader">
-              <ClubLeaderReportsPage />
             </ProtectedRoute>
           } 
         />
