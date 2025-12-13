@@ -70,7 +70,7 @@ function ClubLeaderInfoPage() {
           setFormData(mapped[0]);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Không thể tải danh sách CLB của bạn');
+        setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
       } finally {
         setIsLoading(false);
       }
@@ -126,7 +126,7 @@ function ClubLeaderInfoPage() {
         setFormData(null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể xóa CLB');
+      setError('Không thể xóa CLB. Vui lòng thử lại sau.');
     } finally {
       setShowDeleteConfirm(false);
       setIsLoading(false);
@@ -179,7 +179,7 @@ function ClubLeaderInfoPage() {
       setFormData(updatedProfile);
       setShowDetailView(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể cập nhật CLB');
+      setError('Không thể cập nhật thông tin CLB. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }

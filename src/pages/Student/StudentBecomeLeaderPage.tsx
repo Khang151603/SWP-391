@@ -151,7 +151,7 @@ function StudentBecomeLeaderPage() {
       }, 5000);
     } catch (error) {
       setIsSubmitting(false);
-      const errorMsg = error instanceof Error ? error.message : 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.';
+      const errorMsg = 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.';
       setErrorMessage(errorMsg);
       handleApiError(error);
     }

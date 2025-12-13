@@ -38,7 +38,7 @@ function ClubLeaderActivitiesPage() {
       const data = await activityService.getByClub(clubId);
       setActivities(data);
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể tải hoạt động' });
+      setMessage({ type: 'error', text: 'Không thể tải danh sách hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setActivitiesLoading(false);
     }
@@ -56,7 +56,7 @@ function ClubLeaderActivitiesPage() {
           loadActivities(data[0].id);
         }
       } catch (err) {
-        setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể tải danh sách CLB' });
+        setMessage({ type: 'error', text: 'Không thể tải danh sách CLB. Vui lòng thử lại sau.' });
       } finally {
         setClubsLoading(false);
       }
@@ -123,7 +123,7 @@ function ClubLeaderActivitiesPage() {
       });
       setShowCreateModal(false);
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể tạo hoạt động' });
+      setMessage({ type: 'error', text: 'Không thể tạo hoạt động mới. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +156,7 @@ function ClubLeaderActivitiesPage() {
       setShowEditModal(false);
       setSelectedActivity(null);
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể cập nhật hoạt động' });
+      setMessage({ type: 'error', text: 'Không thể cập nhật hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
     }
@@ -174,7 +174,7 @@ function ClubLeaderActivitiesPage() {
       setShowDeleteConfirm(false);
       setSelectedActivity(null);
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể xóa hoạt động' });
+      setMessage({ type: 'error', text: 'Không thể xóa hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
     }
@@ -188,7 +188,7 @@ function ClubLeaderActivitiesPage() {
       setMessage({ type: 'success', text: 'Đã mở đăng ký' });
       loadActivities(form.clubId);
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể mở đăng ký' });
+      setMessage({ type: 'error', text: 'Không thể mở đăng ký hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
     }
@@ -202,7 +202,7 @@ function ClubLeaderActivitiesPage() {
       setMessage({ type: 'success', text: 'Đã đóng đăng ký' });
       loadActivities(form.clubId);
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể đóng đăng ký' });
+      setMessage({ type: 'error', text: 'Không thể đóng đăng ký hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
     }
@@ -216,7 +216,7 @@ function ClubLeaderActivitiesPage() {
       const data = await activityService.getParticipants(activity.id);
       setParticipants(data);
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Không thể tải danh sách participants' });
+      setMessage({ type: 'error', text: 'Không thể tải danh sách người tham gia. Vui lòng thử lại sau.' });
     } finally {
       setParticipantsLoading(false);
     }

@@ -152,7 +152,7 @@ function StudentMembershipRequestsPage() {
       }
     } catch (err) {
       console.error('Error creating payment:', err);
-      setPaymentError(err instanceof Error ? err.message : 'Không thể tạo link thanh toán. Vui lòng thử lại sau.');
+      setPaymentError('Không thể tạo link thanh toán. Vui lòng thử lại sau.');
       setProcessingPayment(null);
     }
   };

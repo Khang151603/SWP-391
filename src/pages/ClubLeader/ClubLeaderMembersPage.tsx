@@ -62,8 +62,7 @@ function ClubLeaderMembersPage() {
         setMembers([]);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Không thể tải danh sách thành viên';
-      setError(errorMessage);
+      setError('Không thể tải danh sách thành viên. Vui lòng thử lại sau.');
       console.error('Error fetching members:', err);
       // Set empty array on error to prevent display issues
       setMembers([]);
@@ -152,7 +151,7 @@ function ClubLeaderMembersPage() {
         delete: 'xóa',
       };
       const actionName = actionType ? actionNames[actionType] : 'thực hiện hành động';
-      setError(err instanceof Error ? err.message : `Không thể ${actionName} thành viên`);
+      setError(`Không thể ${actionName} thành viên. Vui lòng thử lại sau.`);
       console.error(`Error ${actionType}ing:`, err);
     } finally {
       setIsProcessing(false);

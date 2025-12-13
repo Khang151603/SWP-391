@@ -173,8 +173,7 @@ function StudentActivitiesPage() {
       setActivities(activitiesWithClubNames);
     } catch (err) {
       console.error('Error registering for activity:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Không thể đăng ký tham gia. Vui lòng thử lại sau.';
-      setRegistrationError(errorMessage);
+      setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
     }
   };
 
