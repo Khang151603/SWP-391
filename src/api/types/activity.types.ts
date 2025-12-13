@@ -47,3 +47,16 @@ export interface StudentActivity {
   isRegistered?: boolean;
 }
 
+// Activity Participant for Leader
+export interface ActivityParticipant {
+  id: number;
+  activityId: number;
+  membershipId: number;
+  accountId: number;
+  fullName: string;
+  email: string;
+  phone: string;
+  registerTime: string;
+  attended: boolean;
+}
+

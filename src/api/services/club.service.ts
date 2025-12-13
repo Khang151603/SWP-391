@@ -77,5 +77,34 @@ export const clubService = {
   async deleteLeaderClub(id: number | string): Promise<void> {
     return httpClient.delete<void>(CLUB_ENDPOINTS.LEADER_CLUB_BY_ID(id));
   },
+
+  /**
+   * Upload club image
+   */
+  async uploadClubImage(id: number | string, file: File): Promise<{ message: string; imageUrl: string; publicId: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // Use httpClient's baseURL and auth headers but skip Content-Type for FormData
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7124';
+    const response = await fetch(`${API_BASE_URL}${CLUB_ENDPOINTS.UPLOAD_CLUB_IMAGE(id)}`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Upload failed');
+    }
+
+    return response.json();
+  },
 };
 

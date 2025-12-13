@@ -8,6 +8,7 @@ function StudentActivitiesPage() {
   const [activities, setActivities] = useState<StudentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -173,13 +174,19 @@ function StudentActivitiesPage() {
     } catch (err) {
       console.error('Error registering for activity:', err);
       const errorMessage = err instanceof Error ? err.message : 'Không thể đăng ký tham gia. Vui lòng thử lại sau.';
-      alert(errorMessage);
+      setRegistrationError(errorMessage);
     }
   };
 
   return (
     <StudentLayout title="Hoạt động" subtitle="Khám phá và đăng ký tham gia các hoạt động">
       <div className="space-y-8">
+        {registrationError && (
+          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {registrationError}
+          </div>
+        )}
+        
         {/* Search & Filter */}
         <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">

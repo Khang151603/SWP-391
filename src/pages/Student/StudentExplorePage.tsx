@@ -59,6 +59,7 @@ function StudentExplorePage() {
   const [selectedClub, setSelectedClub] = useState<DisplayClub | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registrationError, setRegistrationError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   
   // Registration form data
@@ -179,11 +180,12 @@ function StudentExplorePage() {
 
   const confirmRegistration = async () => {
     if (!isFormValid() || !selectedClub) {
-      alert('Vui lòng điền đầy đủ thông tin bắt buộc');
+      setRegistrationError('Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
 
     setIsRegistering(true);
+    setRegistrationError(null);
     try {
       // Call API to create membership request
       await membershipService.createStudentRequest({
@@ -203,7 +205,7 @@ function StudentExplorePage() {
       }, 3000);
     } catch (error) {
       console.error('Error submitting membership request:', error);
-      alert('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
+      setRegistrationError('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
     } finally {
       setIsRegistering(false);
     }
@@ -557,6 +559,12 @@ function StudentExplorePage() {
                       </header>
 
                       <div className="min-h-0 flex-1 overflow-y-auto space-y-6 pr-2">
+                        {registrationError && (
+                          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                            {registrationError}
+                          </div>
+                        )}
+                        
                         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
                           <h5 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
                             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-100 text-xs text-blue-700">1</span>

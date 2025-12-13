@@ -25,6 +25,8 @@ function ClubLeaderInfoPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const stats = useMemo(
     () => ({
@@ -239,6 +241,50 @@ function ClubLeaderInfoPage() {
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleUploadImage = async () => {
+    if (!selectedImageFile || !formData) return;
+    
+    setIsUploadingImage(true);
+    setError(null);
+    
+    try {
+      const result = await clubService.uploadClubImage(formData.id, selectedImageFile);
+      
+      // Update formData and clubs state with new image URL
+      const updatedFormData = { ...formData, imageClubsUrl: result.imageUrl };
+      setFormData(updatedFormData);
+      setClubs((prev) => prev.map((club) => (club.id === formData.id ? updatedFormData : club)));
+      
+      // Clear selected file after successful upload
+      setSelectedImageFile(null);
+      
+      // Show success message briefly
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Không thể upload ảnh');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Vui lòng chọn file ảnh (jpg, png, gif, ...)');
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Kích thước ảnh không được vượt quá 5MB');
+        return;
+      }
+      setSelectedImageFile(file);
+      setError(null);
+    }
   };
 
   // State for date input display value (DD/MM/YYYY format)
@@ -721,24 +767,64 @@ function ClubLeaderInfoPage() {
                 </label>
 
                 <div className="grid gap-4 md:grid-cols-3">
-                  <label className="block text-sm text-slate-800 md:col-span-2">
-                    Ảnh CLB (URL)
-                    <input
-                      value={formData.imageClubsUrl || ''}
-                      onChange={(e) => handleInputChange('imageClubsUrl', e.target.value)}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                      placeholder="https://example.com/image.jpg"
-                    />
+                  <div className="block text-sm text-slate-800 md:col-span-2 space-y-3">
+                    <label>
+                      Ảnh CLB (URL)
+                      <input
+                        value={formData.imageClubsUrl || ''}
+                        onChange={(e) => handleInputChange('imageClubsUrl', e.target.value)}
+                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        placeholder="https://example.com/image.jpg"
+                      />
+                    </label>
+
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                      <p className="text-sm font-medium text-slate-700 mb-2">Hoặc upload ảnh từ máy tính</p>
+                      <div className="flex items-center gap-3">
+                        <label className="flex-1">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageFileChange}
+                            className="hidden"
+                            id="club-image-upload"
+                          />
+                          <label
+                            htmlFor="club-image-upload"
+                            className="cursor-pointer inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                          >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            {selectedImageFile ? selectedImageFile.name : 'Chọn ảnh'}
+                          </label>
+                        </label>
+                        {selectedImageFile && (
+                          <button
+                            onClick={handleUploadImage}
+                            disabled={isUploadingImage}
+                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isUploadingImage ? 'Đang upload...' : 'Upload'}
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-2 text-xs text-slate-500">Chấp nhận file ảnh (jpg, png, gif, ...), tối đa 5MB</p>
+                    </div>
+
                     {formData.imageClubsUrl ? (
                       <img
                         src={formData.imageClubsUrl}
                         alt={formData.name}
                         className="mt-3 h-56 w-full rounded-xl object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                       />
                     ) : (
                       <p className="mt-2 text-xs text-slate-500">Chưa có ảnh</p>
                     )}
-                  </label>
+                  </div>
 
                   <label className="block text-sm text-slate-800">
                     Phí thành viên

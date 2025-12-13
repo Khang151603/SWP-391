@@ -99,10 +99,7 @@ function LoginPage() {
           />
         </div>
         <div>
-          <div className="flex items-center justify-between text-sm">
-            <label htmlFor="password" className="font-medium text-slate-700">Mật khẩu</label>
-            <button type="button" className="text-blue-600 hover:text-blue-700">Quên mật khẩu?</button>
-          </div>
+          <label htmlFor="password" className="block text-sm font-medium text-slate-700">Mật khẩu</label>
           <input
             id="password"
             name="password"
@@ -111,13 +108,15 @@ function LoginPage() {
             value={formData.password}
             onChange={handleChange}
             className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            required
           />
         </div>
-        <label className="inline-flex items-center gap-2 text-sm text-slate-700">
-          <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-          Giữ tôi luôn đăng nhập
-        </label>
+        <div className="flex items-center justify-between text-sm">
+          <label className="inline-flex items-center gap-2 text-slate-700">
+            <input type="checkbox" className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+            Giữ tôi luôn đăng nhập
+          </label>
+          <button type="button" className="text-blue-600 hover:text-blue-700">Quên mật khẩu?</button>
+        </div>
         <button 
           type="submit" 
           disabled={loading}

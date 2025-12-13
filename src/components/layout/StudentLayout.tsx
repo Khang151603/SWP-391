@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
 import { membershipService } from '../../api/services/membership.service';
 import { Avatar, AvatarFallback } from '../ui/Avatar';
+import RoleSwitcher from '../RoleSwitcher';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -211,6 +212,8 @@ function StudentLayout({
                       <p className="text-sm font-semibold text-slate-900">{user.fullName}</p>
                       <p className="text-xs text-slate-500 truncate">{user.email}</p>
                     </div>
+                    <DropdownMenuSeparator />
+                    <RoleSwitcher />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       onClick={() => navigate('/student')}

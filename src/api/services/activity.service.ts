@@ -3,7 +3,9 @@ import { ACTIVITY_ENDPOINTS } from '../config/constants';
 import type {
   Activity,
   CreateActivityRequest,
+  UpdateActivityRequest,
   StudentActivity,
+  ActivityParticipant,
 } from '../types/activity.types';
 
 /**
@@ -50,6 +52,41 @@ export const activityService = {
    */
   async getStudentForRegistration(): Promise<StudentActivity[]> {
     return httpClient.get<StudentActivity[]>(ACTIVITY_ENDPOINTS.STUDENT_FOR_REGISTRATION);
+  },
+
+  /**
+   * Leader: Update activity
+   */
+  async update(id: number | string, data: UpdateActivityRequest): Promise<void> {
+    return httpClient.put<void>(ACTIVITY_ENDPOINTS.UPDATE(id), data);
+  },
+
+  /**
+   * Leader: Delete activity
+   */
+  async delete(id: number | string): Promise<void> {
+    return httpClient.delete<void>(ACTIVITY_ENDPOINTS.DELETE(id));
+  },
+
+  /**
+   * Leader: Open registration for activity
+   */
+  async openRegistration(id: number | string): Promise<void> {
+    return httpClient.put<void>(ACTIVITY_ENDPOINTS.OPEN_REGISTRATION(id));
+  },
+
+  /**
+   * Leader: Close registration for activity
+   */
+  async closeRegistration(id: number | string): Promise<void> {
+    return httpClient.put<void>(ACTIVITY_ENDPOINTS.CLOSE_REGISTRATION(id));
+  },
+
+  /**
+   * Leader: Get activity participants
+   */
+  async getParticipants(id: number | string): Promise<ActivityParticipant[]> {
+    return httpClient.get<ActivityParticipant[]>(ACTIVITY_ENDPOINTS.GET_PARTICIPANTS(id));
   },
 };
 

@@ -15,44 +15,68 @@ function StudentClubsPage() {
   const [clubs, setClubs] = useState<ClubWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
+  // Function to fetch clubs data
+  const fetchMyClubs = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Get list of clubs student is member of
+      const myClubs = await membershipService.getStudentMyClubs();
+      
+      // Fetch detailed information for each club using /api/clubs/{id}
+      const clubsWithDetails = await Promise.all(
+        myClubs.map(async (club) => {
+          try {
+            const clubDetails = await clubService.getClubDetailsById(club.clubId);
+            return {
+              ...club,
+              clubDetails,
+            };
+          } catch (err) {
+            console.error(`Error fetching club ${club.clubId}:`, err);
+            // Return club without details if fetch fails
+            return club;
+          }
+        })
+      );
+      
+      setClubs(clubsWithDetails);
+    } catch (err) {
+      console.error('Error fetching my clubs:', err);
+      setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load data on mount and when refreshKey changes
   useEffect(() => {
-    const fetchMyClubs = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Get list of clubs student is member of
-        const myClubs = await membershipService.getStudentMyClubs();
-        
-        // Fetch detailed information for each club using /api/clubs/{id}
-        const clubsWithDetails = await Promise.all(
-          myClubs.map(async (club) => {
-            try {
-              const clubDetails = await clubService.getClubDetailsById(club.clubId);
-              return {
-                ...club,
-                clubDetails,
-              };
-            } catch (err) {
-              console.error(`Error fetching club ${club.clubId}:`, err);
-              // Return club without details if fetch fails
-              return club;
-            }
-          })
-        );
-        
-        setClubs(clubsWithDetails);
-      } catch (err) {
-        console.error('Error fetching my clubs:', err);
-        setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
-      } finally {
-        setLoading(false);
+    fetchMyClubs();
+  }, [refreshKey]);
+
+  // Auto-refresh when user returns to the page/tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && clubs.length > 0) {
+        // Silently refresh data in background when user returns to tab
+        setRefreshKey((prev) => prev + 1);
       }
     };
 
-    fetchMyClubs();
-  }, []);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [clubs.length]);
+
+  // Manual refresh handler
+  const handleRefresh = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
 
   const filteredClubs = useMemo(() => {
     return clubs.filter((club) => {
@@ -74,7 +98,7 @@ function StudentClubsPage() {
     >
       <div className="space-y-8">
     
-        {/* Controls: search + filter */}
+        {/* Controls: search + refresh button */}
         <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-1 items-center gap-3 rounded-xl border border-slate-300 bg-white px-3 py-2 focus-within:ring-2 focus-within:ring-blue-200 focus-within:border-blue-500">
             <svg className="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,6 +111,27 @@ function StudentClubsPage() {
               className="h-8 w-full bg-transparent text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
           </div>
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Làm mới danh sách CLB"
+          >
+            <svg 
+              className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" 
+              />
+            </svg>
+            Làm mới
+          </button>
         </div>
 
         {/* Clubs list + empty states */}
@@ -156,11 +201,11 @@ function StudentClubsPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredClubs.map((club) => {
-              const clubName = club.clubDetails?.name || club.clubName;
-              const clubDescription = club.clubDetails?.description || '';
+              const clubName = club.clubDetails?.name || club.club?.name || club.clubName;
+              const clubDescription = club.clubDetails?.description || club.club?.description || '';
               const memberCount = club.clubDetails?.memberCount;
-              const membershipFee = club.clubDetails?.membershipFee;
-              const imageUrl = club.clubDetails?.imageClubsUrl;
+              const membershipFee = club.clubDetails?.membershipFee ?? club.club?.membershipFee;
+              const imageUrl = club.clubDetails?.imageClubsUrl || club.club?.imageClubsUrl;
               
               return (
                 <div

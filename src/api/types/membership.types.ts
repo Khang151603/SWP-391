@@ -85,5 +85,15 @@ export interface StudentMyClub {
   clubName: string;
   joinDate: string;
   status: string;
+  club?: {
+    id: number;
+    name: string;
+    description: string;
+    establishedDate: string;
+    imageClubsUrl: string | null;
+    avatarPublicId: string | null;
+    membershipFee: number;
+    status: string;
+  };
 }
 

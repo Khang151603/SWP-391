@@ -8,6 +8,7 @@ function StudentMembershipRequestsPage() {
   const [membershipRequests, setMembershipRequests] = useState<StudentMembershipRequestResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<number | null>(null);
 
   useEffect(() => {
@@ -151,7 +152,7 @@ function StudentMembershipRequestsPage() {
       }
     } catch (err) {
       console.error('Error creating payment:', err);
-      alert(err instanceof Error ? err.message : 'Không thể tạo link thanh toán. Vui lòng thử lại sau.');
+      setPaymentError(err instanceof Error ? err.message : 'Không thể tạo link thanh toán. Vui lòng thử lại sau.');
       setProcessingPayment(null);
     }
   };
@@ -177,6 +178,12 @@ function StudentMembershipRequestsPage() {
       subtitle="Xem và theo dõi trạng thái các yêu cầu tham gia CLB của bạn"
     >
       <div className="space-y-8">
+        {paymentError && (
+          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {paymentError}
+          </div>
+        )}
+        
         {loading ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
             <div className="mx-auto max-w-md space-y-3">

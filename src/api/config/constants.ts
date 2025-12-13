@@ -19,12 +19,18 @@ export const CLUB_ENDPOINTS = {
   LEADER_CREATE: '/api/clubs',
   LEADER_MY_CLUBS: '/api/clubs/my',
   LEADER_CLUB_BY_ID: (id: number | string) => `/api/clubs/${id}`,
+  UPLOAD_CLUB_IMAGE: (id: number | string) => `/api/clubs/${id}/upload-image`,
 } as const;
 
 // Activities Endpoints
 export const ACTIVITY_ENDPOINTS = {
   GET_BY_CLUB: (clubId: number | string) => `/api/Activities/club/${clubId}`,
   CREATE: '/api/Activities',
+  UPDATE: (id: number | string) => `/api/Activities/${id}`,
+  DELETE: (id: number | string) => `/api/Activities/${id}`,
+  OPEN_REGISTRATION: (id: number | string) => `/api/Activities/${id}/open-registration`,
+  CLOSE_REGISTRATION: (id: number | string) => `/api/Activities/${id}/close-registration`,
+  GET_PARTICIPANTS: (id: number | string) => `/api/Activities/${id}/participants`,
   // Student activity endpoints
   STUDENT_VIEW_ALL: '/api/student/activities/view-all',
   STUDENT_VIEW_CLUB: (clubId: number | string) => `/api/student/activities/view-club/${clubId}`,

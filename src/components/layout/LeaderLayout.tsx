@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
+import RoleSwitcher from '../RoleSwitcher';
 
 type LeaderLayoutProps = {
   title?: string;
@@ -74,6 +75,9 @@ function LeaderLayout({
                 <p className="mt-0.5 text-xs text-slate-500">{user.email}</p>
               </div>
             )}
+            <div className="mb-4">
+              <RoleSwitcher />
+            </div>
             <button
               onClick={handleLogout}
               className="flex w-full items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 transition hover:bg-red-100"
