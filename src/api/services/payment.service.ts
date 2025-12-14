@@ -1,7 +1,10 @@
+import { httpClient } from '../config/client';
 import type {
   PayOSCreatePaymentRequest,
     PayOSPaymentResponse,
     MembershipPaymentRequest,
+  StudentPaidPayment,
+  StudentDebt,
 } from '../types/payment.types';
 
 // PayOS API Base URL
@@ -77,6 +80,27 @@ export const paymentService = {
     };
 
     return this.createPayOSPayment(paymentId, paymentRequest);
+  },
+
+  /**
+   * Student: Get paid payments
+   */
+  async getStudentPaidPayments(): Promise<StudentPaidPayment[]> {
+    return httpClient.get<StudentPaidPayment[]>('/api/student/payment/paid');
+  },
+
+  /**
+   * Student: Get debts
+   */
+  async getStudentDebts(): Promise<StudentDebt[]> {
+    return httpClient.get<StudentDebt[]>('/api/student/payment/debts');
+  },
+
+  /**
+   * Student: Get payment history (all statuses)
+   */
+  async getStudentPaymentHistory(): Promise<StudentPaidPayment[]> {
+    return httpClient.get<StudentPaidPayment[]>('/api/student/payment/history');
   },
 };
 

@@ -1,10 +1,59 @@
+import { useState, useEffect } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
+import { membershipService } from '../../api/services/membership.service';
+import { clubService } from '../../api/services/club.service';
+import { activityService } from '../../api/services/activity.service';
 
 function ClubLeaderDashboardPage() {
-  // These will be loaded from API in future updates
-  const pendingCount = 0;
-  const upcomingActivities = 0;
-  const totalMembers = 0;
+  const [pendingCount, setPendingCount] = useState(0);
+  const [upcomingActivities, setUpcomingActivities] = useState(0);
+  const [totalMembers, setTotalMembers] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch data in parallel
+        const [pendingRequests, members, myClubs] = await Promise.all([
+          membershipService.getLeaderPendingRequests(),
+          membershipService.getLeaderMembers(),
+          clubService.getMyLeaderClubs(),
+        ]);
+
+        // Set pending requests count
+        setPendingCount(pendingRequests.length);
+
+        // Set total members count
+        setTotalMembers(members.length);
+
+        // Fetch activities for all clubs and count upcoming
+        if (myClubs.length > 0) {
+          const allActivitiesPromises = myClubs.map(club => 
+            activityService.getByClub(club.id).catch(() => [])
+          );
+          const allActivitiesArrays = await Promise.all(allActivitiesPromises);
+          const allActivities = allActivitiesArrays.flat();
+
+          // Filter upcoming activities (startTime > now)
+          const now = new Date();
+          const upcoming = allActivities.filter(activity => {
+            const startTime = new Date(activity.startTime);
+            return startTime > now;
+          });
+
+          setUpcomingActivities(upcoming.length);
+        }
+      } catch (error) {
+        // Error handled silently
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
 
   return (
     <LeaderLayout
@@ -32,21 +81,33 @@ function ClubLeaderDashboardPage() {
             <div className="flex items-center justify-between text-xs text-slate-500">
               <p className="uppercase tracking-[0.25em]">Đơn đăng ký</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{pendingCount}</p>
+            {loading ? (
+              <p className="mt-2 text-3xl font-semibold text-slate-400">...</p>
+            ) : (
+              <p className="mt-2 text-3xl font-semibold text-slate-900">{pendingCount}</p>
+            )}
           </div>
 
           <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <p className="uppercase tracking-[0.25em]">Hoạt động sắp diễn ra</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{upcomingActivities}</p>
+            {loading ? (
+              <p className="mt-2 text-3xl font-semibold text-slate-400">...</p>
+            ) : (
+              <p className="mt-2 text-3xl font-semibold text-slate-900">{upcomingActivities}</p>
+            )}
           </div>
 
           <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
             <div className="flex items-center justify-between text-xs text-slate-500">
               <p className="uppercase tracking-[0.25em]">Tổng thành viên</p>
             </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{totalMembers}</p>
+            {loading ? (
+              <p className="mt-2 text-3xl font-semibold text-slate-400">...</p>
+            ) : (
+              <p className="mt-2 text-3xl font-semibold text-slate-900">{totalMembers}</p>
+            )}
           </div>
         </section>
       </div>

@@ -35,7 +35,6 @@ function StudentActivitiesPage() {
                 clubName: clubDetails.name,
               };
             } catch (err) {
-              console.error(`Error fetching club ${activity.clubId}:`, err);
               // Return activity with fallback clubName
               return {
                 ...activity,
@@ -47,7 +46,6 @@ function StudentActivitiesPage() {
         
         setActivities(activitiesWithClubNames);
       } catch (err) {
-        console.error('Error fetching activities:', err);
         setError('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -161,7 +159,6 @@ function StudentActivitiesPage() {
               clubName: clubDetails.name,
             };
           } catch (err) {
-            console.error(`Error fetching club ${activity.clubId}:`, err);
             return {
               ...activity,
               clubName: `CLB #${activity.clubId}`,
@@ -172,7 +169,6 @@ function StudentActivitiesPage() {
       
       setActivities(activitiesWithClubNames);
     } catch (err) {
-      console.error('Error registering for activity:', err);
       setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
     }
   };

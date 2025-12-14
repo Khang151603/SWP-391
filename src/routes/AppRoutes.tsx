@@ -16,6 +16,7 @@ import StudentExplorePage from '../pages/Student/StudentExplorePage';
 import StudentExploreDetailPage from '../pages/Student/StudentExploreDetailPage';
 import StudentBecomeLeaderPage from '../pages/Student/StudentBecomeLeaderPage';
 import StudentMembershipRequestsPage from '../pages/Student/StudentMembershipRequestsPage';
+import StudentProfilePage from '../pages/Student/StudentProfilePage';
 
 function AppRoutes() {
   return (
@@ -98,6 +99,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="student">
               <StudentMembershipRequestsPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/profile" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentProfilePage />
             </ProtectedRoute>
           } 
         />

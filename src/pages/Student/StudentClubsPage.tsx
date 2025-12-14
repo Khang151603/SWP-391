@@ -28,24 +28,22 @@ function StudentClubsPage() {
       
       // Fetch detailed information for each club using /api/clubs/{id}
       const clubsWithDetails = await Promise.all(
-        myClubs.map(async (club) => {
+        myClubs.map(async (item) => {
           try {
-            const clubDetails = await clubService.getClubDetailsById(club.clubId);
+            const clubDetails = await clubService.getClubDetailsById(item.club.id);
             return {
-              ...club,
+              ...item,
               clubDetails,
             };
           } catch (err) {
-            console.error(`Error fetching club ${club.clubId}:`, err);
-            // Return club without details if fetch fails
-            return club;
+            // Return item without details if fetch fails
+            return item;
           }
         })
       );
       
       setClubs(clubsWithDetails);
     } catch (err) {
-      console.error('Error fetching my clubs:', err);
       setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
@@ -79,11 +77,12 @@ function StudentClubsPage() {
   };
 
   const filteredClubs = useMemo(() => {
-    return clubs.filter((club) => {
+    return clubs.filter((item) => {
       const matchSearch =
         !search ||
-        club.clubName.toLowerCase().includes(search.toLowerCase()) ||
-        club.clubDetails?.name.toLowerCase().includes(search.toLowerCase());
+        item.membership.clubName.toLowerCase().includes(search.toLowerCase()) ||
+        item.club.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.clubDetails?.name.toLowerCase().includes(search.toLowerCase());
 
       return matchSearch;
     });
@@ -200,16 +199,16 @@ function StudentClubsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredClubs.map((club) => {
-              const clubName = club.clubDetails?.name || club.club?.name || club.clubName;
-              const clubDescription = club.clubDetails?.description || club.club?.description || '';
-              const memberCount = club.clubDetails?.memberCount;
-              const membershipFee = club.clubDetails?.membershipFee ?? club.club?.membershipFee;
-              const imageUrl = club.clubDetails?.imageClubsUrl || club.club?.imageClubsUrl;
+            {filteredClubs.map((item) => {
+              const clubName = item.clubDetails?.name || item.club.name;
+              const clubDescription = item.clubDetails?.description || item.club.description || '';
+              const memberCount = item.clubDetails?.memberCount;
+              const membershipFee = item.clubDetails?.membershipFee ?? item.club.membershipFee;
+              const imageUrl = item.clubDetails?.imageClubsUrl;
               
               return (
                 <div
-                  key={club.clubId}
+                  key={item.club.id}
                   className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
                 >
                   {/* Club Image */}
@@ -232,17 +231,26 @@ function StudentClubsPage() {
                         </svg>
                       </div>
                     )}
-                    {/* Status Badge */}
-                    <div className="absolute right-2 top-2">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm ${
-                        club.status === 'active' 
+                  </div>
+                  
+                  {/* Status Badge - moved outside image */}
+                  {item.membership.status && (
+                    <div className="absolute right-2 top-2 z-10">
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold shadow-md ${
+                        item.membership.status.toLowerCase() === 'active' 
                           ? 'bg-emerald-500 text-white' 
+                          : item.membership.status.toLowerCase() === 'pending_payment'
+                          ? 'bg-amber-500 text-white'
                           : 'bg-slate-500 text-white'
                       }`}>
-                        {club.status === 'active' ? 'Đang hoạt động' : club.status}
+                        {item.membership.status.toLowerCase() === 'active' 
+                          ? 'Đang hoạt động' 
+                          : item.membership.status.toLowerCase() === 'pending_payment'
+                          ? 'Chờ thanh toán'
+                          : item.membership.status}
                       </span>
                     </div>
-                  </div>
+                  )}
 
                   {/* Club Content */}
                   <div className="p-4">
@@ -269,13 +277,13 @@ function StudentClubsPage() {
                         </div>
                       )}
                       
-                      {membershipFee !== undefined && membershipFee > 0 && (
+                      {membershipFee !== undefined && membershipFee !== null && membershipFee > 0 && (
                         <div className="flex items-center gap-1.5 text-xs text-slate-600">
                           <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           <span className="font-semibold text-emerald-700">
-                            {membershipFee.toLocaleString('vi-VN')}đ
+                            {membershipFee?.toLocaleString('vi-VN')}đ
                           </span>
                           <span className="text-slate-500">phí thành viên</span>
                         </div>
@@ -287,11 +295,20 @@ function StudentClubsPage() {
                         </svg>
                         <span className="text-slate-500">Tham gia:</span>
                         <span className="font-medium text-slate-900">
-                          {new Date(club.joinDate).toLocaleDateString('vi-VN', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                          })}
+                          {(() => {
+                            if (!item.membership.joinDate) return '--';
+                            try {
+                              const date = new Date(item.membership.joinDate);
+                              if (isNaN(date.getTime())) return '--';
+                              return date.toLocaleDateString('vi-VN', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                              });
+                            } catch (e) {
+                              return '--';
+                            }
+                          })()}
                         </span>
                       </div>
                     </div>

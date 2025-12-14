@@ -30,7 +30,6 @@ function StudentExploreDetailPage() {
         const clubData = await clubService.getClubDetailsById(clubId);
         setClub(clubData);
       } catch (err) {
-        console.error('Failed to fetch club details:', err);
         setError('Không thể tải thông tin câu lạc bộ. Vui lòng thử lại sau.');
         handleApiError(err);
       } finally {

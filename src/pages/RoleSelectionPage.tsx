@@ -1,9 +1,11 @@
 import { useEffect, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tokenManager } from '../api/utils/tokenManager';
+import { useAppContext } from '../context/AppContext';
 
 function RoleSelectionPage() {
   const navigate = useNavigate();
+  const { user, setUser, setSelectedRole: setContextRole } = useAppContext();
   const [roles, setRoles] = useState<string[]>([]);
   const [userInfo, setUserInfo] = useState<{
     accountId: number;
@@ -22,9 +24,21 @@ function RoleSelectionPage() {
         
         setRoles(loadedRoles || []);
         setUserInfo(loadedUserInfo);
+        
+        // Update AppContext with user data if not already set
+        if (!user && loadedUserInfo && loadedRoles) {
+          setUser({
+            accountId: loadedUserInfo.accountId,
+            username: loadedUserInfo.username,
+            email: loadedUserInfo.email,
+            fullName: loadedUserInfo.fullName,
+            imageAccountUrl: loadedUserInfo.imageAccountUrl,
+            roles: loadedRoles,
+          });
+        }
+        
         setIsLoading(false);
       } catch (error) {
-        console.error('Error loading role selection data:', error);
         setIsLoading(false);
         // Redirect về login nếu có lỗi
         navigate('/login', { replace: true });
@@ -33,10 +47,21 @@ function RoleSelectionPage() {
 
     // Đảm bảo data được load sau khi component mount
     loadData();
-  }, [navigate]);
+  }, [navigate, user, setUser]);
 
   const handleRoleSelect = useCallback((role: string) => {
     tokenManager.setSelectedRole(role);
+    
+    // Update selected role in AppContext
+    setContextRole(role);
+    
+    // Update user object with selected role
+    if (user) {
+      setUser({
+        ...user,
+        selectedRole: role,
+      });
+    }
 
     // Chuyển hướng dựa trên role (chuẩn hóa để so sánh)
     const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
@@ -47,7 +72,7 @@ function RoleSelectionPage() {
     } else {
       navigate('/');
     }
-  }, [navigate]);
+  }, [navigate, setContextRole, user, setUser]);
 
   useEffect(() => {
     if (isLoading) return;

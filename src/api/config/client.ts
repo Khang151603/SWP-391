@@ -69,10 +69,27 @@ class HttpClient {
 
     // Handle error responses
     if (!response.ok) {
-      const errorMessage = 
-        (data && typeof data === 'object' && 'message' in data)
-          ? String((data as { message: unknown }).message)
-          : `API error: ${response.status} ${response.statusText}`;
+      let errorMessage = `API error: ${response.status} ${response.statusText}`;
+      
+      // Try to extract error message from various response formats
+      if (data && typeof data === 'object') {
+        // Check for 'message' property
+        if ('message' in data && data.message) {
+          errorMessage = String(data.message);
+        }
+        // Check for 'error' property
+        else if ('error' in data && data.error) {
+          errorMessage = String(data.error);
+        }
+        // Check for 'title' property (common in ASP.NET Core)
+        else if ('title' in data && data.title) {
+          errorMessage = String(data.title);
+        }
+      }
+      // If data is a string, use it as error message
+      else if (typeof data === 'string' && data.trim()) {
+        errorMessage = data;
+      }
 
       throw new ApiError(
         response.status,
@@ -140,7 +157,7 @@ class HttpClient {
     const response = await this.request<T>(path, {
       ...config,
       method: 'POST',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
     });
     return response.data;
   }
@@ -152,7 +169,7 @@ class HttpClient {
     const response = await this.request<T>(path, {
       ...config,
       method: 'PUT',
-      body: body ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
     });
     return response.data;
   }

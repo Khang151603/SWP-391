@@ -67,7 +67,6 @@ function StudentMyActivitiesPage() {
                 const clubDetails = await clubService.getClubDetailsById(activity.clubId);
                 clubName = clubDetails.name;
               } catch (err) {
-                console.error(`Error fetching club ${activity.clubId}:`, err);
                 clubName = `CLB #${activity.clubId}`;
               }
             }
@@ -81,7 +80,6 @@ function StudentMyActivitiesPage() {
         
         setActivities(activitiesWithDetails);
       } catch (err) {
-        console.error('Error fetching my activities:', err);
         setError('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);

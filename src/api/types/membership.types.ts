@@ -64,15 +64,19 @@ export interface LeaderApproveRejectRequest {
 }
 
 // Leader membership management types
-export interface ClubMemberDto {
-  membershipId: number;
+export interface MemberInfo {
   accountId: number;
-  clubId: number;
   fullName: string | null;
   email: string | null;
   phone: string | null;
-  joinDate: string | null;
   status: string;
+}
+
+export interface ClubMemberDto {
+  member: MemberInfo;
+  membershipId: number;
+  clubId: number;
+  joinDate: string | null;
 }
 
 export interface LeaderDecisionDto {
@@ -81,19 +85,18 @@ export interface LeaderDecisionDto {
 
 // Student: My clubs (clubs student is currently a member of)
 export interface StudentMyClub {
-  clubId: number;
-  clubName: string;
-  joinDate: string;
-  status: string;
-  club?: {
+  membership: {
+    clubId: number;
+    clubName: string;
+    joinDate: string | null;
+    status: string;
+  };
+  club: {
     id: number;
     name: string;
-    description: string;
-    establishedDate: string;
-    imageClubsUrl: string | null;
-    avatarPublicId: string | null;
-    membershipFee: number;
+    description: string | null;
     status: string;
+    membershipFee: number | null;
   };
 }
 

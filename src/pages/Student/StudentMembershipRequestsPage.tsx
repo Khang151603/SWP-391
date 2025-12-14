@@ -19,7 +19,6 @@ function StudentMembershipRequestsPage() {
         const requests = await membershipService.getStudentRequests();
         setMembershipRequests(requests);
       } catch (err) {
-        console.error('Error fetching membership requests:', err);
         setError('Không thể tải danh sách yêu cầu. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -282,17 +281,21 @@ function StudentMembershipRequestsPage() {
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           <div className="text-sm text-slate-900">
-                            {new Date(request.requestDate).toLocaleDateString('vi-VN', {
-                              year: 'numeric',
-                              month: '2-digit',
-                              day: '2-digit',
-                            })}
+                            {(() => {
+                              const date = new Date(request.requestDate);
+                              const day = String(date.getUTCDate()).padStart(2, '0');
+                              const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                              const year = date.getUTCFullYear();
+                              return `${day}/${month}/${year}`;
+                            })()}
                           </div>
                           <div className="text-xs text-slate-500">
-                            {new Date(request.requestDate).toLocaleTimeString('vi-VN', {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })}
+                            {(() => {
+                              const date = new Date(request.requestDate);
+                              const hours = String(date.getUTCHours()).padStart(2, '0');
+                              const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                              return `${hours}:${minutes}`;
+                            })()}
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">

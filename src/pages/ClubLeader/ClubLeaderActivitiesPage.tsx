@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
 import { activityService } from '../../api/services/activity.service';
 import type { Activity, CreateActivityRequest, UpdateActivityRequest, ActivityParticipant } from '../../api/types/activity.types';
@@ -28,8 +28,73 @@ function ClubLeaderActivitiesPage() {
   const [editForm, setEditForm] = useState<UpdateActivityRequest>({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  // Date input display states
+  const [startDateDisplay, setStartDateDisplay] = useState('');
+  const [endDateDisplay, setEndDateDisplay] = useState('');
+  const startDatePickerRef = useRef<HTMLInputElement>(null);
+  const endDatePickerRef = useRef<HTMLInputElement>(null);
+  
   const isValid =
     !!form.clubId && !!form.title && !!form.description && !!form.startTime && !!form.endTime && !!form.location;
+
+  // Format date to DD/MM/YYYY for display
+  const formatDateToDDMMYYYY = (dateTimeString: string): string => {
+    if (!dateTimeString) return '';
+    try {
+      const date = new Date(dateTimeString);
+      if (isNaN(date.getTime())) return '';
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    } catch {
+      return '';
+    }
+  };
+
+  // Parse DD/MM/YYYY to ISO date string (with validation)
+  const parseDDMMYYYYToISO = (dateString: string): string | null => {
+    if (!dateString || dateString.trim() === '') return null;
+    const parts = dateString.split('/');
+    if (parts.length !== 3) return null;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
+    if (day < 1 || day > 31 || month < 0 || month > 11 || year < 1900 || year > 2100) return null;
+    
+    const date = new Date(Date.UTC(year, month, day));
+    if (date.getUTCDate() !== day || date.getUTCMonth() !== month || date.getUTCFullYear() !== year) {
+      return null;
+    }
+    
+    return date.toISOString();
+  };
+
+  // Parse DD/MM/YYYY to YYYY-MM-DD format for date input
+  const parseDDMMYYYYToDate = (dateString: string): string => {
+    if (!dateString || dateString.trim() === '') return '';
+    const parts = dateString.split('/');
+    if (parts.length !== 3) return '';
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1;
+    const year = parseInt(parts[2], 10);
+    
+    if (isNaN(day) || isNaN(month) || isNaN(year)) return '';
+    if (day < 1 || day > 31 || month < 0 || month > 11 || year < 1900 || year > 2100) return '';
+    
+    const date = new Date(year, month, day);
+    if (date.getDate() !== day || date.getMonth() !== month || date.getFullYear() !== year) {
+      return '';
+    }
+    
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
 
   const loadActivities = async (clubId: number) => {
     if (!clubId) return;
@@ -442,18 +507,63 @@ function ClubLeaderActivitiesPage() {
                 <label className="text-sm text-slate-800">
                   Thời gian bắt đầu
                   <div className="mt-2 grid grid-cols-[1.3fr_1fr] gap-2">
-                    <input
-                      lang="vi-VN"
-                      type="date"
-                      value={getDatePart(form.startTime)}
-                      onChange={(e) => {
-                        const datePart = e.target.value;
-                        const timePart = getTimePart(form.startTime) || '00:00';
-                        handleChange('startTime', combineDateTime(datePart, timePart));
-                      }}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={startDateDisplay}
+                        onChange={(e) => {
+                          let inputValue = e.target.value.replace(/[^\d/]/g, '');
+                          const digits = inputValue.replace(/\//g, '');
+                          
+                          let formatted = inputValue;
+                          if (!inputValue.includes('/')) {
+                            if (digits.length >= 3) {
+                              formatted = digits.slice(0, 2) + '/' + digits.slice(2);
+                            }
+                            if (digits.length >= 5) {
+                              formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
+                            }
+                          }
+                          
+                          formatted = formatted.slice(0, 10);
+                          setStartDateDisplay(formatted);
+                          
+                          const datePart = parseDDMMYYYYToDate(formatted);
+                          if (datePart) {
+                            const timePart = getTimePart(form.startTime) || '00:00';
+                            handleChange('startTime', combineDateTime(datePart, timePart));
+                          }
+                        }}
+                        placeholder="dd/mm/yyyy"
+                        maxLength={10}
+                        className="w-full rounded-xl border border-slate-300 bg-white pl-4 pr-10 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                        required
+                      />
+                      <input
+                        ref={startDatePickerRef}
+                        type="date"
+                        value={getDatePart(form.startTime)}
+                        className="absolute opacity-0 pointer-events-none w-0 h-0"
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            const [year, month, day] = e.target.value.split('-').map(Number);
+                            setStartDateDisplay(`${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}/${year}`);
+                            const timePart = getTimePart(form.startTime) || '00:00';
+                            handleChange('startTime', combineDateTime(e.target.value, timePart));
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => startDatePickerRef.current?.showPicker?.()}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer hover:opacity-70"
+                        tabIndex={-1}
+                      >
+                        <svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                    </div>
                     <input
                       lang="vi-VN"
                       type="time"
@@ -467,25 +577,80 @@ function ClubLeaderActivitiesPage() {
                       required
                     />
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">Ngày/tháng/năm giờ:phút (giờ VN).</p>
+                  <p className="mt-1 text-xs text-slate-500">dd/mm/yyyy giờ:phút (giờ VN).</p>
                 </label>
 
                 <label className="text-sm text-slate-800">
                   Thời gian kết thúc
                   <div className="mt-2 grid grid-cols-[1.3fr_1fr] gap-2">
-                    <input
-                      lang="vi-VN"
-                      type="date"
-                      value={getDatePart(form.endTime)}
-                      min={getDatePart(form.startTime) || undefined}
-                      onChange={(e) => {
-                        const datePart = e.target.value;
-                        const timePart = getTimePart(form.endTime) || '00:00';
-                        handleChange('endTime', combineDateTime(datePart, timePart));
-                      }}
-                      className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        placeholder="dd/mm/yyyy"
+                        value={endDateDisplay}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/[^\d]/g, '');
+                          if (value.length > 8) value = value.slice(0, 8);
+
+                          if (value.length >= 2) {
+                            value = value.slice(0, 2) + '/' + value.slice(2);
+                          }
+                          if (value.length >= 5) {
+                            value = value.slice(0, 5) + '/' + value.slice(5);
+                          }
+
+                          setEndDateDisplay(value);
+
+                          if (value.length === 10) {
+                            const isoDate = parseDDMMYYYYToISO(value);
+                            if (isoDate) {
+                              const timePart = getTimePart(form.endTime) || '00:00';
+                              const datePartFormatted = parseDDMMYYYYToDate(value);
+                              if (datePartFormatted) {
+                                handleChange('endTime', combineDateTime(datePartFormatted, timePart));
+                              }
+                            }
+                          }
+                        }}
+                        onBlur={() => {
+                          if (form.endTime) {
+                            const dateObj = new Date(form.endTime);
+                            if (!isNaN(dateObj.getTime())) {
+                              setEndDateDisplay(formatDateToDDMMYYYY(dateObj.toISOString()));
+                            }
+                          }
+                        }}
+                        className="w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 pr-10 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                        required
+                      />
+                      <input
+                        ref={endDatePickerRef}
+                        type="date"
+                        value={form.endTime ? parseDDMMYYYYToDate(formatDateToDDMMYYYY(form.endTime)) || '' : ''}
+                        min={form.startTime ? parseDDMMYYYYToDate(formatDateToDDMMYYYY(form.startTime)) || undefined : undefined}
+                        onChange={(e) => {
+                          const datePart = e.target.value;
+                          if (datePart) {
+                            const [year, month, day] = datePart.split('-').map(Number);
+                            const utcDate = new Date(Date.UTC(year, month - 1, day));
+                            const formatted = formatDateToDDMMYYYY(utcDate.toISOString());
+                            setEndDateDisplay(formatted);
+                            const timePart = getTimePart(form.endTime) || '00:00';
+                            handleChange('endTime', combineDateTime(datePart, timePart));
+                          }
+                        }}
+                        className="absolute inset-0 opacity-0 pointer-events-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => endDatePickerRef.current?.showPicker()}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                        </svg>
+                      </button>
+                    </div>
                     <input
                       lang="vi-VN"
                       type="time"
@@ -499,7 +664,7 @@ function ClubLeaderActivitiesPage() {
                       required
                     />
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">Ngày/tháng/năm giờ:phút (giờ VN).</p>
+                  <p className="mt-1 text-xs text-slate-500">dd/mm/yyyy giờ:phút (giờ VN).</p>
                 </label>
 
                 <label className="text-sm text-slate-800 md:col-span-2">

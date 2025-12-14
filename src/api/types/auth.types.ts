@@ -19,11 +19,20 @@ export interface AuthResponse {
   email: string;
   fullName: string;
   roles: string[];
+  phone?: string;
+  imageAccountUrl?: string;
 }
 
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
+}
+
+export interface UpdateProfileRequest {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  imageAccountUrl?: string;
 }
 
 export interface UserInfo {
@@ -33,5 +42,6 @@ export interface UserInfo {
   fullName: string;
   roles: string[];
   selectedRole?: string;
+  imageAccountUrl?: string;
 }
 

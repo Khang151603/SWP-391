@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { Button } from '../../components/ui/Button';
 import { clubService } from '../../api/services/club.service';
@@ -107,9 +107,7 @@ function StudentBecomeLeaderPage() {
   const { user } = useAppContext();
   
   // Kiểm tra xem user có role clubleader không
-  const isClubLeader = useMemo(() => {
-    return user?.roles?.some(role => role.toLowerCase() === 'clubleader') ?? false;
-  }, [user?.roles]);
+  const [isClubLeader, setIsClubLeader] = useState(false);
 
   const [formData, setFormData] = useState({
     reason: '',
@@ -117,8 +115,17 @@ function StudentBecomeLeaderPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [myRequests, setMyRequests] = useState<LeaderRequest[]>([]);
+
+  // Check if user is club leader whenever user changes
+  useEffect(() => {
+    const checkLeaderStatus = () => {
+      const hasLeaderRole = user?.roles?.some(role => role.toLowerCase() === 'clubleader') ?? false;
+      setIsClubLeader(hasLeaderRole);
+    };
+    
+    checkLeaderStatus();
+  }, [user, user?.roles]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -130,12 +137,10 @@ function StudentBecomeLeaderPage() {
     
     // Check if user is already a club leader
     if (isClubLeader) {
-      setErrorMessage('Bạn đã là Club Leader rồi. Không thể gửi yêu cầu trở thành leader mới.');
       return;
     }
 
     setIsSubmitting(true);
-    setErrorMessage(null);
 
     try {
       // Gọi API để gửi yêu cầu trở thành Club Leader
@@ -151,15 +156,12 @@ function StudentBecomeLeaderPage() {
       }, 5000);
     } catch (error) {
       setIsSubmitting(false);
-      const errorMsg = 'Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.';
-      setErrorMessage(errorMsg);
       handleApiError(error);
     }
   };
 
   const resetForm = () => {
     setFormData({ reason: '' });
-    setErrorMessage(null);
   };
 
   // Fetch my leader requests
@@ -177,7 +179,6 @@ function StudentBecomeLeaderPage() {
           return;
         }
         // For other errors, just log but don't show to user
-        console.error('Failed to fetch leader requests:', error);
         setMyRequests([]);
       }
     };
@@ -198,8 +199,7 @@ function StudentBecomeLeaderPage() {
             setMyRequests([]);
             return;
           }
-          // For other errors, just log but don't show to user
-          console.error('Failed to fetch leader requests:', error);
+          // For other errors, just don't show to user
           setMyRequests([]);
         }
       };
@@ -238,25 +238,7 @@ function StudentBecomeLeaderPage() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Alert Messages */}
-                {errorMessage && (
-                  <div className="rounded-xl border border-red-300 bg-red-50 p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 text-red-600">
-                        <Icons.X />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-red-700">{errorMessage}</p>
-                        {isClubLeader && (
-                          <p className="mt-1 text-xs text-red-600">
-                            Vui lòng sử dụng tài khoản Club Leader để quản lý câu lạc bộ của bạn.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {isClubLeader && !errorMessage && (
+                {isClubLeader && (
                   <div className="rounded-xl border border-amber-300 bg-amber-50 p-4">
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 text-amber-600">
@@ -284,7 +266,7 @@ function StudentBecomeLeaderPage() {
                     placeholder={field.placeholder}
                     value={formData[field.id as keyof typeof formData]}
                     onChange={handleChange}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isClubLeader}
                   />
                 ))}
 
@@ -302,7 +284,7 @@ function StudentBecomeLeaderPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !formData.reason.trim()}
+                    disabled={isSubmitting || !formData.reason.trim() || isClubLeader}
                     className="w-full sm:w-auto"
                   >
                     {isSubmitting ? (
@@ -388,17 +370,13 @@ function StudentBecomeLeaderPage() {
                             </td>
                             <td className="whitespace-nowrap px-6 py-4">
                               <div className="text-sm text-slate-900">
-                                {new Date(request.requestDate).toLocaleDateString('vi-VN', {
-                                  year: 'numeric',
-                                  month: '2-digit',
-                                  day: '2-digit',
-                                })}
-                              </div>
-                              <div className="text-xs text-slate-500">
-                                {new Date(request.requestDate).toLocaleTimeString('vi-VN', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                })}
+                                {(() => {
+                                  const date = new Date(request.requestDate);
+                                  const day = String(date.getUTCDate()).padStart(2, '0');
+                                  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                                  const year = date.getUTCFullYear();
+                                  return `${day}/${month}/${year}`;
+                                })()}
                               </div>
                             </td>
                             <td className="px-6 py-4">

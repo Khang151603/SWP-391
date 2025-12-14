@@ -95,13 +95,6 @@ function StudentExplorePage() {
         setError(null);
         const apiClubs = await clubService.getAllClubs();
         
-        // Debug: Log để kiểm tra dữ liệu từ API
-        console.log('API Clubs data:', apiClubs);
-        if (apiClubs.length > 0) {
-          console.log('First club sample:', apiClubs[0]);
-          console.log('Has establishedDate?', 'establishedDate' in apiClubs[0], apiClubs[0].establishedDate);
-        }
-        
         // Map API response to display format
         const mappedClubs: DisplayClub[] = apiClubs.map((club: ClubListItem) => ({
           id: club.id.toString(),
@@ -114,15 +107,9 @@ function StudentExplorePage() {
           establishedDate: club.establishedDate,
         }));
         
-        // Debug: Log mapped clubs
-        console.log('Mapped clubs:', mappedClubs);
-        if (mappedClubs.length > 0) {
-          console.log('First mapped club:', mappedClubs[0]);
-        }
-        
         setClubs(mappedClubs);
       } catch (err) {
-        console.error('Error fetching clubs:', err);
+
         setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -204,7 +191,6 @@ function StudentExplorePage() {
         setRegistrationSuccess(false);
       }, 3000);
     } catch (error) {
-      console.error('Error submitting membership request:', error);
       setRegistrationError('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.');
     } finally {
       setIsRegistering(false);

@@ -41,6 +41,7 @@ export const tokenManager = {
     username: string;
     email: string;
     fullName: string;
+    imageAccountUrl?: string;
   } | null {
     if (typeof window === 'undefined') return null;
     const userInfo = localStorage.getItem(USER_INFO_KEY);
@@ -52,6 +53,7 @@ export const tokenManager = {
     username: string;
     email: string;
     fullName: string;
+    imageAccountUrl?: string;
   }): void {
     if (typeof window === 'undefined') return;
     localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));

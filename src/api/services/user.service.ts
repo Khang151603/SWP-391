@@ -1,6 +1,7 @@
 import { httpClient } from '../config/client';
 import { USER_ENDPOINTS } from '../config/constants';
-import type { User, UpdateProfileRequest } from '../types/user.types';
+import type { User } from '../types/user.types';
+import type { UpdateProfileRequest } from '../types/auth.types';
 
 /**
  * User Service

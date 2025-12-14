@@ -68,7 +68,7 @@ export interface CreateLeaderClubRequest {
   description: string;
   establishedDate: string; // ISO date string
   imageClubsUrl: string;
-  membershipFee: number;
+  membershipFee?: number;
 }
 
 export interface UpdateLeaderClubRequest {

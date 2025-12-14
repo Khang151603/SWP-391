@@ -40,3 +40,31 @@ export interface MembershipPaymentRequest {
   clubName: string;
 }
 
+// Student Payment Types
+export interface StudentPaidPayment {
+  id: number;
+  membershipId: number;
+  clubId: number;
+  clubName: string;
+  amount: number;
+  paidDate: string | null;
+  method: string | null;
+  status: string;
+  orderCode: number | null;
+  description: string | null;
+}
+
+export interface StudentDebt {
+  id: number;
+  membershipId: number;
+  clubId: number;
+  clubName: string;
+  amount: number;
+  paidDate: string | null;
+  method: string | null;
+  status: string;
+  orderCode: number | null;
+  description: string | null;
+  createdDate: string | null;
+}
+

@@ -27,6 +27,7 @@ function ClubLeaderInfoPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const stats = useMemo(
     () => ({
@@ -85,7 +86,7 @@ function ClubLeaderInfoPage() {
     description: '',
     establishedDate: new Date().toISOString(),
     imageClubsUrl: '',
-    membershipFee: 0,
+    membershipFee: undefined,
   });
 
   const selectedClub = useMemo(
@@ -165,20 +166,31 @@ function ClubLeaderInfoPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const updated = await clubService.updateLeaderClub(Number(formData.id), payload);
+      await clubService.updateLeaderClub(Number(formData.id), payload);
+      
+      // API only returns "Updated" string, so use formData as the source of truth
       const updatedProfile: ClubProfile = {
-        id: String(updated.id),
-        name: updated.name,
-        description: updated.description,
-        establishedDate: updated.establishedDate,
-        imageClubsUrl: updated.imageClubsUrl,
-        membershipFee: updated.membershipFee,
-        status: updated.status,
+        id: formData.id,
+        name: formData.name,
+        description: formData.description,
+        establishedDate: formData.establishedDate,
+        imageClubsUrl: formData.imageClubsUrl,
+        membershipFee: formData.membershipFee,
+        status: formData.status,
       };
+      
+      // Update clubs list
       setClubs((prev) => prev.map((club) => (club.id === updatedProfile.id ? updatedProfile : club)));
+      
       setFormData(updatedProfile);
       setShowDetailView(false);
+      
+      // Show success message
+      setSuccessMessage('Cập nhật thông tin CLB thành công!');
+      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
+      console.error('=== UPDATE FAILED ===');
+      console.error('Error details:', err);
       setError('Không thể cập nhật thông tin CLB. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
@@ -236,7 +248,7 @@ function ClubLeaderInfoPage() {
     }
   };
 
-  const handleCreateFormChange = (field: keyof CreateLeaderClubRequest, value: string | number) => {
+  const handleCreateFormChange = (field: keyof CreateLeaderClubRequest, value: string | number | undefined) => {
     setCreateFormData((prev) => ({
       ...prev,
       [field]: value,
@@ -289,8 +301,10 @@ function ClubLeaderInfoPage() {
 
   // State for date input display value (DD/MM/YYYY format)
   const [dateInputValue, setDateInputValue] = useState<string>('');
+  const [editDateInputValue, setEditDateInputValue] = useState<string>('');
   // Ref for hidden date picker
   const datePickerRef = useRef<HTMLInputElement>(null);
+  const editDatePickerRef = useRef<HTMLInputElement>(null);
 
   // Format date to DD/MM/YYYY
   const formatDateToDDMMYYYY = (dateString: string): string => {
@@ -298,9 +312,10 @@ function ClubLeaderInfoPage() {
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return '';
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const year = date.getFullYear();
+      // Use UTC to avoid timezone issues
+      const day = String(date.getUTCDate()).padStart(2, '0');
+      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+      const year = date.getUTCFullYear();
       return `${day}/${month}/${year}`;
     } catch {
       return '';
@@ -319,12 +334,14 @@ function ClubLeaderInfoPage() {
     if (isNaN(day) || isNaN(month) || isNaN(year)) return null;
     if (day < 1 || day > 31 || month < 0 || month > 11 || year < 1900 || year > 2100) return null;
     
-    const date = new Date(year, month, day);
-    if (date.getDate() !== day || date.getMonth() !== month || date.getFullYear() !== year) {
+    // Use UTC to avoid timezone issues
+    const date = new Date(Date.UTC(year, month, day, 0, 0, 0, 0));
+    
+    // Validate date
+    if (date.getUTCDate() !== day || date.getUTCMonth() !== month || date.getUTCFullYear() !== year) {
       return null; // Invalid date
     }
     
-    date.setHours(0, 0, 0, 0);
     return date.toISOString();
   };
 
@@ -338,12 +355,41 @@ function ClubLeaderInfoPage() {
       setDateInputValue('');
     }
   }, [showCreateForm]);
+
+  // Initialize edit date input value when detail view opens
+  useEffect(() => {
+    if (showDetailView && formData?.establishedDate) {
+      setEditDateInputValue(formatDateToDDMMYYYY(formData.establishedDate));
+    } else {
+      setEditDateInputValue('');
+    }
+  }, [showDetailView, formData?.establishedDate]);
   return (
     <LeaderLayout
       title="Quản lý hồ sơ CLB"
       subtitle="Thiết lập nhanh thông tin hiển thị"
     >
-      <div className="space-y-8">
+      {/* Success Toast Notification */}
+      {successMessage && (
+        <div className="fixed top-4 right-4 z-50 animate-slide-in">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]">
+            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <p className="flex-1 text-sm font-medium">{successMessage}</p>
+            <button
+              onClick={() => setSuccessMessage(null)}
+              className="flex-shrink-0 hover:bg-green-600 rounded p-1 transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-8">{/* Header with Create Button and quick stats */}
         {/* Header with Create Button and quick stats */}
         {!showDetailView && !showCreateForm && (
           <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -455,7 +501,7 @@ function ClubLeaderInfoPage() {
                       value={createFormData.membershipFee ?? ''}
                       onChange={(e) => {
                         const value = e.target.value === '' ? undefined : Number(e.target.value);
-                        handleCreateFormChange('membershipFee', value ?? 0);
+                        handleCreateFormChange('membershipFee', value);
                       }}
                       className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
                       placeholder="Nhập phí thành viên"
@@ -551,8 +597,9 @@ function ClubLeaderInfoPage() {
                       max={new Date().toISOString().split('T')[0]}
                       onChange={(e) => {
                         if (e.target.value) {
-                          const date = new Date(e.target.value);
-                          date.setHours(0, 0, 0, 0);
+                          // e.target.value is in YYYY-MM-DD format
+                          const [year, month, day] = e.target.value.split('-').map(Number);
+                          const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
                           const formatted = formatDateToDDMMYYYY(date.toISOString());
                           setDateInputValue(formatted);
                           handleCreateFormChange('establishedDate', date.toISOString());
@@ -857,18 +904,124 @@ function ClubLeaderInfoPage() {
                       </svg>
                     </div>
                     <input
+                      type="text"
+                      value={editDateInputValue}
+                      onChange={(e) => {
+                        let inputValue = e.target.value;
+                        // Remove all non-digit characters except slash
+                        inputValue = inputValue.replace(/[^\d/]/g, '');
+                        
+                        // Count digits only (not slashes)
+                        const digits = inputValue.replace(/\//g, '');
+                        
+                        // Auto-format as user types: DD/MM/YYYY
+                        let formatted = inputValue;
+                        
+                        // Only auto-add slashes if user hasn't typed them
+                        if (!inputValue.includes('/')) {
+                          if (digits.length >= 3) {
+                            // Add first slash after day
+                            formatted = digits.slice(0, 2) + '/' + digits.slice(2);
+                          }
+                          if (digits.length >= 5) {
+                            // Add second slash after month
+                            formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
+                          }
+                        } else {
+                          // User has typed slashes, just ensure correct positions
+                          const parts = inputValue.split('/');
+                          if (parts.length === 2 && parts[1].length >= 3) {
+                            formatted = parts[0] + '/' + parts[1].slice(0, 2) + '/' + parts[1].slice(2);
+                          }
+                        }
+                        
+                        // Limit to 10 characters (DD/MM/YYYY)
+                        formatted = formatted.slice(0, 10);
+                        
+                        setEditDateInputValue(formatted);
+                        
+                        // Try to parse and update ISO date if valid
+                        const isoDate = parseDDMMYYYYToISO(formatted);
+                        
+                        if (isoDate) {
+                          const date = new Date(isoDate);
+                          const today = new Date();
+                          today.setHours(23, 59, 59, 999);
+                          
+                          if (date <= today) {
+                            handleInputChange('establishedDate', isoDate);
+                          }
+                        }
+                      }}
+                      onBlur={() => {
+                        // Validate on blur
+                        const isoDate = parseDDMMYYYYToISO(editDateInputValue);
+                        if (!isoDate && editDateInputValue.trim() !== '') {
+                          // Invalid date - reset to current value
+                          if (formData.establishedDate) {
+                            setEditDateInputValue(formatDateToDDMMYYYY(formData.establishedDate));
+                          }
+                        } else if (isoDate) {
+                          const date = new Date(isoDate);
+                          const today = new Date();
+                          today.setHours(23, 59, 59, 999);
+                          if (date > today) {
+                            // Future date - set to today
+                            const todayFormatted = formatDateToDDMMYYYY(today.toISOString());
+                            setEditDateInputValue(todayFormatted);
+                            handleInputChange('establishedDate', today.toISOString());
+                          }
+                        }
+                      }}
+                      placeholder="DD/MM/YYYY"
+                      maxLength={10}
+                      className="w-full rounded-xl border border-slate-300 bg-white pl-12 pr-12 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+                    />
+                    {/* Hidden date picker */}
+                    <input
+                      ref={editDatePickerRef}
                       type="date"
-                      value={formData.establishedDate ? new Date(formData.establishedDate).toISOString().split('T')[0] : ''}
+                      value={
+                        formData.establishedDate
+                          ? new Date(formData.establishedDate).toISOString().split('T')[0]
+                          : ''
+                      }
+                      className="absolute opacity-0 pointer-events-none w-0 h-0"
+                      max={(() => {
+                        const today = new Date();
+                        const year = today.getFullYear();
+                        const month = String(today.getMonth() + 1).padStart(2, '0');
+                        const day = String(today.getDate()).padStart(2, '0');
+                        return `${year}-${month}-${day}`;
+                      })()}
                       onChange={(e) => {
                         if (e.target.value) {
-                          const date = new Date(e.target.value);
-                          date.setHours(0, 0, 0, 0);
+                          // e.target.value is in YYYY-MM-DD format
+                          const [year, month, day] = e.target.value.split('-').map(Number);
+                          const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+                          const formatted = formatDateToDDMMYYYY(date.toISOString());
+                          setEditDateInputValue(formatted);
                           handleInputChange('establishedDate', date.toISOString());
                         }
                       }}
-                      max={new Date().toISOString().split('T')[0]}
-                      className="w-full rounded-xl border border-slate-300 bg-white pl-12 pr-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
                     />
+                    {/* Calendar icon on the right - clickable */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        editDatePickerRef.current?.showPicker?.();
+                        // Fallback for browsers that don't support showPicker
+                        if (!editDatePickerRef.current?.showPicker) {
+                          editDatePickerRef.current?.click();
+                        }
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer z-10"
+                      aria-label="Chọn ngày từ lịch"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </button>
                   </div>
                 </label>
               </div>

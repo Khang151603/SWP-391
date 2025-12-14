@@ -10,9 +10,3 @@ export interface User {
   updatedAt?: string;
 }
 
-export interface UpdateProfileRequest {
-  fullName?: string;
-  email?: string;
-  avatar?: string;
-}
-

@@ -32,7 +32,6 @@ function StudentDashboardPage() {
         ).length;
         setCompletedActivities(completed);
       } catch (error) {
-        console.error('Failed to fetch dashboard data:', error);
         handleApiError(error);
       } finally {
         setLoading(false);

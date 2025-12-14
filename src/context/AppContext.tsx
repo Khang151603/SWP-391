@@ -13,6 +13,7 @@ type AppContextValue = {
   isAuthenticated: boolean;
   selectedRole: string | null;
   setUser: (user: UserInfo | null) => void;
+  updateUser: (updates: Partial<UserInfo>) => void;
   setSelectedRole: (role: string) => void;
   logout: () => void;
 };
@@ -50,6 +51,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
 
+  const updateUser = (updates: Partial<UserInfo>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      
+      // Cập nhật localStorage để persist data
+      // Chỉ lưu các field cần thiết, không lưu roles và selectedRole vì đã có riêng
+      authService.setUserInfo({
+        accountId: updatedUser.accountId,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        fullName: updatedUser.fullName,
+        imageAccountUrl: updatedUser.imageAccountUrl,
+      });
+    }
+  };
+
   const setSelectedRole = (role: string) => {
     authService.setSelectedRole(role);
     setSelectedRoleState(role);
@@ -74,6 +92,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         isAuthenticated,
         selectedRole,
         setUser,
+        updateUser,
         setSelectedRole,
         logout,
       }}

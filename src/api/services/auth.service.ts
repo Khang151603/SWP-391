@@ -6,6 +6,7 @@ import type {
   LoginRequest,
   AuthResponse,
   ChangePasswordRequest,
+  UpdateProfileRequest,
 } from '../types/auth.types';
 
 /**
@@ -35,6 +36,7 @@ export const authService = {
         username: response.username,
         email: response.email,
         fullName: response.fullName,
+        imageAccountUrl: response.imageAccountUrl,
       });
     }
 
@@ -62,6 +64,7 @@ export const authService = {
         username: response.username,
         email: response.email,
         fullName: response.fullName,
+        imageAccountUrl: response.imageAccountUrl,
       });
     }
 
@@ -76,7 +79,6 @@ export const authService = {
       await httpClient.post<void>(AUTH_ENDPOINTS.LOGOUT);
     } catch (error) {
       // Even if API call fails, clear local storage
-      console.error('Logout API error:', error);
     } finally {
       tokenManager.clear();
     }
@@ -100,6 +102,7 @@ export const authService = {
         username: response.username,
         email: response.email,
         fullName: response.fullName,
+        imageAccountUrl: response.imageAccountUrl,
       });
     }
 
@@ -111,6 +114,30 @@ export const authService = {
    */
   async changePassword(data: ChangePasswordRequest): Promise<void> {
     await httpClient.post<void>(AUTH_ENDPOINTS.CHANGE_PASSWORD, data);
+  },
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(data: UpdateProfileRequest): Promise<AuthResponse> {
+    const response = await httpClient.put<AuthResponse>('/api/Account/profile', data);
+
+    // Update token and user info if returned
+    if (response.token) {
+      tokenManager.setToken(response.token);
+      if (response.roles) {
+        tokenManager.setRoles(response.roles);
+      }
+      tokenManager.setUserInfo({
+        accountId: response.accountId,
+        username: response.username,
+        email: response.email,
+        fullName: response.fullName,
+        imageAccountUrl: response.imageAccountUrl,
+      });
+    }
+
+    return response;
   },
 
   /**
@@ -153,6 +180,19 @@ export const authService = {
    */
   setSelectedRole(role: string): void {
     tokenManager.setSelectedRole(role);
+  },
+
+  /**
+   * Set user info (for updating user data in localStorage)
+   */
+  setUserInfo(userInfo: {
+    accountId: number;
+    username: string;
+    email: string;
+    fullName: string;
+    imageAccountUrl?: string;
+  }): void {
+    tokenManager.setUserInfo(userInfo);
   },
 
   /**
