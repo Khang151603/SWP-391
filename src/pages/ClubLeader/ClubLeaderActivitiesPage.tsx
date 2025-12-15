@@ -273,6 +273,48 @@ function ClubLeaderActivitiesPage() {
     }
   };
 
+  const handleCompleteActivity = async (activity: Activity) => {
+    setIsLoading(true);
+    setMessage(null);
+    try {
+      await activityService.update(activity.id, { status: 'Completed' });
+      setMessage({ type: 'success', text: 'Đã kết thúc hoạt động' });
+      loadActivities(form.clubId);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Không thể kết thúc hoạt động. Vui lòng thử lại sau.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStartActivity = async (activity: Activity) => {
+    setIsLoading(true);
+    setMessage(null);
+    try {
+      await activityService.startActivity(activity.id);
+      setMessage({ type: 'success', text: 'Đã bắt đầu hoạt động' });
+      loadActivities(form.clubId);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Không thể bắt đầu hoạt động. Vui lòng thử lại sau.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleStopActivity = async (activity: Activity) => {
+    setIsLoading(true);
+    setMessage(null);
+    try {
+      await activityService.update(activity.id, { status: 'Completed' });
+      setMessage({ type: 'success', text: 'Đã dừng hoạt động' });
+      loadActivities(form.clubId);
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Không thể dừng hoạt động. Vui lòng thử lại sau.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleViewParticipants = async (activity: Activity) => {
     setSelectedActivity(activity);
     setShowParticipantsModal(true);
@@ -360,14 +402,24 @@ function ClubLeaderActivitiesPage() {
                 const start = new Date(act.startTime);
                 const end = new Date(act.endTime);
                 const status = (act.status || 'Pending').toLowerCase();
+                
+                // Map status to Vietnamese
+                const statusVietnamese = 
+                  status === 'pending' ? 'Chưa bắt đầu' :
+                  status === 'registrationopen' ? 'Đã mở ĐK' :
+                  status === 'ongoing' ? 'Đang diễn ra' :
+                  status === 'completed' ? 'Đã dừng' : act.status || 'Chưa bắt đầu';
+                
                 const statusStyle =
                   status === 'pending'
                     ? 'bg-amber-50 text-amber-700 ring-amber-200'
-                    : status === 'active'
-                      ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-                      : status === 'completed'
-                        ? 'bg-blue-50 text-blue-700 ring-blue-200'
-                        : 'bg-slate-50 text-slate-700 ring-slate-200';
+                    : status === 'registrationopen'
+                      ? 'bg-blue-50 text-blue-700 ring-blue-200'
+                      : status === 'ongoing'
+                        ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                        : status === 'completed'
+                          ? 'bg-slate-50 text-slate-700 ring-slate-200'
+                          : 'bg-slate-50 text-slate-700 ring-slate-200';
 
                 return (
                   <div
@@ -380,7 +432,7 @@ function ClubLeaderActivitiesPage() {
                         <p className="text-xs text-slate-600 line-clamp-2">{act.description}</p>
                       </div>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${statusStyle}`}>
-                        {act.status || 'Pending'}
+                        {statusVietnamese}
                       </span>
                     </div>
                     <div className="text-xs text-slate-700 space-y-2">
@@ -398,34 +450,47 @@ function ClubLeaderActivitiesPage() {
                     
                     {/* Action Buttons */}
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                      <button
-                        onClick={() => handleEdit(act)}
-                        className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
-                      >
-                        Sửa
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedActivity(act);
-                          setShowDeleteConfirm(true);
-                        }}
-                        className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                      >
-                        Xóa
-                      </button>
-                      {status === 'active' ? (
+                      {status !== 'completed' && (
                         <button
-                          onClick={() => handleCloseRegistration(act)}
-                          className="rounded-lg bg-orange-50 border border-orange-200 px-3 py-1.5 text-xs font-semibold text-orange-700 hover:bg-orange-100 transition-colors"
+                          onClick={() => handleEdit(act)}
+                          className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
                         >
-                          Đóng ĐK
+                          Sửa
                         </button>
-                      ) : (
+                      )}
+                      {status === 'completed' && (
+                        <button
+                          onClick={() => {
+                            setSelectedActivity(act);
+                            setShowDeleteConfirm(true);
+                          }}
+                          className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                        >
+                          Xóa
+                        </button>
+                      )}
+                      {status === 'pending' && (
                         <button
                           onClick={() => handleOpenRegistration(act)}
                           className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
                         >
-                          Mở ĐK
+                          Mở đăng ký
+                        </button>
+                      )}
+                      {status === 'registrationopen' && (
+                        <button
+                          onClick={() => handleStartActivity(act)}
+                          className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                        >
+                          Bắt đầu
+                        </button>
+                      )}
+                      {status === 'ongoing' && (
+                        <button
+                          onClick={() => handleStopActivity(act)}
+                          className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                        >
+                          Dừng
                         </button>
                       )}
                       <button
