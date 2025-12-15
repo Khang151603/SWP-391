@@ -25,8 +25,11 @@ function ClubLeaderDashboardPage() {
         // Set pending requests count
         setPendingCount(pendingRequests.length);
 
-        // Set total members count
-        setTotalMembers(members.length);
+        // Set total members count (only count members who have successfully paid)
+        const activemembers = members.filter(m => 
+          m.member.status.toLowerCase() === 'active'
+        );
+        setTotalMembers(activemembers.length);
 
         // Fetch activities for all clubs and count upcoming
         if (myClubs.length > 0) {
@@ -36,11 +39,18 @@ function ClubLeaderDashboardPage() {
           const allActivitiesArrays = await Promise.all(allActivitiesPromises);
           const allActivities = allActivitiesArrays.flat();
 
-          // Filter upcoming activities (startTime > now)
+          // Filter upcoming activities (not completed/cancelled)
           const now = new Date();
           const upcoming = allActivities.filter(activity => {
             const startTime = new Date(activity.startTime);
-            return startTime > now;
+            const status = (activity.status || '').toLowerCase();
+            
+            // Only count if:
+            // 1. Start time is in the future OR activity is ongoing
+            // 2. Status is NOT completed or cancelled
+            return (startTime > now || status === 'ongoing') && 
+                   status !== 'completed' && 
+                   status !== 'cancelled';
           });
 
           setUpcomingActivities(upcoming.length);

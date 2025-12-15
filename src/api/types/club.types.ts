@@ -16,7 +16,8 @@ export interface ClubListItem {
   name: string;
   description: string;
   establishedDate?: string;
-  imageClubsUrl: string | null;
+  imageClubsUrl?: string | null;
+  imageUrl?: string | null; // API sometimes returns imageUrl instead of imageClubsUrl
   memberCount?: number;
   membershipFee: number;
   status: 'Active' | 'Unactive' | string;

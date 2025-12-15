@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
 import { clubService } from '../../api/services/club.service';
+import { membershipService } from '../../api/services/membership.service';
 import type {
   CreateLeaderClubRequest,
   LeaderClubListItem,
@@ -64,22 +65,47 @@ function ClubLeaderInfoPage() {
       setError(null);
       try {
         const myClubs = await clubService.getMyLeaderClubs();
-        const mapped: ClubProfile[] = myClubs.map((club: ExtendedLeaderClubListItem) => ({
-          id: String(club.id),
-          name: club.name,
-          description: club.description,
-          establishedDate: club.establishedDate,
-          imageClubsUrl: club.imageClubsUrl,
-          avatarPublicId: club.avatarPublicId || null,
-          membershipFee: club.membershipFee,
-          status: club.status,
-          memberCount: club.memberCount ?? null,
-          totalRevenue: club.totalRevenue ?? null,
-        }));
-        setClubs(mapped);
-        if (mapped.length > 0) {
-          setSelectedClubId(mapped[0].id);
-          setFormData(mapped[0]);
+        
+        // Fetch member count for each club
+        const clubsWithData = await Promise.all(
+          myClubs.map(async (club: ExtendedLeaderClubListItem) => {
+            let memberCount = 0;
+            let totalRevenue = 0;
+            
+            try {
+              // Get members for this club
+              const members = await membershipService.getLeaderClubMembers(club.id);
+              
+              // Count only active members (those who have paid)
+              memberCount = members.filter(m => 
+                m.member.status?.toLowerCase() === 'active'
+              ).length;
+              
+              // Calculate total revenue (membershipFee * active members)
+              totalRevenue = (club.membershipFee || 0) * memberCount;
+            } catch (error) {
+              console.error(`Failed to fetch data for club ${club.id}:`, error);
+            }
+            
+            return {
+              id: String(club.id),
+              name: club.name,
+              description: club.description,
+              establishedDate: club.establishedDate,
+              imageClubsUrl: club.imageClubsUrl,
+              avatarPublicId: club.avatarPublicId || null,
+              membershipFee: club.membershipFee,
+              status: club.status,
+              memberCount,
+              totalRevenue,
+            };
+          })
+        );
+        
+        setClubs(clubsWithData);
+        if (clubsWithData.length > 0) {
+          setSelectedClubId(clubsWithData[0].id);
+          setFormData(clubsWithData[0]);
         }
       } catch {
         setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');

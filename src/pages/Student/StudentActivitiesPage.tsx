@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { activityService } from '../../api/services/activity.service';
-import { clubService } from '../../api/services/club.service';
+import { membershipService } from '../../api/services/membership.service';
 import type { StudentActivity } from '../../api/types/activity.types';
 
 function StudentActivitiesPage() {
@@ -17,35 +17,38 @@ function StudentActivitiesPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await activityService.getStudentViewAll();
         
-        // Fetch club names for activities that don't have clubName
-        const activitiesWithClubNames = await Promise.all(
-          data.map(async (activity) => {
-            // If clubName already exists, return as is
-            if (activity.clubName) {
-              return activity;
-            }
-            
-            // Otherwise, fetch club name from clubId
-            try {
-              const clubDetails = await clubService.getClubDetailsById(activity.clubId);
-              return {
-                ...activity,
-                clubName: clubDetails.name,
-              };
-            } catch (err) {
-              // Return activity with fallback clubName
-              return {
-                ...activity,
-                clubName: `CLB #${activity.clubId}`,
-              };
-            }
-          })
-        );
+        // Get clubs that student is member of
+        const myClubs = await membershipService.getStudentMyClubs();
         
-        setActivities(activitiesWithClubNames);
+        // Get activities from all clubs student is member of (no status filter)
+        const allActivitiesPromises = myClubs.map(async (clubMembership) => {
+          try {
+            const clubActivities = await activityService.getByClub(clubMembership.club.id);
+            // Add club name to each activity
+            return clubActivities.map((activity: any) => ({
+              ...activity,
+              clubName: clubMembership.club.name,
+            }));
+          } catch (err) {
+            console.error(`Failed to fetch activities for club ${clubMembership.club.id}:`, err);
+            return [];
+          }
+        });
+        
+        const activitiesArrays = await Promise.all(allActivitiesPromises);
+        const allActivities = activitiesArrays.flat();
+        
+        // Sort by start time (newest first)
+        allActivities.sort((a, b) => {
+          const dateA = new Date(a.startTime).getTime();
+          const dateB = new Date(b.startTime).getTime();
+          return dateB - dateA;
+        });
+        
+        setActivities(allActivities);
       } catch (err) {
+        console.error('Error fetching activities:', err);
         setError('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -80,22 +83,50 @@ function StudentActivitiesPage() {
 
   const getStatusConfig = (status: string) => {
     const statusLower = status.toLowerCase();
-    if (statusLower.includes('active') || statusLower.includes('open') || statusLower === 'pending') {
+    // Check Not_yet_open FIRST before checking 'open' keyword
+    if (statusLower.includes('not_yet_open') || statusLower.includes('notyetopen')) {
       return {
-        label: 'Đang mở',
+        label: 'Chưa mở',
+        bgColor: 'bg-amber-50',
+        textColor: 'text-amber-700',
+        borderColor: 'border-amber-200',
+        dotColor: 'bg-amber-500',
+      };
+    }
+    if (statusLower === 'pending') {
+      return {
+        label: 'Chưa mở',
+        bgColor: 'bg-amber-50',
+        textColor: 'text-amber-700',
+        borderColor: 'border-amber-200',
+        dotColor: 'bg-amber-500',
+      };
+    }
+    if (statusLower.includes('active') || statusLower.includes('opened')) {
+      return {
+        label: 'Đã mở đăng ký',
         bgColor: 'bg-emerald-50',
         textColor: 'text-emerald-700',
         borderColor: 'border-emerald-200',
         dotColor: 'bg-emerald-500',
       };
     }
-    if (statusLower.includes('full') || statusLower.includes('completed')) {
+    if (statusLower.includes('ongoing')) {
       return {
-        label: 'Đã đầy',
-        bgColor: 'bg-amber-50',
-        textColor: 'text-amber-700',
-        borderColor: 'border-amber-200',
-        dotColor: 'bg-amber-500',
+        label: 'Đang diễn ra',
+        bgColor: 'bg-purple-50',
+        textColor: 'text-purple-700',
+        borderColor: 'border-purple-200',
+        dotColor: 'bg-purple-500',
+      };
+    }
+    if (statusLower.includes('completed')) {
+      return {
+        label: 'Đã kết thúc',
+        bgColor: 'bg-slate-100',
+        textColor: 'text-slate-600',
+        borderColor: 'border-slate-300',
+        dotColor: 'bg-slate-500',
       };
     }
     if (statusLower.includes('cancel')) {
@@ -133,8 +164,13 @@ function StudentActivitiesPage() {
 
   const canRegister = (activity: StudentActivity) => {
     const statusLower = activity.status.toLowerCase();
+    // Only allow registration for Active or Open activities (not Not_yet_open)
+    const isOpenForRegistration = statusLower.includes('active') || statusLower.includes('open');
+    const isNotYetOpen = statusLower.includes('not_yet_open') || statusLower.includes('notyetopen');
+    
     return (
-      (statusLower.includes('active') || statusLower.includes('open') || statusLower === 'pending') &&
+      isOpenForRegistration &&
+      !isNotYetOpen &&
       !activity.isRegistered &&
       (!activity.maxParticipants || !activity.registeredCount || activity.registeredCount < activity.maxParticipants)
     );
@@ -143,31 +179,34 @@ function StudentActivitiesPage() {
   const handleJoinActivity = async (activityId: number) => {
     try {
       await activityService.registerStudent(activityId);
+      
       // Refresh activities to update registration status
-      const data = await activityService.getStudentViewAll();
+      const myClubs = await membershipService.getStudentMyClubs();
       
-      // Fetch club names for activities that don't have clubName
-      const activitiesWithClubNames = await Promise.all(
-        data.map(async (activity) => {
-          if (activity.clubName) {
-            return activity;
-          }
-          try {
-            const clubDetails = await clubService.getClubDetailsById(activity.clubId);
-            return {
-              ...activity,
-              clubName: clubDetails.name,
-            };
-          } catch (err) {
-            return {
-              ...activity,
-              clubName: `CLB #${activity.clubId}`,
-            };
-          }
-        })
-      );
+      const allActivitiesPromises = myClubs.map(async (clubMembership) => {
+        try {
+          const clubActivities = await activityService.getByClub(clubMembership.club.id);
+          return clubActivities.map((activity: any) => ({
+            ...activity,
+            clubName: clubMembership.club.name,
+          }));
+        } catch (err) {
+          console.error(`Failed to fetch activities for club ${clubMembership.club.id}:`, err);
+          return [];
+        }
+      });
       
-      setActivities(activitiesWithClubNames);
+      const activitiesArrays = await Promise.all(allActivitiesPromises);
+      const allActivities = activitiesArrays.flat();
+      
+      allActivities.sort((a, b) => {
+        const dateA = new Date(a.startTime).getTime();
+        const dateB = new Date(b.startTime).getTime();
+        return dateB - dateA;
+      });
+      
+      setActivities(allActivities);
+      setRegistrationError(null);
     } catch (err) {
       setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
     }
@@ -286,33 +325,77 @@ function StudentActivitiesPage() {
                   key={activity.id}
                   className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-lg"
                 >
-                  {/* Header */}
-                  <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 p-5">
-                    {/* Status badge */}
-                    <div className="absolute right-3 top-3">
-                      <span
-                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm ${statusConfig.bgColor} ${statusConfig.borderColor} ${statusConfig.textColor}`}
-                      >
-                        <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor} ${canJoin ? 'animate-pulse' : ''}`}></div>
-                        {statusConfig.label}
-                      </span>
-                    </div>
-                    
-                    {/* Club Name */}
-                    {activity.clubName && (
-                      <div className="mb-2 flex items-center gap-2">
-                        <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                          />
-                        </svg>
-                        <span className="text-sm font-semibold text-blue-700">{activity.clubName}</span>
+                  {/* Activity Image */}
+                  {activity.imageActsUrl && (
+                    <div className="relative h-48 w-full overflow-hidden">
+                      <img 
+                        src={activity.imageActsUrl} 
+                        alt={activity.title}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                      
+                      {/* Status badge on image */}
+                      <div className="absolute right-3 top-3">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-lg backdrop-blur-sm ${statusConfig.bgColor} ${statusConfig.borderColor} ${statusConfig.textColor}`}
+                        >
+                          <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor} ${canJoin ? 'animate-pulse' : ''}`}></div>
+                          {statusConfig.label}
+                        </span>
                       </div>
-                    )}
-                    
+                      
+                      {/* Club Name on image */}
+                      {activity.clubName && (
+                        <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                          <div className="flex items-center gap-2 rounded-full bg-white/90 backdrop-blur-sm px-3 py-1.5 shadow-lg">
+                            <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                              />
+                            </svg>
+                            <span className="text-sm font-semibold text-blue-700">{activity.clubName}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Header (shown when no image) */}
+                  {!activity.imageActsUrl && (
+                    <div className="relative bg-gradient-to-br from-blue-50 to-indigo-50 p-5">
+                      {/* Status badge */}
+                      <div className="absolute right-3 top-3">
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm ${statusConfig.bgColor} ${statusConfig.borderColor} ${statusConfig.textColor}`}
+                        >
+                          <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor} ${canJoin ? 'animate-pulse' : ''}`}></div>
+                          {statusConfig.label}
+                        </span>
+                      </div>
+                      
+                      {/* Club Name */}
+                      {activity.clubName && (
+                        <div className="mb-2 flex items-center gap-2">
+                          <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                            />
+                          </svg>
+                          <span className="text-sm font-semibold text-blue-700">{activity.clubName}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Content */}
+                  <div className="p-5">
                     {/* Category and Title */}
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       {activity.category && (
@@ -321,11 +404,8 @@ function StudentActivitiesPage() {
                         </span>
                       )}
                     </div>
-                    <h3 className="line-clamp-2 text-xl font-bold text-slate-900">{activity.title}</h3>
-                  </div>
+                    <h3 className="line-clamp-2 text-xl font-bold text-slate-900 mb-4">{activity.title}</h3>
 
-                  {/* Content */}
-                  <div className="p-5">
                     {activity.description && (
                       <p className="mb-4 line-clamp-2 text-sm text-slate-600">{activity.description}</p>
                     )}

@@ -8,6 +8,7 @@ import ClubLeaderActivitiesPage from '../pages/ClubLeader/ClubLeaderActivitiesPa
 import ClubLeaderDashboardPage from '../pages/ClubLeader/ClubLeaderDashboardPage';
 import ClubLeaderInfoPage from '../pages/ClubLeader/ClubLeaderInfoPage';
 import ClubLeaderMembersPage from '../pages/ClubLeader/ClubLeaderMembersPage';
+import ClubLeaderRequestsPage from '../pages/ClubLeader/ClubLeaderRequestsPage';
 import StudentActivitiesPage from '../pages/Student/StudentActivitiesPage';
 import StudentMyActivitiesPage from '../pages/Student/StudentMyActivitiesPage';
 import StudentClubsPage from '../pages/Student/StudentClubsPage';
@@ -133,6 +134,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="clubleader">
               <ClubLeaderMembersPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/requests" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderRequestsPage />
             </ProtectedRoute>
           } 
         />

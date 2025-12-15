@@ -9,6 +9,7 @@ import type {
   LeaderDecisionDto,
   StudentMyClub,
 } from '../types/membership.types';
+import type { AccountInfo } from '../types/auth.types';
 
 /**
  * Membership Service
@@ -34,6 +35,13 @@ export const membershipService = {
    */
   async getStudentMyClubs(): Promise<StudentMyClub[]> {
     return httpClient.get<StudentMyClub[]>(MEMBERSHIP_ENDPOINTS.STUDENT_MY_CLUBS);
+  },
+
+  /**
+   * Student: Get account info for form pre-fill (includes major, skills)
+   */
+  async getAccountInfo(): Promise<AccountInfo> {
+    return httpClient.get<AccountInfo>(MEMBERSHIP_ENDPOINTS.STUDENT_ACCOUNT_INFO);
   },
 
   /**

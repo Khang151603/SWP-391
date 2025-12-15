@@ -28,6 +28,12 @@ function ClubLeaderActivitiesPage() {
   const [editForm, setEditForm] = useState<UpdateActivityRequest>({});
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedEditImage, setSelectedEditImage] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
   
   // Date input display states
   const [startDateDisplay, setStartDateDisplay] = useState('');
@@ -140,6 +146,87 @@ function ClubLeaderActivitiesPage() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setMessage({ type: 'error', text: 'Vui lòng chọn file ảnh' });
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Kích thước ảnh không được vượt quá 5MB' });
+        return;
+      }
+      setSelectedImage(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleEditImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setMessage({ type: 'error', text: 'Vui lòng chọn file ảnh' });
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setMessage({ type: 'error', text: 'Kích thước ảnh không được vượt quá 5MB' });
+        return;
+      }
+      setSelectedEditImage(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveEditImage = () => {
+    setSelectedEditImage(null);
+    setEditImagePreview(null);
+    if (editFileInputRef.current) {
+      editFileInputRef.current.value = '';
+    }
+  };
+
+  const resetCreateForm = () => {
+    setForm({
+      clubId: clubs.length > 0 ? clubs[0].id : 0,
+      title: '',
+      description: '',
+      startTime: '',
+      endTime: '',
+      location: '',
+    });
+    setStartDateDisplay('');
+    setEndDateDisplay('');
+    setSelectedImage(null);
+    setImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setMessage(null);
+  };
+
   const getDatePart = (value: string) => {
     if (!value) return '';
     const d = new Date(value);
@@ -175,9 +262,24 @@ function ClubLeaderActivitiesPage() {
     }
     setIsLoading(true);
     try {
-      await activityService.create(form);
-      setMessage({ type: 'success', text: 'Tạo hoạt động thành công' });
-      loadActivities(form.clubId);
+      const newActivity = await activityService.create(form);
+      
+      // Upload image if selected
+      if (selectedImage && newActivity.id) {
+        try {
+          await activityService.uploadImage(newActivity.id, selectedImage);
+          setMessage({ type: 'success', text: 'Tạo hoạt động và tải ảnh lên thành công' });
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          setMessage({ type: 'error', text: 'Tạo hoạt động thành công nhưng không thể tải ảnh lên' });
+        }
+      } else {
+        setMessage({ type: 'success', text: 'Tạo hoạt động thành công' });
+      }
+      
+      // Reload activities to show new activity with image
+      await loadActivities(form.clubId);
+      
       setForm({
         clubId: form.clubId,
         title: '',
@@ -186,8 +288,14 @@ function ClubLeaderActivitiesPage() {
         endTime: '',
         location: '',
       });
+      setSelectedImage(null);
+      setImagePreview(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       setShowCreateModal(false);
-    } catch {
+    } catch (error) {
+      console.error('Failed to create activity:', error);
       setMessage({ type: 'error', text: 'Không thể tạo hoạt động mới. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
@@ -205,6 +313,13 @@ function ClubLeaderActivitiesPage() {
       location: activity.location,
       status: activity.status,
     });
+    // Set current image preview if exists
+    if (activity.imageActsUrl) {
+      setEditImagePreview(activity.imageActsUrl);
+    } else {
+      setEditImagePreview(null);
+    }
+    setSelectedEditImage(null);
     setShowEditModal(true);
   };
 
@@ -216,10 +331,25 @@ function ClubLeaderActivitiesPage() {
     setMessage(null);
     try {
       await activityService.update(selectedActivity.id, editForm);
-      setMessage({ type: 'success', text: 'Cập nhật hoạt động thành công' });
-      loadActivities(form.clubId);
+      
+      // Upload new image if selected
+      if (selectedEditImage) {
+        try {
+          await activityService.uploadImage(selectedActivity.id, selectedEditImage);
+          setMessage({ type: 'success', text: 'Cập nhật hoạt động và ảnh thành công' });
+        } catch (error) {
+          console.error('Failed to upload image:', error);
+          setMessage({ type: 'error', text: 'Cập nhật hoạt động thành công nhưng không thể tải ảnh lên' });
+        }
+      } else {
+        setMessage({ type: 'success', text: 'Cập nhật hoạt động thành công' });
+      }
+      
+      await loadActivities(form.clubId);
       setShowEditModal(false);
       setSelectedActivity(null);
+      setSelectedEditImage(null);
+      setEditImagePreview(null);
     } catch {
       setMessage({ type: 'error', text: 'Không thể cập nhật hoạt động. Vui lòng thử lại sau.' });
     } finally {
@@ -235,7 +365,7 @@ function ClubLeaderActivitiesPage() {
     try {
       await activityService.delete(selectedActivity.id);
       setMessage({ type: 'success', text: 'Xóa hoạt động thành công' });
-      loadActivities(form.clubId);
+      await loadActivities(form.clubId);
       setShowDeleteConfirm(false);
       setSelectedActivity(null);
     } catch {
@@ -251,7 +381,7 @@ function ClubLeaderActivitiesPage() {
     try {
       await activityService.openRegistration(activity.id);
       setMessage({ type: 'success', text: 'Đã mở đăng ký' });
-      loadActivities(form.clubId);
+      await loadActivities(form.clubId);
     } catch {
       setMessage({ type: 'error', text: 'Không thể mở đăng ký hoạt động. Vui lòng thử lại sau.' });
     } finally {
@@ -263,9 +393,18 @@ function ClubLeaderActivitiesPage() {
     setIsLoading(true);
     setMessage(null);
     try {
-      await activityService.update(activity.id, { status: 'Ongoing' });
+      // Update with full activity info, only changing status
+      await activityService.update(activity.id, {
+        clubId: activity.clubId,
+        title: activity.title,
+        description: activity.description,
+        startTime: activity.startTime,
+        endTime: activity.endTime,
+        location: activity.location,
+        status: 'Ongoing',
+      });
       setMessage({ type: 'success', text: 'Đã bắt đầu hoạt động' });
-      loadActivities(form.clubId);
+      await loadActivities(form.clubId);
     } catch {
       setMessage({ type: 'error', text: 'Không thể bắt đầu hoạt động. Vui lòng thử lại sau.' });
     } finally {
@@ -277,9 +416,18 @@ function ClubLeaderActivitiesPage() {
     setIsLoading(true);
     setMessage(null);
     try {
-      await activityService.update(activity.id, { status: 'Completed' });
+      // Update with full activity info, only changing status
+      await activityService.update(activity.id, {
+        clubId: activity.clubId,
+        title: activity.title,
+        description: activity.description,
+        startTime: activity.startTime,
+        endTime: activity.endTime,
+        location: activity.location,
+        status: 'Completed',
+      });
       setMessage({ type: 'success', text: 'Đã dừng hoạt động' });
-      loadActivities(form.clubId);
+      await loadActivities(form.clubId);
     } catch {
       setMessage({ type: 'error', text: 'Không thể dừng hoạt động. Vui lòng thử lại sau.' });
     } finally {
@@ -329,8 +477,8 @@ function ClubLeaderActivitiesPage() {
             </select>
             <button
               onClick={() => {
+                resetCreateForm();
                 setShowCreateModal(true);
-                setMessage(null);
               }}
               className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60"
               disabled={!form.clubId}
@@ -375,13 +523,16 @@ function ClubLeaderActivitiesPage() {
                 const end = new Date(act.endTime);
                 const status = (act.status || 'Not_yet_open').toLowerCase().replace(/_/g, '');
                 
+                // Debug: log status
+                console.log(`Activity ${act.id} - Original status: "${act.status}" - Normalized: "${status}"`);
+                
                 // Map status to Vietnamese
                 const statusVietnamese = 
                   status === 'notyetopen' ? 'Chưa mở' :
                   status === 'pending' ? 'Chưa mở' :
-                  status === 'active' ? 'Đã mở ĐK' :
+                  status === 'active' ? 'Đã mở đăng ký' :
                   status === 'ongoing' ? 'Đang diễn ra' :
-                  status === 'completed' ? 'Đã dừng' : act.status || 'Chưa mở';
+                  status === 'completed' ? 'Đã kết thúc' : act.status || 'Chưa mở';
                 
                 const statusStyle =
                   status === 'notyetopen' || status === 'pending'
@@ -399,6 +550,17 @@ function ClubLeaderActivitiesPage() {
                     key={act.id}
                     className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition"
                   >
+                    {/* Activity Image */}
+                    {act.imageActsUrl && (
+                      <div className="rounded-xl overflow-hidden -mx-4 -mt-4 mb-3">
+                        <img 
+                          src={act.imageActsUrl} 
+                          alt={act.title}
+                          className="w-full h-40 object-cover"
+                        />
+                      </div>
+                    )}
+                    
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-1 flex-1">
                         <p className="text-sm font-semibold text-slate-900 line-clamp-2">{act.title}</p>
@@ -458,7 +620,8 @@ function ClubLeaderActivitiesPage() {
                           Bắt đầu
                         </button>
                       )}
-                      {status === 'ongoing' && (
+                      {/* Check both 'ongoing' and status containing 'ongoing' */}
+                      {(status === 'ongoing' || act.status?.toLowerCase().includes('ongoing')) && (
                         <button
                           onClick={() => handleStopActivity(act)}
                           className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
@@ -493,8 +656,8 @@ function ClubLeaderActivitiesPage() {
                 </div>
                 <button
                   onClick={() => {
+                    resetCreateForm();
                     setShowCreateModal(false);
-                    setMessage(null);
                   }}
                   className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
                 >
@@ -717,6 +880,51 @@ function ClubLeaderActivitiesPage() {
                   />
                 </label>
 
+                {/* Image Upload Section */}
+                <div className="text-sm text-slate-800 md:col-span-2">
+                  <label className="block mb-2">Ảnh đại diện hoạt động</label>
+                  <div className="space-y-3">
+                    {!imagePreview ? (
+                      <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="cursor-pointer rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+                      >
+                        <svg className="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <p className="mt-2 text-sm text-slate-600">
+                          <span className="font-semibold text-blue-600">Nhấn để chọn ảnh</span> hoặc kéo thả vào đây
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">PNG, JPG, GIF tối đa 5MB</p>
+                      </div>
+                    ) : (
+                      <div className="relative rounded-xl border border-slate-300 overflow-hidden">
+                        <img 
+                          src={imagePreview} 
+                          alt="Preview" 
+                          className="w-full h-48 object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="absolute top-2 right-2 rounded-lg bg-red-500 p-2 text-white hover:bg-red-600 transition-colors shadow-lg"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+
                 <div className="md:col-span-2 flex flex-wrap items-center gap-3 text-sm">
                   <button
                     type="submit"
@@ -727,7 +935,10 @@ function ClubLeaderActivitiesPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowCreateModal(false)}
+                    onClick={() => {
+                      resetCreateForm();
+                      setShowCreateModal(false);
+                    }}
                     className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                   >
                     Hủy
@@ -751,6 +962,8 @@ function ClubLeaderActivitiesPage() {
                   onClick={() => {
                     setShowEditModal(false);
                     setSelectedActivity(null);
+                    setSelectedEditImage(null);
+                    setEditImagePreview(null);
                     setMessage(null);
                   }}
                   className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
@@ -843,6 +1056,61 @@ function ClubLeaderActivitiesPage() {
                   />
                 </label>
 
+                {/* Edit Image Upload Section */}
+                <div className="text-sm text-slate-800 md:col-span-2">
+                  <label className="block mb-2">Ảnh đại diện hoạt động</label>
+                  <div className="space-y-3">
+                    {!editImagePreview ? (
+                      <div 
+                        onClick={() => editFileInputRef.current?.click()}
+                        className="cursor-pointer rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+                      >
+                        <svg className="mx-auto h-12 w-12 text-slate-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <p className="mt-2 text-sm text-slate-600">
+                          <span className="font-semibold text-blue-600">Nhấn để chọn ảnh mới</span> hoặc kéo thả vào đây
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">PNG, JPG, GIF tối đa 5MB</p>
+                      </div>
+                    ) : (
+                      <div className="relative rounded-xl border border-slate-300 overflow-hidden">
+                        <img 
+                          src={editImagePreview} 
+                          alt="Preview" 
+                          className="w-full h-48 object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleRemoveEditImage}
+                          className="absolute top-2 right-2 rounded-lg bg-red-500 p-2 text-white hover:bg-red-600 transition-colors shadow-lg"
+                        >
+                          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                        {!selectedEditImage && (
+                          <div className="absolute bottom-2 left-2 rounded-lg bg-blue-500/90 backdrop-blur-sm px-3 py-1 text-xs text-white">
+                            Ảnh hiện tại
+                          </div>
+                        )}
+                        {selectedEditImage && (
+                          <div className="absolute bottom-2 left-2 rounded-lg bg-emerald-500/90 backdrop-blur-sm px-3 py-1 text-xs text-white">
+                            Ảnh mới sẽ được tải lên
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <input
+                      ref={editFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleEditImageChange}
+                      className="hidden"
+                    />
+                  </div>
+                </div>
+
                 <div className="md:col-span-2 flex flex-wrap items-center gap-3 text-sm">
                   <button
                     type="submit"
@@ -853,7 +1121,11 @@ function ClubLeaderActivitiesPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setShowEditModal(false)}
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setSelectedEditImage(null);
+                      setEditImagePreview(null);
+                    }}
                     className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
                   >
                     Hủy

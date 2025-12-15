@@ -28,6 +28,7 @@ export const ACTIVITY_ENDPOINTS = {
   CREATE: '/api/Activities',
   UPDATE: (id: number | string) => `/api/Activities/${id}`,
   DELETE: (id: number | string) => `/api/Activities/${id}`,
+  UPLOAD_ACTIVITY_IMAGE: (id: number | string) => `/api/Activities/${id}/upload-image`,
   OPEN_REGISTRATION: (id: number | string) => `/api/Activities/${id}/open-registration`,
   CLOSE_REGISTRATION: (id: number | string) => `/api/Activities/${id}/close-registration`,
   START_ACTIVITY: (id: number | string) => `/api/Activities/${id}/start`,
@@ -52,6 +53,7 @@ export const MEMBERSHIP_ENDPOINTS = {
   STUDENT_REQUEST: '/api/student/membership/request',
   STUDENT_REQUESTS: '/api/student/membership/requests',
   STUDENT_MY_CLUBS: '/api/student/membership/my-clubs',
+  STUDENT_ACCOUNT_INFO: '/api/student/membership/account-info',
   // Leader membership request endpoints
   LEADER_PENDING: '/api/leader/membership/pending',
   LEADER_MEMBERS: '/api/leader/membership/members',

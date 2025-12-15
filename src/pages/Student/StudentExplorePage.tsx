@@ -29,6 +29,12 @@ function StudentExplorePage() {
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
+  const [myClubIds, setMyClubIds] = useState<number[]>([]);
+  const [showMemberAlert, setShowMemberAlert] = useState(false);
+  const [attemptedClubName, setAttemptedClubName] = useState('');
+  
+  // Debug: Log when component renders
+  console.log('StudentExplorePage render - showMemberAlert:', showMemberAlert);
   
   // Registration form data
   const [formData, setFormData] = useState({
@@ -37,6 +43,7 @@ function StudentExplorePage() {
     email: '',
     phone: '',
     major: '',
+    skills: '',
     year: '1',
     motivation: '',
     experience: '',
@@ -54,6 +61,39 @@ function StudentExplorePage() {
     100,
     Math.round((filledRequiredFields / requiredFieldKeys.length) * 100),
   );
+
+  // Fetch my clubs to check membership
+  useEffect(() => {
+    const fetchMyClubs = async () => {
+      try {
+        const myClubs = await membershipService.getStudentMyClubs();
+        const clubIds = myClubs.map(item => item.club.id);
+        setMyClubIds(clubIds);
+      } catch (error) {
+        console.error('Failed to fetch my clubs:', error);
+      }
+    };
+    fetchMyClubs();
+  }, []);
+
+  // Fetch account info for form pre-fill (only fullName, email, phone)
+  useEffect(() => {
+    const fetchAccountInfo = async () => {
+      try {
+        const accountInfo = await membershipService.getAccountInfo();
+        // Auto-fill form data with account info (only 3 fields)
+        setFormData(prev => ({
+          ...prev,
+          fullName: accountInfo.fullName || '',
+          email: accountInfo.email || '',
+          phone: accountInfo.phone || '',
+        }));
+      } catch (error) {
+        console.error('Failed to fetch account info:', error);
+      }
+    };
+    fetchAccountInfo();
+  }, []);
 
   // Fetch clubs from API
   useEffect(() => {
@@ -105,20 +145,33 @@ function StudentExplorePage() {
   });
 
   const handleRegister = (club: DisplayClub) => {
+    // Check if already a member
+    const clubId = parseInt(club.id);
+    console.log('handleRegister called for club:', club.name, 'clubId:', clubId);
+    console.log('myClubIds:', myClubIds);
+    console.log('Is member?', myClubIds.includes(clubId));
+    
+    if (myClubIds.includes(clubId)) {
+      setAttemptedClubName(club.name);
+      setShowMemberAlert(true);
+      return;
+    }
+
     setSelectedClub(club);
-    // Reset form
-    setFormData({
-      fullName: '',
+    // Reset form but keep auto-filled account info (only 3 fields)
+    setFormData(prev => ({
+      fullName: prev.fullName,
       studentId: '',
-      email: '',
-      phone: '',
+      email: prev.email,
+      phone: prev.phone,
       major: '',
+      skills: '',
       year: '1',
       motivation: '',
       experience: '',
       availability: [],
       agreedToTerms: false,
-    });
+    }));
   };
 
   const handleFormChange = (field: string, value: string | boolean) => {
@@ -524,9 +577,9 @@ function StudentExplorePage() {
                               <input
                                 type="text"
                                 value={formData.fullName}
-                                onChange={(e) => handleFormChange('fullName', e.target.value)}
+                                disabled
                                 placeholder="Nguyễn Văn A"
-                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                className="w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-slate-700 placeholder-slate-400 cursor-not-allowed"
                               />
                             </div>
                             <div>
@@ -534,9 +587,9 @@ function StudentExplorePage() {
                               <input
                                 type="email"
                                 value={formData.email}
-                                onChange={(e) => handleFormChange('email', e.target.value)}
+                                disabled
                                 placeholder="nguyenvana@fpt.edu.vn"
-                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                                className="w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-slate-700 placeholder-slate-400 cursor-not-allowed"
                               />
                             </div>
                             <div>
@@ -544,8 +597,28 @@ function StudentExplorePage() {
                               <input
                                 type="tel"
                                 value={formData.phone}
-                                onChange={(e) => handleFormChange('phone', e.target.value)}
+                                disabled
                                 placeholder="0912345678"
+                                className="w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-3 text-slate-700 placeholder-slate-400 cursor-not-allowed"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-600">Ngành học</label>
+                              <input
+                                type="text"
+                                value={formData.major}
+                                onChange={(e) => handleFormChange('major', e.target.value)}
+                                placeholder="Ví dụ: Kỹ thuật phần mềm"
+                                className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                              />
+                            </div>
+                            <div className="sm:col-span-2">
+                              <label className="mb-1.5 block text-xs uppercase tracking-wide text-slate-600">Kỹ năng</label>
+                              <input
+                                type="text"
+                                value={formData.skills}
+                                onChange={(e) => handleFormChange('skills', e.target.value)}
+                                placeholder="Ví dụ: Java, Python, React"
                                 className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
                               />
                             </div>
@@ -622,6 +695,45 @@ function StudentExplorePage() {
           </div>
         )}
       </Dialog>
+
+      {/* Already Member Alert Dialog */}
+      {showMemberAlert && (
+        <Dialog open={showMemberAlert} onOpenChange={(open) => !open && setShowMemberAlert(false)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowMemberAlert(false)} />
+            <div className="relative z-10 w-full max-w-md">
+              <div className="rounded-2xl border border-amber-300 bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                    <svg className="h-6 w-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">Đã là thành viên</h3>
+                </div>
+                <p className="mb-6 text-slate-600">
+                  Bạn đã là thành viên của <span className="font-semibold text-blue-700">{attemptedClubName}</span> rồi. Không thể đăng ký lại vào câu lạc bộ này.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowMemberAlert(false)}
+                    className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Đóng
+                  </button>
+                  <a
+                    href="/student/clubs"
+                    className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
+                  >
+                    Xem CLB của tôi
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      )}
     </StudentLayout>
   );
 }

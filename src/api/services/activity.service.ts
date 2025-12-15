@@ -102,5 +102,14 @@ export const activityService = {
   async getParticipants(id: number | string): Promise<ActivityParticipant[]> {
     return httpClient.get<ActivityParticipant[]>(ACTIVITY_ENDPOINTS.GET_PARTICIPANTS(id));
   },
+
+  /**
+   * Leader: Upload activity image
+   */
+  async uploadImage(id: number | string, file: File): Promise<{ message: string; imageUrl: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return httpClient.post<{ message: string; imageUrl: string }>(ACTIVITY_ENDPOINTS.UPLOAD_ACTIVITY_IMAGE(id), formData);
+  },
 };
 

@@ -20,6 +20,8 @@ export interface AuthResponse {
   fullName: string;
   roles: string[];
   phone?: string;
+  major?: string;
+  skills?: string;
   imageAccountUrl?: string;
 }
 
@@ -42,6 +44,17 @@ export interface UserInfo {
   fullName: string;
   roles: string[];
   selectedRole?: string;
+  phone?: string;
+  major?: string;
+  skills?: string;
   imageAccountUrl?: string;
+}
+
+export interface AccountInfo {
+  fullName: string;
+  email: string;
+  phone?: string;
+  major?: string;
+  skills?: string;
 }
 

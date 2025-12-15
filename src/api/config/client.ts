@@ -154,10 +154,12 @@ class HttpClient {
    * POST request
    */
   async post<T>(path: string, body?: unknown, config?: RequestConfig): Promise<T> {
+    const isFormData = body instanceof FormData;
     const response = await this.request<T>(path, {
       ...config,
       method: 'POST',
-      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+      skipContentType: isFormData || config?.skipContentType,
     });
     return response.data;
   }
@@ -166,10 +168,12 @@ class HttpClient {
    * PUT request
    */
   async put<T>(path: string, body?: unknown, config?: RequestConfig): Promise<T> {
+    const isFormData = body instanceof FormData;
     const response = await this.request<T>(path, {
       ...config,
       method: 'PUT',
-      body: body instanceof FormData ? body : (body ? JSON.stringify(body) : undefined),
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
+      skipContentType: isFormData || config?.skipContentType,
     });
     return response.data;
   }

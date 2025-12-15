@@ -9,6 +9,7 @@ export interface Activity {
   location: string;
   status: 'Pending' | 'Active' | 'Completed' | 'Cancelled' | string;
   createdBy?: number;
+  imageActsUrl?: string;
 }
 
 export interface CreateActivityRequest {
@@ -45,6 +46,7 @@ export interface StudentActivity {
   registeredCount?: number;
   maxParticipants?: number;
   isRegistered?: boolean;
+  imageActsUrl?: string;
 }
 
 // Activity Participant for Leader

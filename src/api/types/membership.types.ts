@@ -97,6 +97,7 @@ export interface StudentMyClub {
     description: string | null;
     status: string;
     membershipFee: number | null;
+    imageClubsUrl?: string | null;
   };
 }
 

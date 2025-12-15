@@ -11,7 +11,8 @@ type LeaderLayoutProps = {
 const leaderMenu = [
   { label: 'Dashboard', path: '/leader',},
   { label: 'Thông tin CLB', path: '/leader/club-info' },
-  { label: 'Thành viên & Đơn', path: '/leader/members' },
+  { label: 'Thành viên', path: '/leader/members' },
+  { label: 'Đơn', path: '/leader/requests' },
   { label: 'Hoạt động', path: '/leader/activities' },
 ];
 

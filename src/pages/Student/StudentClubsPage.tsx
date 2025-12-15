@@ -8,6 +8,7 @@ import type { ClubListItem } from '../../api/types/club.types';
 
 interface ClubWithDetails extends StudentMyClub {
   clubDetails?: ClubListItem;
+  memberCount?: number;
 }
 
 function StudentClubsPage() {
@@ -31,9 +32,23 @@ function StudentClubsPage() {
         myClubs.map(async (item) => {
           try {
             const clubDetails = await clubService.getClubDetailsById(item.club.id);
+            
+            // Fetch member count for each club
+            let memberCount = 0;
+            try {
+              const members = await membershipService.getLeaderClubMembers(item.club.id);
+              // Count only active members
+              memberCount = members.filter(m => 
+                m.member.status?.toLowerCase() === 'active'
+              ).length;
+            } catch (error) {
+              console.log(`Could not fetch members for club ${item.club.id}:`, error);
+            }
+            
             return {
               ...item,
               clubDetails,
+              memberCount,
             };
           } catch {
             // Return item without details if fetch fails
@@ -202,9 +217,9 @@ function StudentClubsPage() {
             {filteredClubs.map((item) => {
               const clubName = item.clubDetails?.name || item.club.name;
               const clubDescription = item.clubDetails?.description || item.club.description || '';
-              const memberCount = item.clubDetails?.memberCount;
+              const memberCount = item.memberCount ?? item.clubDetails?.memberCount;
               const membershipFee = item.clubDetails?.membershipFee ?? item.club.membershipFee;
-              const imageUrl = item.clubDetails?.imageClubsUrl;
+              const imageUrl = item.clubDetails?.imageUrl || item.clubDetails?.imageClubsUrl || item.club.imageClubsUrl;
               const establishedDate = item.clubDetails?.establishedDate;
               
               return (
@@ -212,37 +227,48 @@ function StudentClubsPage() {
                   key={item.club.id}
                   className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 hover:border-blue-200 transition"
                 >
-                  {/* Hình ảnh CLB ở đầu card */}
-                  {imageUrl && (
-                    <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200 relative">
+                  {/* Hình ảnh CLB ở đầu card - luôn hiển thị khung */}
+                  <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200 relative">
+                    {imageUrl ? (
                       <img
                         src={imageUrl}
                         alt={clubName}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-400"><svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
+                          }
                         }}
                       />
-                      {/* Status Badge */}
-                      {item.membership.status && (
-                        <div className="absolute right-2 top-2 z-10">
-                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 ${
-                            item.membership.status.toLowerCase() === 'active' 
-                              ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
-                              : item.membership.status.toLowerCase() === 'pending_payment'
-                              ? 'bg-amber-50 text-amber-700 ring-amber-200'
-                              : 'bg-slate-50 text-slate-700 ring-slate-200'
-                          }`}>
-                            {item.membership.status.toLowerCase() === 'active' 
-                              ? 'Đang hoạt động' 
-                              : item.membership.status.toLowerCase() === 'pending_payment'
-                              ? 'Chờ thanh toán'
-                              : item.membership.status}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">
+                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                    )}
+                    {/* Status Badge */}
+                    {item.membership.status && (
+                      <div className="absolute right-2 top-2 z-10">
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 ${
+                          item.membership.status.toLowerCase() === 'active' 
+                            ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
+                            : item.membership.status.toLowerCase() === 'pending_payment'
+                            ? 'bg-amber-50 text-amber-700 ring-amber-200'
+                            : 'bg-slate-50 text-slate-700 ring-slate-200'
+                        }`}>
+                          {item.membership.status.toLowerCase() === 'active' 
+                            ? 'Đang hoạt động' 
+                            : item.membership.status.toLowerCase() === 'pending_payment'
+                            ? 'Chờ thanh toán'
+                            : item.membership.status}
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                   {/* Thông tin CLB */}
                   <div className="flex items-start justify-between gap-3">
@@ -250,21 +276,6 @@ function StudentClubsPage() {
                       <p className="text-sm font-semibold text-slate-900">{clubName}</p>
                       <p className="text-xs text-slate-600 mt-1 line-clamp-2">{clubDescription || 'Chưa có mô tả'}</p>
                     </div>
-                    {!imageUrl && item.membership.status && (
-                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 ${
-                        item.membership.status.toLowerCase() === 'active' 
-                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
-                          : item.membership.status.toLowerCase() === 'pending_payment'
-                          ? 'bg-amber-50 text-amber-700 ring-amber-200'
-                          : 'bg-slate-50 text-slate-700 ring-slate-200'
-                      }`}>
-                        {item.membership.status.toLowerCase() === 'active' 
-                          ? 'Đang hoạt động' 
-                          : item.membership.status.toLowerCase() === 'pending_payment'
-                          ? 'Chờ thanh toán'
-                          : item.membership.status}
-                      </span>
-                    )}
                   </div>
 
                   {/* Thông tin chi tiết */}

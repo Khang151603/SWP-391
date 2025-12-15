@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { Dialog } from '../../components/ui/Dialog';
 import { clubService } from '../../api/services/club.service';
+import { membershipService } from '../../api/services/membership.service';
 import type { ClubListItem } from '../../api/types/club.types';
 import { handleApiError } from '../../api/utils/errorHandler';
 
@@ -14,8 +15,10 @@ function StudentExploreDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedClub, setSelectedClub] = useState<ClubListItem | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [showMemberAlert, setShowMemberAlert] = useState(false);
 
-  // Fetch club details from API
+  // Fetch club details and check membership status
   useEffect(() => {
     const fetchClubDetails = async () => {
       if (!clubId) {
@@ -27,8 +30,19 @@ function StudentExploreDetailPage() {
       try {
         setLoading(true);
         setError(null);
+        
+        // Fetch club details
         const clubData = await clubService.getClubDetailsById(clubId);
         setClub(clubData);
+        
+        // Check if student is already a member
+        try {
+          const myClubs = await membershipService.getStudentMyClubs();
+          const isAlreadyMember = myClubs.some(item => item.club.id === parseInt(clubId));
+          setIsMember(isAlreadyMember);
+        } catch (err) {
+          console.error('Failed to check membership:', err);
+        }
       } catch (err) {
         setError('Không thể tải thông tin câu lạc bộ. Vui lòng thử lại sau.');
         handleApiError(err);
@@ -42,6 +56,11 @@ function StudentExploreDetailPage() {
 
   const handleRegister = () => {
     if (club) {
+      // Check if already a member
+      if (isMember) {
+        setShowMemberAlert(true);
+        return;
+      }
       setSelectedClub(club);
     }
   };
@@ -126,7 +145,14 @@ function StudentExploreDetailPage() {
               <p className="mt-3 text-slate-300">{club.description}</p>
             </div>
             <div className="flex flex-shrink-0 flex-col gap-3 lg:w-64">
-              {isRecruiting ? (
+              {isMember ? (
+                <button
+                  disabled
+                  className="w-full cursor-not-allowed rounded-xl bg-slate-800 px-6 py-3 text-base font-semibold text-slate-400"
+                >
+                  Đã là thành viên
+                </button>
+              ) : isRecruiting ? (
                 <button
                   onClick={handleRegister}
                   className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-base font-semibold text-white transition hover:shadow-lg hover:shadow-violet-500/30"
@@ -225,6 +251,43 @@ function StudentExploreDetailPage() {
             </div>
           </div>
         )}
+      </Dialog>
+
+      {/* Already Member Alert Dialog */}
+      <Dialog open={showMemberAlert} onOpenChange={(open) => !open && setShowMemberAlert(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setShowMemberAlert(false)} />
+          <div className="relative z-10 w-full max-w-md">
+            <div className="rounded-2xl border border-amber-500/20 bg-slate-950 p-6 shadow-2xl">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-500/10">
+                  <svg className="h-6 w-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-white">Đã là thành viên</h3>
+              </div>
+              <p className="mb-6 text-slate-300">
+                Bạn đã là thành viên của <span className="font-semibold text-violet-200">{club?.name}</span> rồi. Không thể đăng ký lại vào câu lạc bộ này.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowMemberAlert(false)}
+                  className="flex-1 rounded-xl border border-white/15 px-4 py-2.5 text-sm font-semibold text-white transition hover:border-white/40 hover:bg-white/5"
+                >
+                  Đóng
+                </button>
+                <Link
+                  to="/student/clubs"
+                  className="flex-1 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:shadow-lg hover:shadow-violet-500/30"
+                >
+                  Xem CLB của tôi
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
       </Dialog>
     </StudentLayout>
   );
