@@ -113,7 +113,7 @@ function StudentLayout({
           (req) => req.status.toLowerCase() === 'pending' || req.status.toLowerCase() === 'approved_pending_payment'
         ).length;
         setPendingRequestsCount(pending);
-      } catch (error) {
+      } catch {
         // Silent fail - just don't show badge if error
       }
     };
@@ -203,7 +203,6 @@ function StudentLayout({
                     <button className="flex items-center gap-2 sm:gap-3 rounded-lg px-2 sm:px-3 py-1.5 hover:bg-slate-100 transition-colors">
                       <div className="hidden xl:block text-right">
                         <p className="text-sm font-semibold text-slate-900 truncate max-w-[120px]">{user.fullName}</p>
-                        <p className="text-xs text-slate-500 truncate max-w-[120px]">{user.email}</p>
                       </div>
                       <Avatar className="h-9 w-9 flex-shrink-0">
                         {user.imageAccountUrl && (

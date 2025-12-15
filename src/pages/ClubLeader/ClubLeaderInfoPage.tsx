@@ -29,7 +29,6 @@ type ExtendedLeaderClubListItem = LeaderClubListItem & {
 function ClubLeaderInfoPage() {
   const [clubs, setClubs] = useState<ClubProfile[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDetailView, setShowDetailView] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -123,29 +122,6 @@ function ClubLeaderInfoPage() {
     setFormData((prev) => (prev ? { ...prev, [field]: value ?? '' } : prev));
   };
 
-  const handleDeleteClub = async () => {
-    if (!selectedClubId) return;
-    setIsLoading(true);
-    setError(null);
-    try {
-      await clubService.deleteLeaderClub(Number(selectedClubId));
-      setClubs((prev) => prev.filter((club) => club.id !== selectedClubId));
-      const remainingClubs = clubs.filter((club) => club.id !== selectedClubId);
-      if (remainingClubs.length > 0) {
-        setSelectedClubId(remainingClubs[0].id);
-        setFormData(remainingClubs[0]);
-      } else {
-        setSelectedClubId('');
-        setFormData(null);
-      }
-    } catch {
-      setError('Không thể xóa CLB. Vui lòng thử lại sau.');
-    } finally {
-      setShowDeleteConfirm(false);
-      setIsLoading(false);
-    }
-  };
-
   const handleViewDetail = (clubId: string) => {
     const club = clubs.find((c) => c.id === clubId);
     if (club) {
@@ -166,13 +142,18 @@ function ClubLeaderInfoPage() {
       return;
     }
 
+    // Normalize status to ensure it's 'Active' or 'Unactive'
+    const normalizedStatus = formData.status 
+      ? (formData.status.toLowerCase() === 'active' ? 'Active' : 'Unactive')
+      : 'Active';
+
     const payload: UpdateLeaderClubRequest = {
       name: formData.name,
       description: formData.description,
       establishedDate: formData.establishedDate,
       imageClubsUrl: formData.imageClubsUrl || '',
       membershipFee: formData.membershipFee,
-      status: (formData.status as UpdateLeaderClubRequest['status']) || 'Active',
+      status: normalizedStatus as UpdateLeaderClubRequest['status'],
     };
 
     setIsLoading(true);
@@ -189,7 +170,7 @@ function ClubLeaderInfoPage() {
         imageClubsUrl: formData.imageClubsUrl,
         avatarPublicId: formData.avatarPublicId,
         membershipFee: formData.membershipFee,
-        status: formData.status,
+        status: normalizedStatus,
         memberCount: formData.memberCount,
         totalRevenue: formData.totalRevenue,
       };
@@ -504,16 +485,6 @@ function ClubLeaderInfoPage() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <label className="block text-sm text-slate-800">
-                    URL ảnh CLB
-                    <input
-                      value={createFormData.imageClubsUrl}
-                      onChange={(e) => handleCreateFormChange('imageClubsUrl', e.target.value)}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </label>
-
-                  <label className="block text-sm text-slate-800">
                     Phí thành viên (VNĐ)
                     <input
                       type="number"
@@ -763,49 +734,12 @@ function ClubLeaderInfoPage() {
                       >
                         Chi tiết
                       </button>
-                      {clubs.length > 1 && (
-                        <button
-                          onClick={() => {
-                            setSelectedClubId(club.id);
-                            setShowDeleteConfirm(true);
-                          }}
-                          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                        >
-                          Xóa
-                        </button>
-                      )}
                     </div>
                   </div>
                 ))}
               </div>
             )}
           </section>
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && selectedClub && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 max-w-md w-full mx-4 shadow-xl">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Xác nhận xóa CLB</h3>
-              <p className="text-sm text-slate-600 mb-6">
-                Bạn có chắc chắn muốn xóa CLB "{selectedClub.name}"? Hành động này không thể hoàn tác.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleDeleteClub}
-                  className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors"
-                >
-                  Xóa CLB
-                </button>
-              </div>
-            </div>
-          </div>
         )}
 
         {/* Detail View: form + live preview */}
@@ -856,16 +790,6 @@ function ClubLeaderInfoPage() {
 
                 <div className="grid gap-4 md:grid-cols-3">
                   <div className="block text-sm text-slate-800 md:col-span-2 space-y-3">
-                    <label>
-                      Ảnh CLB (URL)
-                      <input
-                        value={formData.imageClubsUrl || ''}
-                        onChange={(e) => handleInputChange('imageClubsUrl', e.target.value)}
-                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                        placeholder="https://example.com/image.jpg"
-                      />
-                    </label>
-
                     <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                       <p className="text-sm font-medium text-slate-700 mb-2">Hoặc upload ảnh từ máy tính</p>
                       <div className="flex items-center gap-3">
@@ -914,73 +838,31 @@ function ClubLeaderInfoPage() {
                     )}
                   </div>
 
-                  <label className="block text-sm text-slate-800">
-                    Phí thành viên
-                    <input
-                      type="number"
-                      value={formData.membershipFee}
-                      onChange={(e) => handleInputChange('membershipFee', Number(e.target.value))}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                      min="0"
-                    />
-                  </label>
+                  <div className="space-y-4">
+                    <label className="block text-sm text-slate-800">
+                      Phí thành viên
+                      <input
+                        type="number"
+                        value={formData.membershipFee}
+                        onChange={(e) => handleInputChange('membershipFee', Number(e.target.value))}
+                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        min="0"
+                      />
+                    </label>
+
+                    <label className="block text-sm text-slate-800">
+                      Trạng thái
+                      <select
+                        value={formData.status || 'Active'}
+                        onChange={(e) => handleInputChange('status', e.target.value)}
+                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      >
+                        <option value="Active">Hoạt động</option>
+                        <option value="Unactive">Không hoạt động</option>
+                      </select>
+                    </label>
+                  </div>
                 </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="block text-sm text-slate-800">
-                    Avatar Public ID
-                    <input
-                      value={formData.avatarPublicId || ''}
-                      onChange={(e) => handleInputChange('avatarPublicId', e.target.value)}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                      placeholder="studentclub/xxx"
-                      readOnly
-                    />
-                    <p className="mt-1 text-xs text-slate-500">ID công khai của ảnh đại diện (chỉ đọc)</p>
-                  </label>
-
-                  <label className="block text-sm text-slate-800">
-                    Số thành viên
-                    <input
-                      type="number"
-                      value={formData.memberCount ?? ''}
-                      onChange={(e) => handleInputChange('memberCount', e.target.value === '' ? null : Number(e.target.value))}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                      placeholder="0"
-                      readOnly
-                    />
-                    <p className="mt-1 text-xs text-slate-500">Tổng số thành viên hiện tại (chỉ đọc)</p>
-                  </label>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <label className="block text-sm text-slate-800">
-                    Tổng doanh thu
-                    <input
-                      type="number"
-                      value={formData.totalRevenue ?? ''}
-                      onChange={(e) => handleInputChange('totalRevenue', e.target.value === '' ? null : Number(e.target.value))}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                      placeholder="0"
-                      readOnly
-                    />
-                    <p className="mt-1 text-xs text-slate-500">Tổng doanh thu từ phí thành viên (chỉ đọc)</p>
-                  </label>
-
-                  <label className="block text-sm text-slate-800">
-                    Trạng thái
-                    <select
-                      value={formData.status}
-                      onChange={(e) => handleInputChange('status', e.target.value)}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
-                      <option value="Pending">Pending</option>
-                    </select>
-                  </label>
-                </div>
-
                 <label className="block text-sm text-slate-800">
                   Ngày thành lập
                   <div className="mt-2 relative">
@@ -1127,16 +1009,6 @@ function ClubLeaderInfoPage() {
             <section className="flex flex-col justify-between gap-3 border-t border-slate-200 pt-4 text-sm md:flex-row md:items-center">
               <div className="flex items-center gap-2 text-xs text-slate-500" />
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => {
-                    setShowDeleteConfirm(true);
-                    setSelectedClubId(formData.id);
-                  }}
-                  className="rounded-xl border border-red-300 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-100 transition-colors"
-                  disabled={isLoading}
-                >
-                  Xóa
-                </button>
                 <button
                   onClick={handleCloseDetail}
                   className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
