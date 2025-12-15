@@ -53,15 +53,13 @@ function RegisterPage() {
       errors.phone = 'Số điện thoại không hợp lệ (Viettel, Vinaphone, Mobiphone)';
     }
 
-    // Password: min 8 chars, uppercase, special char
+    // Password: min 8 chars, uppercase
     if (!formData.password) {
       errors.password = 'Mật khẩu không được để trống';
     } else if (formData.password.length < 8) {
       errors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
     } else if (!/[A-Z]/.test(formData.password)) {
       errors.password = 'Mật khẩu phải chứa ít nhất 1 chữ cái viết hoa';
-    } else if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) {
-      errors.password = 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt';
     }
 
     setValidationErrors(errors);
@@ -201,7 +199,7 @@ function RegisterPage() {
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Ít nhất 8 ký tự, chữ hoa và ký tự đặc biệt"
+              placeholder="Ít nhất 8 ký tự và chữ hoa"
               value={formData.password}
               onChange={handleChange}
               className={`mt-2 w-full rounded-xl border ${validationErrors.password ? 'border-red-500' : 'border-slate-300'} bg-white px-4 py-3 pr-12 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200`}

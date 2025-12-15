@@ -8,7 +8,6 @@ type AuthLayoutProps = {
 
 function AuthLayout({
   title = 'SCMS',
-  subtitle = 'Student Club Management System',
   children,
 }: AuthLayoutProps) {
   return (
@@ -19,11 +18,6 @@ function AuthLayout({
             SC
           </div>
           <h1 className="text-2xl font-semibold text-slate-900 text-balance">{title}</h1>
-          {subtitle && (
-            <p className="text-sm text-slate-600 text-balance">
-              {subtitle}
-            </p>
-          )}
         </div>
 
         {children}

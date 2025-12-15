@@ -18,38 +18,6 @@ interface DisplayClub {
   establishedDate?: string;
 }
 
-// Helper component for club avatar with fallback
-function ClubAvatar({ imageUrl, name, size = 'md' }: { imageUrl?: string | null; name: string; size?: 'sm' | 'md' | 'lg' }) {
-  const [imageError, setImageError] = useState(false);
-  const sizeClasses = {
-    sm: 'h-12 w-12 text-sm',
-    md: 'h-16 w-16 text-base',
-    lg: 'h-24 w-24 text-xl',
-  };
-  const initials = name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('');
-
-  if (imageUrl && !imageError) {
-    return (
-      <img
-        src={imageUrl}
-        alt={name}
-        className={`${sizeClasses[size]} flex-shrink-0 rounded-2xl object-cover`}
-        onError={() => setImageError(true)}
-      />
-    );
-  }
-
-  return (
-    <div className={`${sizeClasses[size]} flex flex-shrink-0 items-center justify-center rounded-2xl bg-blue-100 font-semibold text-blue-700`}>
-      {initials}
-    </div>
-  );
-}
-
 function StudentExplorePage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -305,72 +273,65 @@ function StudentExplorePage() {
                 </div>
               </div>
             ) : viewMode === 'grid' ? (
-              <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {filteredClubs.map((club) => (
                   <div
                     key={club.id}
-                    className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 hover:border-blue-200 transition"
                   >
-                    {/* Avatar hình ảnh hoặc chữ cái */}
-                    <div className="mb-3 flex items-center gap-3">
-                      <ClubAvatar imageUrl={club.imageUrl} name={club.name} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <h3 className="truncate text-sm font-semibold text-slate-900 sm:text-base">{club.name}</h3>
-                        {club.establishedDate ? (
-                          <p className="mt-0.5 text-xs text-slate-500">
-                            Thành lập: {new Date(club.establishedDate).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long' })}
-                          </p>
-                        ) : (
-                          <p className="mt-0.5 text-xs text-slate-400 italic">Chưa có thông tin ngày thành lập</p>
-                        )}
+                    {/* Hình ảnh CLB ở đầu card */}
+                    {club.imageUrl && (
+                      <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200">
+                        <img
+                          src={club.imageUrl}
+                          alt={club.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Thông tin CLB */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900">{club.name}</p>
+                        <p className="text-xs text-slate-600 mt-1 line-clamp-2">{club.description || 'Chưa có mô tả'}</p>
+                      </div>
+                      {club.recruiting && (
+                        <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200">
+                          Đang tuyển
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Thông tin chi tiết */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600">
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Ngày thành lập</p>
+                        <p className="mt-1 text-sm text-slate-900">
+                          {club.establishedDate ? new Date(club.establishedDate).toLocaleDateString('vi-VN') : '--'}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Phí thành viên</p>
+                        <p className="mt-1 text-sm text-slate-900">
+                          {club.fee === 0 ? 'Miễn phí' : club.fee.toLocaleString('vi-VN') + ' đ'}
+                        </p>
+                      </div>
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
+                        <p className="mt-1 text-sm text-slate-900">{club.members ?? '--'}</p>
                       </div>
                     </div>
 
-                    <p className="line-clamp-2 text-[13px] leading-relaxed text-slate-600">
-                      {club.description}
-                    </p>
-
-                    {/* Stats + tags */}
-                    <div className="mt-3 space-y-3">
-                      <div className="flex gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-                        {/* Hình ảnh CLB */}
-                        {club.imageUrl && (
-                          <div className="flex-shrink-0">
-                            <img
-                              src={club.imageUrl}
-                              alt={club.name}
-                              className="h-16 w-16 rounded-lg object-cover"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                              }}
-                            />
-                          </div>
-                        )}
-                        {/* Thông tin phí và thành viên */}
-                      <div className={`flex-1 grid gap-2 text-center text-[11px] text-slate-600 ${(club.members ?? 0) > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                          {(club.members ?? 0) > 0 && (
-                            <div>
-                              <p className="text-[11px] text-slate-500">Thành viên</p>
-                              <p className="mt-0.5 text-sm font-semibold text-slate-900">{club.members}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-[11px] text-slate-500">Phí/tháng</p>
-                            <p className="mt-0.5 text-sm font-semibold text-emerald-700">
-                              {club.fee === 0 ? 'Miễn phí' : club.fee.toLocaleString() + 'đ'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
+                    {/* Nút đăng ký */}
                     {club.recruiting && (
-                      <div className="mt-4">
+                      <div className="pt-2">
                         <button
                           onClick={() => handleRegister(club)}
-                          className="w-full rounded-xl bg-blue-600 px-3.5 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
+                          className="w-full rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
                         >
                           Đăng ký ngay
                         </button>
@@ -384,70 +345,71 @@ function StudentExplorePage() {
                 {filteredClubs.map((club) => (
                   <div
                     key={club.id}
-                    className="group flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md sm:flex-row"
+                    className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:border-blue-300 hover:shadow-md"
                   >
-                    {/* Trái: Avatar + mô tả */}
-                    <div className="flex flex-1 items-start gap-4">
-                      <ClubAvatar imageUrl={club.imageUrl} name={club.name} size="md" />
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-base font-semibold text-slate-900 sm:text-lg">{club.name}</h3>
-                        </div>
-                        {club.establishedDate ? (
-                          <p className="text-xs text-slate-500">
-                            Thành lập: {new Date(club.establishedDate).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-slate-400 italic">Chưa có thông tin ngày thành lập</p>
-                        )}
-                        <p className="text-[13px] leading-relaxed text-slate-600">{club.description}</p>
-                      </div>
-                    </div>
-
-                    {/* Phải: thống kê & action */}
-                    <div className="flex flex-col justify-between gap-3 sm:w-72 sm:flex-shrink-0">
-                      <div className="flex gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-                        {/* Hình ảnh CLB */}
-                        {club.imageUrl && (
-                          <div className="flex-shrink-0">
+                    <div className="flex flex-col gap-4 sm:flex-row">
+                      {/* Hình ảnh CLB */}
+                      {club.imageUrl && (
+                        <div className="flex-shrink-0 sm:w-48">
+                          <div className="w-full h-40 sm:h-full sm:min-h-[120px] rounded-lg overflow-hidden bg-slate-200">
                             <img
                               src={club.imageUrl}
                               alt={club.name}
-                              className="h-20 w-20 rounded-lg object-cover"
+                              className="w-full h-full object-cover"
                               onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
+                                (e.target as HTMLImageElement).style.display = 'none';
                               }}
                             />
                           </div>
-                        )}
-                        {/* Thông tin phí và thành viên */}
-                        <div className={`flex-1 grid gap-2 text-center text-[11px] text-slate-600 ${(club.members ?? 0) > 0 ? 'grid-cols-2' : 'grid-cols-1'}`}>
-                          {(club.members ?? 0) > 0 && (
-                            <div>
-                              <p className="text-[11px] text-slate-500">Thành viên</p>
-                              <p className="mt-0.5 text-base font-semibold text-slate-900">{club.members}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-[11px] text-slate-500">Phí/tháng</p>
-                            <p className="mt-0.5 text-base font-semibold text-emerald-700">
-                              {club.fee === 0 ? 'Miễn phí' : club.fee.toLocaleString() + 'đ/tháng'}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {club.recruiting && (
-                        <div className="flex">
-                          <button
-                            onClick={() => handleRegister(club)}
-                            className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
-                          >
-                            Đăng ký ngay
-                          </button>
                         </div>
                       )}
+
+                      {/* Nội dung */}
+                      <div className="flex-1 flex flex-col gap-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-slate-900">{club.name}</h3>
+                            <p className="text-sm text-slate-600 mt-1 line-clamp-2">{club.description || 'Chưa có mô tả'}</p>
+                          </div>
+                          {club.recruiting && (
+                            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200">
+                              Đang tuyển
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Thông tin chi tiết */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                            <p className="text-[10px] uppercase text-slate-500">Ngày thành lập</p>
+                            <p className="mt-1 text-sm font-semibold text-slate-900">
+                              {club.establishedDate ? new Date(club.establishedDate).toLocaleDateString('vi-VN') : '--'}
+                            </p>
+                          </div>
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                            <p className="text-[10px] uppercase text-slate-500">Phí thành viên</p>
+                            <p className="mt-1 text-sm font-semibold text-emerald-700">
+                              {club.fee === 0 ? 'Miễn phí' : club.fee.toLocaleString('vi-VN') + ' đ'}
+                            </p>
+                          </div>
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                            <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
+                            <p className="mt-1 text-sm font-semibold text-slate-900">{club.members ?? '--'}</p>
+                          </div>
+                        </div>
+
+                        {/* Nút đăng ký */}
+                        {club.recruiting && (
+                          <div className="pt-2">
+                            <button
+                              onClick={() => handleRegister(club)}
+                              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
+                            >
+                              Đăng ký ngay
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

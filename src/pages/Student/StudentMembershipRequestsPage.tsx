@@ -18,7 +18,7 @@ function StudentMembershipRequestsPage() {
         setError(null);
         const requests = await membershipService.getStudentRequests();
         setMembershipRequests(requests);
-      } catch (err) {
+      } catch{
         setError('Không thể tải danh sách yêu cầu. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);

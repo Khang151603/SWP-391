@@ -35,7 +35,7 @@ function StudentClubsPage() {
               ...item,
               clubDetails,
             };
-          } catch (err) {
+          } catch {
             // Return item without details if fetch fails
             return item;
           }
@@ -43,7 +43,7 @@ function StudentClubsPage() {
       );
       
       setClubs(clubsWithDetails);
-    } catch (err) {
+    } catch {
       setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
@@ -198,50 +198,65 @@ function StudentClubsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {filteredClubs.map((item) => {
               const clubName = item.clubDetails?.name || item.club.name;
               const clubDescription = item.clubDetails?.description || item.club.description || '';
               const memberCount = item.clubDetails?.memberCount;
               const membershipFee = item.clubDetails?.membershipFee ?? item.club.membershipFee;
               const imageUrl = item.clubDetails?.imageClubsUrl;
+              const establishedDate = item.clubDetails?.establishedDate;
               
               return (
                 <div
                   key={item.club.id}
-                  className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-md"
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 hover:border-blue-200 transition"
                 >
-                  {/* Club Image */}
-                  <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-blue-100 to-blue-50">
-                    {imageUrl ? (
+                  {/* Hình ảnh CLB ở đầu card */}
+                  {imageUrl && (
+                    <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200 relative">
                       <img
                         src={imageUrl}
                         alt={clubName}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
                       />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <svg className="h-12 w-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Status Badge - moved outside image */}
-                  {item.membership.status && (
-                    <div className="absolute right-2 top-2 z-10">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold shadow-md ${
+                      {/* Status Badge */}
+                      {item.membership.status && (
+                        <div className="absolute right-2 top-2 z-10">
+                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 ${
+                            item.membership.status.toLowerCase() === 'active' 
+                              ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
+                              : item.membership.status.toLowerCase() === 'pending_payment'
+                              ? 'bg-amber-50 text-amber-700 ring-amber-200'
+                              : 'bg-slate-50 text-slate-700 ring-slate-200'
+                          }`}>
+                            {item.membership.status.toLowerCase() === 'active' 
+                              ? 'Đang hoạt động' 
+                              : item.membership.status.toLowerCase() === 'pending_payment'
+                              ? 'Chờ thanh toán'
+                              : item.membership.status}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Thông tin CLB */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-slate-900">{clubName}</p>
+                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">{clubDescription || 'Chưa có mô tả'}</p>
+                    </div>
+                    {!imageUrl && item.membership.status && (
+                      <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 ${
                         item.membership.status.toLowerCase() === 'active' 
-                          ? 'bg-emerald-500 text-white' 
+                          ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
                           : item.membership.status.toLowerCase() === 'pending_payment'
-                          ? 'bg-amber-500 text-white'
-                          : 'bg-slate-500 text-white'
+                          ? 'bg-amber-50 text-amber-700 ring-amber-200'
+                          : 'bg-slate-50 text-slate-700 ring-slate-200'
                       }`}>
                         {item.membership.status.toLowerCase() === 'active' 
                           ? 'Đang hoạt động' 
@@ -249,68 +264,43 @@ function StudentClubsPage() {
                           ? 'Chờ thanh toán'
                           : item.membership.status}
                       </span>
-                    </div>
-                  )}
-
-                  {/* Club Content */}
-                  <div className="p-4">
-                    <h3 className="mb-1.5 text-lg font-bold text-slate-900 line-clamp-1">{clubName}</h3>
-                    
-                    {clubDescription && (
-                      <p className="mb-3 text-xs text-slate-600 line-clamp-2">{clubDescription}</p>
                     )}
+                  </div>
 
-                    {/* Club Stats */}
-                    <div className="space-y-1.5 border-t border-slate-100 pt-3">
-                      {memberCount !== undefined && (
-                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                          <svg className="h-3.5 w-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                            />
-                          </svg>
-                          <span className="font-medium text-slate-900">{memberCount}</span>
-                          <span className="text-slate-500">thành viên</span>
-                        </div>
-                      )}
-                      
-                      {membershipFee !== undefined && membershipFee !== null && membershipFee > 0 && (
-                        <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                          <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <span className="font-semibold text-emerald-700">
-                            {membershipFee?.toLocaleString('vi-VN')}đ
-                          </span>
-                          <span className="text-slate-500">phí thành viên</span>
-                        </div>
-                      )}
-
-                      <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                        <svg className="h-3.5 w-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                        <span className="text-slate-500">Tham gia:</span>
-                        <span className="font-medium text-slate-900">
-                          {(() => {
-                            if (!item.membership.joinDate) return '--';
-                            try {
-                              const date = new Date(item.membership.joinDate);
-                              if (isNaN(date.getTime())) return '--';
-                              return date.toLocaleDateString('vi-VN', {
-                                year: 'numeric',
-                                month: '2-digit',
-                                day: '2-digit',
-                              });
-                            } catch (e) {
-                              return '--';
-                            }
-                          })()}
-                        </span>
+                  {/* Thông tin chi tiết */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600">
+                    {establishedDate && (
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Ngày thành lập</p>
+                        <p className="mt-1 text-sm text-slate-900">
+                          {new Date(establishedDate).toLocaleDateString('vi-VN')}
+                        </p>
                       </div>
+                    )}
+                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                      <p className="text-[10px] uppercase text-slate-500">Phí thành viên</p>
+                      <p className="mt-1 text-sm text-slate-900">
+                        {membershipFee === 0 || !membershipFee ? 'Miễn phí' : membershipFee.toLocaleString('vi-VN') + ' đ'}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                      <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
+                      <p className="mt-1 text-sm text-slate-900">{memberCount ?? '--'}</p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                      <p className="text-[10px] uppercase text-slate-500">Ngày tham gia</p>
+                      <p className="mt-1 text-sm text-slate-900">
+                        {(() => {
+                          if (!item.membership.joinDate) return '--';
+                          try {
+                            const date = new Date(item.membership.joinDate);
+                            if (isNaN(date.getTime())) return '--';
+                            return date.toLocaleDateString('vi-VN');
+                          } catch {
+                            return '--';
+                          }
+                        })()}
+                      </p>
                     </div>
                   </div>
                 </div>
