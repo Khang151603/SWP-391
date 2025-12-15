@@ -83,6 +83,20 @@ export const activityService = {
   },
 
   /**
+   * Leader: Start activity
+   */
+  async startActivity(id: number | string): Promise<void> {
+    return httpClient.put<void>(ACTIVITY_ENDPOINTS.START_ACTIVITY(id));
+  },
+
+  /**
+   * Leader: Stop activity
+   */
+  async stopActivity(id: number | string): Promise<void> {
+    return httpClient.put<void>(ACTIVITY_ENDPOINTS.STOP_ACTIVITY(id));
+  },
+
+  /**
    * Leader: Get activity participants
    */
   async getParticipants(id: number | string): Promise<ActivityParticipant[]> {

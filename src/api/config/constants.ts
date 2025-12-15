@@ -30,6 +30,8 @@ export const ACTIVITY_ENDPOINTS = {
   DELETE: (id: number | string) => `/api/Activities/${id}`,
   OPEN_REGISTRATION: (id: number | string) => `/api/Activities/${id}/open-registration`,
   CLOSE_REGISTRATION: (id: number | string) => `/api/Activities/${id}/close-registration`,
+  START_ACTIVITY: (id: number | string) => `/api/Activities/${id}/start`,
+  STOP_ACTIVITY: (id: number | string) => `/api/Activities/${id}/stop`,
   GET_PARTICIPANTS: (id: number | string) => `/api/Activities/${id}/participants`,
   // Student activity endpoints
   STUDENT_VIEW_ALL: '/api/student/activities/view-all',
