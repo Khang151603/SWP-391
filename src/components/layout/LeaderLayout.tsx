@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ProfileDropdown from '../ProfileDropdown';
+import { NotificationBell } from '../NotificationBell';
 
 type LeaderLayoutProps = {
   title?: string;
@@ -69,11 +70,12 @@ function LeaderLayout({
       <div className="lg:ml-[280px] min-h-screen">
         <div className="relative h-full w-full">
           {/* Sticky Header */}
-          <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-slate-200 px-6 py-6 bg-white">
+          <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-slate-200 px-6 py-6 bg-white">
             <div>
               <h1 className="mt-1 text-3xl font-semibold text-slate-900">{title}</h1>
               <p className="text-sm text-slate-600">{subtitle}</p>
             </div>
+            <NotificationBell />
           </header>
 
           <main className="px-4 py-6 md:px-6 lg:py-8">

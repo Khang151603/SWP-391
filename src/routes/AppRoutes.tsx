@@ -1,27 +1,34 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import HomePage from '../pages/HomePage';
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import RoleSelectionPage from '../pages/RoleSelectionPage';
 import ProtectedRoute from '../components/ProtectedRoute';
-import ClubLeaderActivitiesPage from '../pages/ClubLeader/ClubLeaderActivitiesPage';
-import ClubLeaderDashboardPage from '../pages/ClubLeader/ClubLeaderDashboardPage';
-import ClubLeaderInfoPage from '../pages/ClubLeader/ClubLeaderInfoPage';
-import ClubLeaderMembersPage from '../pages/ClubLeader/ClubLeaderMembersPage';
-import ClubLeaderRequestsPage from '../pages/ClubLeader/ClubLeaderRequestsPage';
-import StudentActivitiesPage from '../pages/Student/StudentActivitiesPage';
-import StudentMyActivitiesPage from '../pages/Student/StudentMyActivitiesPage';
-import StudentClubsPage from '../pages/Student/StudentClubsPage';
-import StudentDashboardPage from '../pages/Student/StudentDashboardPage';
-import StudentExplorePage from '../pages/Student/StudentExplorePage';
-import StudentExploreDetailPage from '../pages/Student/StudentExploreDetailPage';
-import StudentBecomeLeaderPage from '../pages/Student/StudentBecomeLeaderPage';
-import StudentMembershipRequestsPage from '../pages/Student/StudentMembershipRequestsPage';
-import StudentProfilePage from '../pages/Student/StudentProfilePage';
+
+const HomePage = lazy(() => import('../pages/HomePage'));
+const LoginPage = lazy(() => import('../pages/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/RegisterPage'));
+const RoleSelectionPage = lazy(() => import('../pages/RoleSelectionPage'));
+const ClubLeaderActivitiesPage = lazy(() => import('../pages/ClubLeader/ClubLeaderActivitiesPage'));
+const ClubLeaderDashboardPage = lazy(() => import('../pages/ClubLeader/ClubLeaderDashboardPage'));
+const ClubLeaderInfoPage = lazy(() => import('../pages/ClubLeader/ClubLeaderInfoPage'));
+const ClubLeaderMembersPage = lazy(() => import('../pages/ClubLeader/ClubLeaderMembersPage'));
+const ClubLeaderRequestsPage = lazy(() => import('../pages/ClubLeader/ClubLeaderRequestsPage'));
+const StudentActivitiesPage = lazy(() => import('../pages/Student/StudentActivitiesPage'));
+const StudentMyActivitiesPage = lazy(() => import('../pages/Student/StudentMyActivitiesPage'));
+const StudentClubsPage = lazy(() => import('../pages/Student/StudentClubsPage'));
+const StudentDashboardPage = lazy(() => import('../pages/Student/StudentDashboardPage'));
+const StudentExplorePage = lazy(() => import('../pages/Student/StudentExplorePage'));
+const StudentExploreDetailPage = lazy(() => import('../pages/Student/StudentExploreDetailPage'));
+const StudentBecomeLeaderPage = lazy(() => import('../pages/Student/StudentBecomeLeaderPage'));
+const StudentMembershipRequestsPage = lazy(() => import('../pages/Student/StudentMembershipRequestsPage'));
+const StudentProfilePage = lazy(() => import('../pages/Student/StudentProfilePage'));
 
 function AppRoutes() {
   return (
     <BrowserRouter>
+      <Suspense fallback={
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      }>
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<HomePage />} />
@@ -154,6 +161,7 @@ function AppRoutes() {
           } 
         />
       </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 }

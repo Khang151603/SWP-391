@@ -55,7 +55,8 @@ function StudentMyActivitiesPage() {
       try {
         setLoading(true);
         setError(null);
-        const data = await activityService.getStudentForRegistration();
+        // Get activities that student has registered for (clicked "Đăng ký tham gia")
+        const data = await activityService.getMyActivityHistory();
         
         // Fetch club names
         const activitiesWithDetails = await Promise.all(

@@ -52,6 +52,13 @@ export const membershipService = {
   },
 
   /**
+   * Leader: Get all membership requests (pending, approved, rejected)
+   */
+  async getLeaderAllRequests(): Promise<LeaderPendingMembershipRequest[]> {
+    return httpClient.get<LeaderPendingMembershipRequest[]>('/api/leader/membership/requests');
+  },
+
+  /**
    * Leader: Approve membership request
    */
   async approveLeaderRequest(id: number | string, data: LeaderApproveRejectRequest): Promise<void> {

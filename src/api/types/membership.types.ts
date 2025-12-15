@@ -57,6 +57,8 @@ export interface LeaderPendingMembershipRequest {
   email: string;
   phone: string;
   reason: string;
+  major?: string;
+  skills?: string;
 }
 
 export interface LeaderApproveRejectRequest {

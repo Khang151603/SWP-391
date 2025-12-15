@@ -55,6 +55,13 @@ export const activityService = {
   },
 
   /**
+   * Student: Get my registered activities history
+   */
+  async getMyActivityHistory(): Promise<StudentActivity[]> {
+    return httpClient.get<StudentActivity[]>('/api/student/activities/history');
+  },
+
+  /**
    * Leader: Update activity
    */
   async update(id: number | string, data: UpdateActivityRequest): Promise<void> {
