@@ -259,39 +259,11 @@ function ClubLeaderActivitiesPage() {
     }
   };
 
-  const handleCloseRegistration = async (activity: Activity) => {
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      await activityService.closeRegistration(activity.id);
-      setMessage({ type: 'success', text: 'Đã đóng đăng ký' });
-      loadActivities(form.clubId);
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Không thể đóng đăng ký hoạt động. Vui lòng thử lại sau.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCompleteActivity = async (activity: Activity) => {
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      await activityService.update(activity.id, { status: 'Completed' });
-      setMessage({ type: 'success', text: 'Đã kết thúc hoạt động' });
-      loadActivities(form.clubId);
-    } catch (err) {
-      setMessage({ type: 'error', text: 'Không thể kết thúc hoạt động. Vui lòng thử lại sau.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleStartActivity = async (activity: Activity) => {
     setIsLoading(true);
     setMessage(null);
     try {
-      await activityService.startActivity(activity.id);
+      await activityService.update(activity.id, { status: 'Ongoing' });
       setMessage({ type: 'success', text: 'Đã bắt đầu hoạt động' });
       loadActivities(form.clubId);
     } catch (err) {
@@ -401,19 +373,20 @@ function ClubLeaderActivitiesPage() {
               {activities.map((act) => {
                 const start = new Date(act.startTime);
                 const end = new Date(act.endTime);
-                const status = (act.status || 'Pending').toLowerCase();
+                const status = (act.status || 'Not_yet_open').toLowerCase().replace(/_/g, '');
                 
                 // Map status to Vietnamese
                 const statusVietnamese = 
-                  status === 'pending' ? 'Chưa bắt đầu' :
-                  status === 'registrationopen' ? 'Đã mở ĐK' :
+                  status === 'notyetopen' ? 'Chưa mở' :
+                  status === 'pending' ? 'Chưa mở' :
+                  status === 'active' ? 'Đã mở ĐK' :
                   status === 'ongoing' ? 'Đang diễn ra' :
-                  status === 'completed' ? 'Đã dừng' : act.status || 'Chưa bắt đầu';
+                  status === 'completed' ? 'Đã dừng' : act.status || 'Chưa mở';
                 
                 const statusStyle =
-                  status === 'pending'
+                  status === 'notyetopen' || status === 'pending'
                     ? 'bg-amber-50 text-amber-700 ring-amber-200'
-                    : status === 'registrationopen'
+                    : status === 'active'
                       ? 'bg-blue-50 text-blue-700 ring-blue-200'
                       : status === 'ongoing'
                         ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
@@ -469,7 +442,7 @@ function ClubLeaderActivitiesPage() {
                           Xóa
                         </button>
                       )}
-                      {status === 'pending' && (
+                      {(status === 'pending' || status === 'notyetopen') && (
                         <button
                           onClick={() => handleOpenRegistration(act)}
                           className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
@@ -477,7 +450,7 @@ function ClubLeaderActivitiesPage() {
                           Mở đăng ký
                         </button>
                       )}
-                      {status === 'registrationopen' && (
+                      {status === 'active' && (
                         <button
                           onClick={() => handleStartActivity(act)}
                           className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
