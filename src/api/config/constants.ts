@@ -12,7 +12,7 @@ export const AUTH_ENDPOINTS = {
 
 // Club Endpoints
 export const CLUB_ENDPOINTS = {
-  GET_ALL_CLUBS: '/api/Clubs', // Endpoint for student explore page
+  GET_ALL_CLUBS: '/api/clubs', // Endpoint for student explore page
   JOIN_REQUEST: (id: number | string) => `/api/Club/${id}/join`,
   LEADER_REQUEST: '/api/club-leader-requests',
   MY_LEADER_REQUEST: '/api/club-leader-requests/my-request',

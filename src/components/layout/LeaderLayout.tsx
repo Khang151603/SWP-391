@@ -70,7 +70,6 @@ function LeaderLayout({
           {/* Sticky Header */}
           <header className="sticky top-0 z-10 flex flex-col gap-4 border-b border-slate-200 px-6 py-6 bg-white">
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Leader Workspace</p>
               <h1 className="mt-1 text-3xl font-semibold text-slate-900">{title}</h1>
               <p className="text-sm text-slate-600">{subtitle}</p>
             </div>

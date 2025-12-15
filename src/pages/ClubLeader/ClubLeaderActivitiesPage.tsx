@@ -102,7 +102,7 @@ function ClubLeaderActivitiesPage() {
     try {
       const data = await activityService.getByClub(clubId);
       setActivities(data);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể tải danh sách hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setActivitiesLoading(false);
@@ -120,7 +120,7 @@ function ClubLeaderActivitiesPage() {
           setForm((prev) => ({ ...prev, clubId: data[0].id }));
           loadActivities(data[0].id);
         }
-      } catch (err) {
+      } catch {
         setMessage({ type: 'error', text: 'Không thể tải danh sách CLB. Vui lòng thử lại sau.' });
       } finally {
         setClubsLoading(false);
@@ -187,7 +187,7 @@ function ClubLeaderActivitiesPage() {
         location: '',
       });
       setShowCreateModal(false);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể tạo hoạt động mới. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
@@ -220,7 +220,7 @@ function ClubLeaderActivitiesPage() {
       loadActivities(form.clubId);
       setShowEditModal(false);
       setSelectedActivity(null);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể cập nhật hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
@@ -238,7 +238,7 @@ function ClubLeaderActivitiesPage() {
       loadActivities(form.clubId);
       setShowDeleteConfirm(false);
       setSelectedActivity(null);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể xóa hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
@@ -252,7 +252,7 @@ function ClubLeaderActivitiesPage() {
       await activityService.openRegistration(activity.id);
       setMessage({ type: 'success', text: 'Đã mở đăng ký' });
       loadActivities(form.clubId);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể mở đăng ký hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
@@ -266,7 +266,7 @@ function ClubLeaderActivitiesPage() {
       await activityService.update(activity.id, { status: 'Ongoing' });
       setMessage({ type: 'success', text: 'Đã bắt đầu hoạt động' });
       loadActivities(form.clubId);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể bắt đầu hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
@@ -280,7 +280,7 @@ function ClubLeaderActivitiesPage() {
       await activityService.update(activity.id, { status: 'Completed' });
       setMessage({ type: 'success', text: 'Đã dừng hoạt động' });
       loadActivities(form.clubId);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể dừng hoạt động. Vui lòng thử lại sau.' });
     } finally {
       setIsLoading(false);
@@ -294,7 +294,7 @@ function ClubLeaderActivitiesPage() {
     try {
       const data = await activityService.getParticipants(activity.id);
       setParticipants(data);
-    } catch (err) {
+    } catch {
       setMessage({ type: 'error', text: 'Không thể tải danh sách người tham gia. Vui lòng thử lại sau.' });
     } finally {
       setParticipantsLoading(false);
@@ -550,7 +550,7 @@ function ClubLeaderActivitiesPage() {
                         type="text"
                         value={startDateDisplay}
                         onChange={(e) => {
-                          let inputValue = e.target.value.replace(/[^\d/]/g, '');
+                          const inputValue = e.target.value.replace(/[^\d/]/g, '');
                           const digits = inputValue.replace(/\//g, '');
                           
                           let formatted = inputValue;
