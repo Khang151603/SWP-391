@@ -7,6 +7,8 @@ function HomePage() {
   const [clubs, setClubs] = useState<ClubListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -25,62 +27,174 @@ function HomePage() {
 
     fetchClubs();
   }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToSection = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setIsMobileMenuOpen(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <div className="relative isolate overflow-hidden">
-        <div className="relative mx-auto max-w-6xl px-6 py-8 lg:py-12">
-          <header className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-8 shadow-lg">
-            <div className="relative z-10 flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
-              {/* Logo and Brand Section */}
-              <div className="flex items-center gap-5">
-                <div className="rounded-2xl bg-blue-600 p-4 ring-2 ring-blue-100">
-                  <span className="text-2xl font-bold text-white">
-                    SCMS
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
-                    Student Club Management System
-                  </p>
-                  <p className="text-lg font-semibold text-slate-900">
-                    Nền tảng quản trị câu lạc bộ
-                  </p>
+      {/* Modern Sticky Header */}
+      <header 
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled 
+            ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200/50' 
+            : 'bg-white/80 backdrop-blur-sm'
+        }`}
+      >
+        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-20 items-center justify-between">
+            {/* Logo Section */}
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 opacity-100 group-hover:opacity-90 transition-opacity duration-300"></div>
+                <div className="relative rounded-xl bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 p-2.5 shadow-lg shadow-blue-500/30">
+                  <span className="text-xl font-bold text-white tracking-tight">SCMS</span>
                 </div>
               </div>
+              <div className="hidden sm:block">
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 leading-tight">
+                  Student Club
+                </p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 leading-tight">
+                  Management System
+                </p>
+              </div>
+            </Link>
 
-              {/* Action Buttons */}
-              <div className="flex items-center gap-4">
-                <Link 
-                  to="/login" 
-                  className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 hover:border-slate-400 hover:bg-slate-50 hover:shadow-md"
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-1">
+              <button
+                onClick={() => scrollToSection('clubs')}
+                className="px-4 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+              >
+                Câu lạc bộ
+              </button>
+              <a
+                href="#about"
+                className="px-4 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+              >
+                Về chúng tôi
+              </a>
+              <a
+                href="#contact"
+                className="px-4 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+              >
+                Liên hệ
+              </a>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="hidden lg:flex items-center gap-3">
+              <Link
+                to="/login"
+                className="px-5 py-2.5 text-sm font-semibold text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                to="/register"
+                className="group relative px-6 py-2.5 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center gap-2 text-white">
+                  <span className="text-white">Đăng ký</span>
+                  <svg className="h-4 w-4 text-white transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="lg:hidden p-2 rounded-lg text-slate-700 hover:bg-slate-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {isMobileMenuOpen ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Mobile Menu */}
+          {isMobileMenuOpen && (
+            <div className="lg:hidden border-t border-slate-200 bg-white/95 backdrop-blur-md">
+              <div className="px-4 py-4 space-y-2">
+                <button
+                  onClick={() => scrollToSection('clubs')}
+                  className="block w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
                 >
-                  Đăng nhập
-                </Link>
-                <Link 
-                  to="/register" 
-                  className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-blue-700 hover:shadow-lg"
+                  Câu lạc bộ
+                </button>
+                <a
+                  href="#about"
+                  className="block px-4 py-3 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
                 >
-                  <span className="flex items-center gap-2">
-                    <span>Đăng ký tài khoản</span>
-                    <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                    </svg>
-                  </span>
-                </Link>
+                  Về chúng tôi
+                </a>
+                <a
+                  href="#contact"
+                  className="block px-4 py-3 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  Liên hệ
+                </a>
+                <div className="pt-2 space-y-2 border-t border-slate-200">
+                  <Link
+                    to="/login"
+                    className="block w-full px-4 py-3 text-sm font-semibold text-center text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 transition-colors"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="block w-full px-4 py-3 text-sm font-semibold text-center text-white rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all"
+                  >
+                    Đăng ký tài khoản
+                  </Link>
+                </div>
               </div>
             </div>
-          </header>
+          )}
+        </nav>
+      </header>
 
-          <section className="mt-12">
-            <div className="space-y-6 text-center">
-              <h1 className="mx-auto max-w-4xl text-4xl font-semibold leading-tight text-slate-900 md:text-5xl lg:text-6xl">
-                Quản lý câu lạc bộ trong trường đại học
+      {/* Hero Section */}
+      <div className="relative pt-20 pb-12 lg:pt-32 lg:pb-20">
+        <div className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute left-[max(50%,25rem)] top-0 h-[40rem] w-[40rem] -translate-x-1/2 bg-gradient-to-r from-blue-400/20 via-indigo-400/20 to-purple-400/20 blur-3xl"></div>
+        </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <section className="text-center">
+            <div className="space-y-6">
+              <h1 className="mx-auto max-w-4xl text-4xl font-bold leading-tight tracking-tight text-slate-900 sm:text-5xl md:text-6xl lg:text-7xl">
+                Quản lý câu lạc bộ trong{' '}
+                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  trường đại học
+                </span>
               </h1>
+
             </div>
           </section>
         </div>
       </div>
-
       <main className="relative z-10 mx-auto max-w-6xl space-y-16 px-6 py-12">
         <section id="clubs" className="space-y-10">
           <div className="flex flex-col gap-4 text-center">
