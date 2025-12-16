@@ -47,7 +47,7 @@ function ClubLeaderRequestsPage() {
       const allData = await membershipService.getLeaderAllRequests();
       setAllRequests(allData);
     } catch (err) {
-      setError('Không thể tải danh sách đơn đăng ký. Vui lòng thử lại sau.');
+      setError(err instanceof Error ? err.message : 'Không thể tải danh sách đơn đăng ký. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
@@ -73,12 +73,32 @@ function ClubLeaderRequestsPage() {
     }
   };
 
-  const pendingRequests = allRequests.filter(r => r.status?.toLowerCase() === 'pending');
-  const approvedRequests = allRequests.filter(r => 
-    r.status?.toLowerCase() === 'awaiting payment' || 
-    r.status?.toLowerCase() === 'approved'
-  );
-  const rejectedRequests = allRequests.filter(r => r.status?.toLowerCase() === 'reject');
+  const{
+    pendingRequests,
+    processedRequests,
+  } = useMemo(() => {
+    const pending = allRequests.filter(r => r.status?.toLowerCase() === 'pending');
+    const approved = allRequests.filter(r =>
+      r.status?.toLowerCase() === 'awaiting payment' ||
+      r.status?.toLowerCase() === 'approved'
+    );
+    const rejected = allRequests.filter(r => r.status?.toLowerCase() === 'reject');
+
+    return {
+      pendingRequests: pending,
+      approvedRequests: approved,
+      rejectedRequests: rejected,
+      processedRequests: [...approved, ...rejected],
+    };
+  }, [allRequests]);
+
+  const statusPill = (status?: string) => {
+    const normalized = status?.toLowerCase();
+    if (normalized === 'reject') return 'bg-red-50 text-red-700 border border-red-200';
+    if (normalized === 'awaiting payment') return 'bg-amber-50 text-amber-700 border border-amber-200';
+    if (normalized === 'approved') return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    return 'bg-slate-100 text-slate-700 border border-slate-200';
+  };
 
   // Handle approve/reject requests
   const handleOpenRequestModal = (request: LeaderPendingMembershipRequest, type: 'approve' | 'reject') => {
@@ -124,7 +144,8 @@ function ClubLeaderRequestsPage() {
       
       handleCloseRequestModal();
     } catch (err) {
-      setError(`Không thể ${requestActionType === 'approve' ? 'duyệt' : 'từ chối'} đơn đăng ký. Vui lòng thử lại sau.`);
+      const fallbackMsg = `Không thể ${requestActionType === 'approve' ? 'duyệt' : 'từ chối'} đơn đăng ký. Vui lòng thử lại sau.`;
+      setError(err instanceof Error ? err.message : fallbackMsg);
     } finally {
       setIsProcessingRequest(false);
     }
@@ -149,8 +170,6 @@ function ClubLeaderRequestsPage() {
       }),
     [search, pendingRequests, selectedClubId]
   );
-
-  const processedRequests = [...approvedRequests, ...rejectedRequests];
 
   const filteredProcessedRequests = useMemo(
     () =>
@@ -183,192 +202,205 @@ function ClubLeaderRequestsPage() {
             {error}
           </div>
         )}
-
-        {/* Top overview cards */}
-        <section className="grid gap-4 md:grid-cols-3">
-          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Đơn chờ duyệt</p>
-            </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{pendingRequests.length}</p>
-          </div>
-
-          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Đơn đã duyệt</p>
-            </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{approvedRequests.length}</p>
-          </div>
-
-          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-red-300 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Đơn đã từ chối</p>
-            </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{rejectedRequests.length}</p>
-          </div>
-        </section>
-
         {/* Filters */}
-        <section className="flex flex-wrap items-center gap-2 text-sm">
-          <input
-            type="text"
-            placeholder="Tìm theo tên hoặc email..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 md:w-52"
-          />
-          <select
-            value={selectedClubId || ''}
-            onChange={(e) => setSelectedClubId(e.target.value ? Number(e.target.value) : null)}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-          >
-            <option value="">Tất cả CLB</option>
-            {clubs.map((club) => (
-              <option key={club.id} value={club.id}>
-                {club.name}
-              </option>
-            ))}
-          </select>
+        <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Bộ lọc nhanh</p>
+              <p className="text-sm text-slate-600">Tìm kiếm nhanh theo tên, email hoặc CLB</p>
+            </div>
+            <div className="flex flex-col gap-2 md:flex-row md:items-center">
+              <div className="relative w-full md:w-72">
+                <svg className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên, email hoặc SĐT..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 pl-9 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                />
+              </div>
+              <select
+                value={selectedClubId || ''}
+                onChange={(e) => setSelectedClubId(e.target.value ? Number(e.target.value) : null)}
+                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 md:w-52"
+              >
+                <option value="">Tất cả CLB</option>
+                {clubs.map((club) => (
+                  <option key={club.id} value={club.id}>
+                    {club.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
         </section>
 
         {/* Pending Requests table */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Đơn chờ duyệt</p>
-            <h3 className="mt-1 text-lg font-semibold text-slate-900">Danh sách đơn đăng ký</h3>
+          <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Đơn chờ duyệt</p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-900">Cần hành động</h3>
+              <p className="text-sm text-slate-600">Ưu tiên các đơn mới nhất</p>
+            </div>
+            <span className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
+              {filteredPendingRequests.length} đơn hiển thị
+            </span>
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-slate-500">Đang tải danh sách đơn...</p>
+            <div className="flex items-center justify-center py-10 text-sm text-slate-500">
+              Đang tải danh sách đơn...
             </div>
           ) : filteredPendingRequests.length === 0 ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-slate-500">
-                {pendingRequests.length === 0 ? 'Chưa có đơn chờ duyệt nào' : 'Không tìm thấy đơn phù hợp với bộ lọc'}
-              </p>
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 py-10 text-slate-500">
+              <svg className="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-8 3h14a2 2 0 002-2V7a2 2 0 00-2-2h-5l-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p>{pendingRequests.length === 0 ? 'Chưa có đơn chờ duyệt nào' : 'Không tìm thấy đơn phù hợp với bộ lọc'}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
-                  <tr>
-                    <th className="w-1/6 px-4 py-3">Người đăng ký</th>
-                    <th className="w-1/6 px-4 py-3">Email / SĐT</th>
-                    <th className="w-1/6 px-4 py-3">CLB</th>
-                    <th className="w-1/4 px-4 py-3">Lý do</th>
-                    <th className="w-1/8 px-4 py-3">Ngày gửi</th>
-                    <th className="w-1/6 px-4 py-3 text-right">Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPendingRequests.map((request) => {
-                    const club = clubs.find(c => c.id === request.clubId);
-                    return (
-                      <tr key={request.id} className="border-t border-slate-200 hover:bg-slate-50">
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-slate-900">{request.fullName}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col text-xs">
-                            <span className="text-slate-700">{request.email}</span>
-                            <span className="text-slate-500">{request.phone}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-slate-700">{club?.name || `CLB #${request.clubId}`}</td>
-                        <td className="px-4 py-3 text-slate-600 text-xs">{request.reason || '--'}</td>
-                        <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
-                          {formatDate(request.requestDate)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <button
-                            onClick={() => handleViewStudentDetail(request)}
-                            className="rounded-lg border border-blue-300 bg-blue-50 p-2 text-blue-700 hover:bg-blue-100 transition-colors"
-                            title="Xem chi tiết"
-                          >
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="overflow-hidden rounded-xl border border-slate-200">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
+                    <tr>
+                      <th className="px-4 py-3">Người đăng ký</th>
+                      <th className="px-4 py-3">Liên hệ</th>
+                      <th className="px-4 py-3">CLB</th>
+                      <th className="px-4 py-3">Lý do</th>
+                      <th className="px-4 py-3">Ngày gửi</th>
+                      <th className="px-4 py-3 text-right">Hành động</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {filteredPendingRequests.map((request) => {
+                      const club = clubs.find(c => c.id === request.clubId);
+                      return (
+                        <tr key={request.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-slate-900">{request.fullName}</span>
+                              <span className="text-xs text-slate-500">#{request.id}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col text-xs">
+                              <span className="text-slate-700">{request.email}</span>
+                              <span className="text-slate-500">{request.phone}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
+                            {club?.name || `CLB #${request.clubId}`}
+                          </td>
+                          <td className="px-4 py-3 text-slate-600 text-xs">
+                            <p className="line-clamp-2 whitespace-pre-line">{request.reason || '--'}</p>
+                          </td>
+                          <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
+                            {formatDate(request.requestDate)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <button
+                              onClick={() => handleViewStudentDetail(request)}
+                              className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition-colors hover:bg-blue-100"
+                              title="Xem chi tiết"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                              Xem
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </section>
 
         {/* Processed Requests table (Approved + Rejected) */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4">
-            <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Đơn đã xử lý</p>
-            <h3 className="mt-1 text-lg font-semibold text-slate-900">Danh sách đơn đã xử lý</h3>
+          <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Đơn đã xử lý</p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-900">Đã duyệt / Từ chối</h3>
+              <p className="text-sm text-slate-600">Lưu trạng thái & ghi chú rõ ràng</p>
+            </div>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-700">
+              {filteredProcessedRequests.length} đơn hiển thị
+            </span>
           </div>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-slate-500">Đang tải...</p>
+            <div className="flex items-center justify-center py-10 text-sm text-slate-500">
+              Đang tải...
             </div>
           ) : filteredProcessedRequests.length === 0 ? (
-            <div className="flex items-center justify-center py-8">
-              <p className="text-slate-500">
-                {processedRequests.length === 0 ? 'Chưa có đơn đã xử lý nào' : 'Không tìm thấy đơn phù hợp với bộ lọc'}
-              </p>
+            <div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 py-10 text-slate-500">
+              <svg className="h-8 w-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13h6m-3-3v6m-8 3h14a2 2 0 002-2V7a2 2 0 00-2-2h-5l-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p>{processedRequests.length === 0 ? 'Chưa có đơn đã xử lý nào' : 'Không tìm thấy đơn phù hợp với bộ lọc'}</p>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
-                  <tr>
-                    <th className="w-1/5 px-4 py-3">Người đăng ký</th>
-                    <th className="w-1/6 px-4 py-3">Email / SĐT</th>
-                    <th className="w-1/6 px-4 py-3">CLB</th>
-                    <th className="w-1/6 px-4 py-3">Ngày gửi</th>
-                    <th className="w-1/6 px-4 py-3">Trạng thái</th>
-                    <th className="w-1/6 px-4 py-3">Ghi chú</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProcessedRequests.map((request) => {
-                    const club = clubs.find(c => c.id === request.clubId);
-                    const isRejected = request.status?.toLowerCase() === 'reject';
-                    return (
-                      <tr key={request.id} className="border-t border-slate-200 hover:bg-slate-50">
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-slate-900">{request.fullName}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex flex-col text-xs">
-                            <span className="text-slate-700">{request.email}</span>
-                            <span className="text-slate-500">{request.phone}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-slate-700">{club?.name || `CLB #${request.clubId}`}</td>
-                        <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
-                          {formatDate(request.requestDate)}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                            isRejected 
-                              ? 'bg-red-50 text-red-700 border border-red-200' 
-                              : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          }`}>
-                            {request.status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-slate-600 text-xs">{request.note || '--'}</td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="overflow-hidden rounded-xl border border-slate-200">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
+                    <tr>
+                      <th className="px-4 py-3">Người đăng ký</th>
+                      <th className="px-4 py-3">Liên hệ</th>
+                      <th className="px-4 py-3">CLB</th>
+                      <th className="px-4 py-3">Ngày gửi</th>
+                      <th className="px-4 py-3">Trạng thái</th>
+                      <th className="px-4 py-3">Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {filteredProcessedRequests.map((request) => {
+                      const club = clubs.find(c => c.id === request.clubId);
+                      return (
+                        <tr key={request.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-slate-900">{request.fullName}</span>
+                              <span className="text-xs text-slate-500">#{request.id}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="flex flex-col text-xs">
+                              <span className="text-slate-700">{request.email}</span>
+                              <span className="text-slate-500">{request.phone}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
+                            {club?.name || `CLB #${request.clubId}`}
+                          </td>
+                          <td className="px-4 py-3 text-slate-700 whitespace-nowrap">
+                            {formatDate(request.requestDate)}
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusPill(request.status)}`}>
+                              <span className="h-2 w-2 rounded-full bg-current opacity-70" />
+                              {request.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-600 text-xs">
+                            <p className="line-clamp-2 whitespace-pre-line">{request.note || '--'}</p>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           )}
         </section>
@@ -379,15 +411,36 @@ function ClubLeaderRequestsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={handleCloseRequestModal} />
           <div className="relative z-10 w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-slate-900">
-                {requestActionType === 'approve' ? 'Duyệt đơn đăng ký' : 'Từ chối đơn đăng ký'}
-              </h3>
-              <p className="mt-2 text-sm text-slate-600">
-                {requestActionType === 'approve' ? 'Duyệt' : 'Từ chối'} đơn đăng ký của{' '}
-                <span className="font-semibold">{selectedRequest.name}</span>
-                {' '}vào <span className="font-semibold">{selectedRequest.clubName}</span>?
-              </p>
+            <div className="mb-6 flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Xác nhận thao tác</p>
+                <h3 className="mt-1 text-xl font-bold text-slate-900">
+                  {requestActionType === 'approve' ? 'Duyệt đơn đăng ký' : 'Từ chối đơn đăng ký'}
+                </h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  {requestActionType === 'approve' ? 'Duyệt' : 'Từ chối'} đơn của{' '}
+                  <span className="font-semibold">{selectedRequest.name}</span> vào{' '}
+                  <span className="font-semibold">{selectedRequest.clubName}</span>.
+                </p>
+              </div>
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                requestActionType === 'approve'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                  : 'bg-red-50 text-red-700 border border-red-200'
+              }`}>
+                {requestActionType === 'approve' ? 'Duyệt' : 'Từ chối'}
+              </span>
+            </div>
+
+            <div className="mb-6 space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">Sinh viên</span>
+                <span className="font-semibold text-slate-900">{selectedRequest.name}</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-slate-600">CLB</span>
+                <span className="font-semibold text-slate-900">{selectedRequest.clubName}</span>
+              </div>
             </div>
 
             <div className="mb-6">
@@ -402,20 +455,23 @@ function ClubLeaderRequestsPage() {
                 rows={4}
                 className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               />
+              {requestActionType === 'reject' && (
+                <p className="mt-1 text-xs text-red-600">Vui lòng ghi rõ lý do từ chối để sinh viên hiểu.</p>
+              )}
             </div>
 
             <div className="flex gap-3">
               <button
                 onClick={handleCloseRequestModal}
                 disabled={isProcessingRequest}
-                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Hủy
               </button>
               <button
                 onClick={handleSubmitRequest}
                 disabled={isProcessingRequest}
-                className={`flex-1 rounded-lg px-4 py-2 font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`flex-1 rounded-lg px-4 py-2 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
                   requestActionType === 'approve'
                     ? 'bg-emerald-600 hover:bg-emerald-700'
                     : 'bg-red-600 hover:bg-red-700'

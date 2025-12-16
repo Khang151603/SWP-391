@@ -44,6 +44,26 @@ function ClubLeaderActivitiesPage() {
   const isValid =
     !!form.clubId && !!form.title && !!form.description && !!form.startTime && !!form.endTime && !!form.location;
 
+  const normalizeStatus = (status?: string) => {
+    if (!status) return 'notyetopen';
+    return status.toLowerCase().replace(/_/g, '');
+  };
+
+  const statusLabel: Record<string, string> = {
+    notyetopen: 'Chưa mở',
+    pending: 'Chưa mở',
+    active: 'Đã mở đăng ký',
+    ongoing: 'Đang diễn ra',
+    completed: 'Đã kết thúc',
+  };
+
+  const statusStyle: Record<string, string> = {
+    notyetopen: 'bg-amber-50 text-amber-700 ring-amber-200',
+    pending: 'bg-amber-50 text-amber-700 ring-amber-200',
+    active: 'bg-blue-50 text-blue-700 ring-blue-200',
+    ongoing: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+    completed: 'bg-slate-50 text-slate-700 ring-slate-200',
+  };
   // Format date to DD/MM/YYYY for display
   const formatDateToDDMMYYYY = (dateTimeString: string): string => {
     if (!dateTimeString) return '';
@@ -454,50 +474,58 @@ function ClubLeaderActivitiesPage() {
       title="Quản lý hoạt động & sự kiện"
       subtitle="Lên kế hoạch, theo dõi tiến độ và truyền thông hoạt động nội bộ trong một màn hình."
     >
-      <div className="space-y-6">
-        {/* Header and actions */}
-        <section className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Hoạt động</p>
-            <h2 className="text-xl font-semibold text-slate-900 mt-1">Danh sách hoạt động theo CLB</h2>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <select
-              value={form.clubId || ''}
-              onChange={(e) => handleChange('clubId', Number(e.target.value))}
-              className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-900 focus:border-blue-400 focus:outline-none"
-              disabled={clubsLoading || clubs.length === 0}
-            >
-              {clubs.length === 0 && <option value="">Không có CLB</option>}
-              {clubs.map((club) => (
-                <option key={club.id} value={club.id}>
-                  {club.name}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => {
-                resetCreateForm();
-                setShowCreateModal(true);
-              }}
-              className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-60"
-              disabled={!form.clubId}
-            >
-              + Tạo hoạt động
-            </button>
+      <div className="space-y-8">
+        {/* Hero */}
+        <section className="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-r from-blue-50 via-white to-emerald-50 p-6 lg:p-8 shadow-sm">
+          <div className="absolute inset-y-0 right-0 w-1/3 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),transparent_55%)] pointer-events-none" />
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between relative">
+            <div className="max-w-2xl space-y-2">
+              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Hoạt động</p>
+              <h2 className="text-2xl font-semibold text-slate-900">Danh sách hoạt động theo CLB</h2>
+            </div>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <select
+                value={form.clubId || ''}
+                onChange={(e) => handleChange('clubId', Number(e.target.value))}
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus:border-blue-400 focus:outline-none min-w-[220px]"
+                disabled={clubsLoading || clubs.length === 0}
+              >
+                {clubs.length === 0 && <option value="">Không có CLB</option>}
+                {clubs.map((club) => (
+                  <option key={club.id} value={club.id}>
+                    {club.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  resetCreateForm();
+                  setShowCreateModal(true);
+                }}
+                className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-blue-700 disabled:opacity-60"
+                disabled={!form.clubId}
+              >
+                <span>+ Tạo hoạt động</span>
+              </button>
+            </div>
           </div>
         </section>
 
-        {/* Activities list */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-5 lg:p-6 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
+
+        {/* Activities */}
+        <section className="rounded-3xl border border-slate-200 bg-white p-5 lg:p-6 space-y-4 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">CLB</p>
               <h3 className="text-lg font-semibold text-slate-900">
                 {clubs.find((c) => c.id === form.clubId)?.name || 'Chưa chọn CLB'}
               </h3>
             </div>
-            {activitiesLoading && <p className="text-xs text-slate-500">Đang tải hoạt động...</p>}
+            {activitiesLoading && (
+              <span className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                Đang tải hoạt động...
+              </span>
+            )}
           </div>
 
           {message && (
@@ -512,7 +540,25 @@ function ClubLeaderActivitiesPage() {
             </div>
           )}
 
-          {activities.length === 0 ? (
+          {activitiesLoading ? (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((skeleton) => (
+                <div
+                  key={skeleton}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3 animate-pulse"
+                >
+                  <div className="h-36 w-full rounded-xl bg-slate-200" />
+                  <div className="h-3 w-3/4 rounded bg-slate-200" />
+                  <div className="h-3 w-1/2 rounded bg-slate-200" />
+                  <div className="h-3 w-2/3 rounded bg-slate-200" />
+                  <div className="flex gap-2">
+                    <div className="h-8 w-16 rounded-lg bg-slate-200" />
+                    <div className="h-8 w-20 rounded-lg bg-slate-200" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : activities.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-600">
               CLB chưa có hoạt động nào. Nhấn “+ Tạo hoạt động” để bắt đầu.
             </div>
@@ -521,120 +567,101 @@ function ClubLeaderActivitiesPage() {
               {activities.map((act) => {
                 const start = new Date(act.startTime);
                 const end = new Date(act.endTime);
-                const status = (act.status || 'Not_yet_open').toLowerCase().replace(/_/g, '');
-                
-                // Debug: log status
-                console.log(`Activity ${act.id} - Original status: "${act.status}" - Normalized: "${status}"`);
-                
-                // Map status to Vietnamese
-                const statusVietnamese = 
-                  status === 'notyetopen' ? 'Chưa mở' :
-                  status === 'pending' ? 'Chưa mở' :
-                  status === 'active' ? 'Đã mở đăng ký' :
-                  status === 'ongoing' ? 'Đang diễn ra' :
-                  status === 'completed' ? 'Đã kết thúc' : act.status || 'Chưa mở';
-                
-                const statusStyle =
-                  status === 'notyetopen' || status === 'pending'
-                    ? 'bg-amber-50 text-amber-700 ring-amber-200'
-                    : status === 'active'
-                      ? 'bg-blue-50 text-blue-700 ring-blue-200'
-                      : status === 'ongoing'
-                        ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
-                        : status === 'completed'
-                          ? 'bg-slate-50 text-slate-700 ring-slate-200'
-                          : 'bg-slate-50 text-slate-700 ring-slate-200';
+                const status = normalizeStatus(act.status);
+                const statusVietnamese = statusLabel[status] || statusLabel.notyetopen;
+                const badgeStyle = statusStyle[status] || statusStyle.notyetopen;
 
                 return (
                   <div
                     key={act.id}
-                    className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition"
+                    className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-lg hover:ring-blue-100"
                   >
-                    {/* Activity Image */}
-                    {act.imageActsUrl && (
-                      <div className="rounded-xl overflow-hidden -mx-4 -mt-4 mb-3">
-                        <img 
-                          src={act.imageActsUrl} 
+                    <span className={`absolute left-4 top-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
+                      {statusVietnamese}
+                    </span>
+
+                    {act.imageActsUrl ? (
+                      <div className="overflow-hidden">
+                        <img
+                          src={act.imageActsUrl}
                           alt={act.title}
-                          className="w-full h-40 object-cover"
+                          className="h-40 w-full object-cover transition duration-500 group-hover:scale-[1.02]"
                         />
                       </div>
+                    ) : (
+                      <div className="flex h-40 w-full items-center justify-center bg-slate-50 text-xs text-slate-500">
+                        Chưa có ảnh hoạt động
+                      </div>
                     )}
-                    
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="space-y-1 flex-1">
+
+                    <div className="flex flex-1 flex-col gap-3 p-4">
+                      <div className="space-y-1">
                         <p className="text-sm font-semibold text-slate-900 line-clamp-2">{act.title}</p>
                         <p className="text-xs text-slate-600 line-clamp-2">{act.description}</p>
                       </div>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ${statusStyle}`}>
-                        {statusVietnamese}
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-700 space-y-2">
-                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
-                        <p className="text-[10px] uppercase tracking-wide text-slate-500">Thời gian</p>
-                        <p className="mt-1 text-sm text-slate-900">
-                          {start.toLocaleString('vi-VN')} → {end.toLocaleString('vi-VN')}
-                        </p>
+
+                      <div className="grid grid-cols-1 gap-2 text-xs text-slate-700">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-500">Thời gian</p>
+                          <p className="text-sm text-slate-900">{start.toLocaleString('vi-VN')} → {end.toLocaleString('vi-VN')}</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                          <p className="text-[10px] uppercase tracking-wide text-slate-500">Địa điểm</p>
+                          <p className="text-sm text-slate-900">{act.location}</p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-slate-500">Địa điểm:</span>
-                        <span className="text-slate-800">{act.location}</span>
+
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
+                        {status !== 'completed' && (
+                          <button
+                            onClick={() => handleEdit(act)}
+                            className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                          >
+                            Sửa
+                          </button>
+                        )}
+                        {status === 'completed' && (
+                          <button
+                            onClick={() => {
+                              setSelectedActivity(act);
+                              setShowDeleteConfirm(true);
+                            }}
+                            className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                          >
+                            Xóa
+                          </button>
+                        )}
+                        {(status === 'pending' || status === 'notyetopen') && (
+                          <button
+                            onClick={() => handleOpenRegistration(act)}
+                            className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                          >
+                            Mở đăng ký
+                          </button>
+                        )}
+                        {status === 'active' && (
+                          <button
+                            onClick={() => handleStartActivity(act)}
+                            className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                          >
+                            Bắt đầu
+                          </button>
+                        )}
+                        {(status === 'ongoing' || act.status?.toLowerCase().includes('ongoing')) && (
+                          <button
+                            onClick={() => handleStopActivity(act)}
+                            className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                          >
+                            Dừng
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleViewParticipants(act)}
+                          className="rounded-lg bg-purple-50 border border-purple-200 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
+                        >
+                          Xem thành viên
+                        </button>
                       </div>
-                    </div>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                      {status !== 'completed' && (
-                        <button
-                          onClick={() => handleEdit(act)}
-                          className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
-                        >
-                          Sửa
-                        </button>
-                      )}
-                      {status === 'completed' && (
-                        <button
-                          onClick={() => {
-                            setSelectedActivity(act);
-                            setShowDeleteConfirm(true);
-                          }}
-                          className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                        >
-                          Xóa
-                        </button>
-                      )}
-                      {(status === 'pending' || status === 'notyetopen') && (
-                        <button
-                          onClick={() => handleOpenRegistration(act)}
-                          className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
-                        >
-                          Mở đăng ký
-                        </button>
-                      )}
-                      {status === 'active' && (
-                        <button
-                          onClick={() => handleStartActivity(act)}
-                          className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
-                        >
-                          Bắt đầu
-                        </button>
-                      )}
-                      {/* Check both 'ongoing' and status containing 'ongoing' */}
-                      {(status === 'ongoing' || act.status?.toLowerCase().includes('ongoing')) && (
-                        <button
-                          onClick={() => handleStopActivity(act)}
-                          className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                        >
-                          Dừng
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleViewParticipants(act)}
-                        className="rounded-lg bg-purple-50 border border-purple-200 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
-                      >
-                        Participants
-                      </button>
                     </div>
                   </div>
                 );
@@ -778,7 +805,6 @@ function ClubLeaderActivitiesPage() {
                       required
                     />
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">dd/mm/yyyy giờ:phút (giờ VN).</p>
                 </label>
 
                 <label className="text-sm text-slate-800">
@@ -865,7 +891,6 @@ function ClubLeaderActivitiesPage() {
                       required
                     />
                   </div>
-                  <p className="mt-1 text-xs text-slate-500">dd/mm/yyyy giờ:phút (giờ VN).</p>
                 </label>
 
                 <label className="text-sm text-slate-800 md:col-span-2">

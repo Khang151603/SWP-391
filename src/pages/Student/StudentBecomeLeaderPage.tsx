@@ -1,20 +1,39 @@
 import { useState, useEffect } from 'react';
 import StudentLayout from '../../components/layout/StudentLayout';
 import { Button } from '../../components/ui/Button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '../../components/ui/Dialog';
 import { clubService } from '../../api/services/club.service';
 import { handleApiError, ApiError } from '../../api/utils/errorHandler';
 import { useAppContext } from '../../context/AppContext';
 import type { LeaderRequest } from '../../api/types/club.types';
 
-// Form field configuration - chỉ giữ lại reason theo API backend
+// Form field configuration - theo API backend mới
 const formFields = [
   {
-    id: 'reason',
-    label: 'Lý do muốn trở thành Club Leader',
+    id: 'motivation',
+    label: 'Động lực muốn trở thành Club Leader',
     required: true,
-    placeholder: 'Hãy chia sẻ lý do bạn muốn trở thành Club Leader...',
+    placeholder: 'Hãy chia sẻ động lực chính khiến bạn muốn trở thành Club Leader...',
   },
-];
+  {
+    id: 'experience',
+    label: 'Kinh nghiệm lãnh đạo / hoạt động ngoại khóa',
+    required: true,
+    placeholder: 'Mô tả các kinh nghiệm lãnh đạo, tham gia CLB, hoạt động ngoại khóa của bạn...',
+  },
+  {
+    id: 'vision',
+    label: 'Tầm nhìn cho câu lạc bộ',
+    required: true,
+    placeholder: 'Chia sẻ tầm nhìn, định hướng phát triển câu lạc bộ nếu bạn trở thành Leader...',
+  },
+  {
+    id: 'commitment',
+    label: 'Cam kết đồng hành',
+    required: true,
+    placeholder: 'Bạn cam kết như thế nào về thời gian, trách nhiệm và sự gắn bó với câu lạc bộ?...',
+  },
+] as const;
 
 // Icons
 const Icons = {
@@ -64,6 +83,12 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
+  Eye: () => (
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+    </svg>
+  ),
 };
 
 // Form field component
@@ -110,12 +135,17 @@ function StudentBecomeLeaderPage() {
   const [isClubLeader, setIsClubLeader] = useState(false);
 
   const [formData, setFormData] = useState({
-    reason: '',
+    motivation: '',
+    experience: '',
+    vision: '',
+    commitment: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [myRequests, setMyRequests] = useState<LeaderRequest[]>([]);
+  const [selectedRequest, setSelectedRequest] = useState<LeaderRequest | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   // Check if user is club leader whenever user changes
   useEffect(() => {
@@ -145,14 +175,22 @@ function StudentBecomeLeaderPage() {
     try {
       // Gọi API để gửi yêu cầu trở thành Club Leader
       await clubService.createLeaderRequest({
-        reason: formData.reason,
+        motivation: formData.motivation,
+        experience: formData.experience,
+        vision: formData.vision,
+        commitment: formData.commitment,
       });
 
       setIsSubmitting(false);
       setSubmitSuccess(true);
       setTimeout(() => {
         setSubmitSuccess(false);
-        setFormData({ reason: '' });
+        setFormData({
+          motivation: '',
+          experience: '',
+          vision: '',
+          commitment: '',
+        });
       }, 5000);
     } catch (error) {
       setIsSubmitting(false);
@@ -161,7 +199,12 @@ function StudentBecomeLeaderPage() {
   };
 
   const resetForm = () => {
-    setFormData({ reason: '' });
+    setFormData({
+      motivation: '',
+      experience: '',
+      vision: '',
+      commitment: '',
+    });
   };
 
   // Fetch my leader requests
@@ -284,7 +327,14 @@ function StudentBecomeLeaderPage() {
                   </Button>
                   <Button
                     type="submit"
-                    disabled={isSubmitting || !formData.reason.trim() || isClubLeader}
+                    disabled={
+                      isSubmitting ||
+                      isClubLeader ||
+                      !formData.motivation.trim() ||
+                      !formData.experience.trim() ||
+                      !formData.vision.trim() ||
+                      !formData.commitment.trim()
+                    }
                     className="w-full sm:w-auto"
                   >
                     {isSubmitting ? (
@@ -304,7 +354,7 @@ function StudentBecomeLeaderPage() {
             )}
           </div>
 
-          {/* Right Column - My Requests Table Section */}
+          {/* Right Column - My Requests Card Section */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="mb-6 flex items-center justify-between">
               <div>
@@ -316,94 +366,70 @@ function StudentBecomeLeaderPage() {
               </span>
             </div>
             {myRequests.length > 0 ? (
-              <div className="overflow-hidden rounded-xl border border-slate-200">
-                <div className="overflow-x-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-                  <table className="w-full min-w-[600px]">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                          STT
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                          Ngày gửi
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                          Lý do
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                          Trạng thái
-                        </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider text-slate-700">
-                          Ghi chú
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 bg-white">
-                      {myRequests.map((request, index) => {
-                        const statusConfig: Record<string, {
-                          textColor: string;
-                          bgColor: string;
-                          label: string;
-                        }> = {
-                          pending: {
-                            textColor: 'text-yellow-800',
-                            bgColor: 'bg-yellow-100 border-yellow-300',
-                            label: 'Đang chờ',
-                          },
-                          approved: {
-                            textColor: 'text-emerald-800',
-                            bgColor: 'bg-emerald-100 border-emerald-300',
-                            label: 'Đã duyệt',
-                          },
-                          rejected: {
-                            textColor: 'text-red-800',
-                            bgColor: 'bg-red-100 border-red-300',
-                            label: 'Đã từ chối',
-                          },
-                        };
-                        const status = request.status?.toLowerCase() || 'pending';
-                        const config = statusConfig[status] || statusConfig.pending;
-                        return (
-                          <tr key={request.id} className="transition-colors hover:bg-slate-50">
-                            <td className="whitespace-nowrap px-6 py-4">
-                              <div className="text-sm font-medium text-slate-900">{index + 1}</div>
-                            </td>
-                            <td className="whitespace-nowrap px-6 py-4">
-                              <div className="text-sm text-slate-900">
-                                {(() => {
-                                  const date = new Date(request.requestDate);
-                                  const day = String(date.getUTCDate()).padStart(2, '0');
-                                  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-                                  const year = date.getUTCFullYear();
-                                  return `${day}/${month}/${year}`;
-                                })()}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="max-w-xs text-sm text-slate-700">
-                                <p className="line-clamp-2">{request.reason}</p>
-                              </div>
-                            </td>
-                            <td className="whitespace-nowrap px-6 py-4">
-                              <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${config.bgColor} ${config.textColor}`}>
-                                {config.label}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="max-w-xs text-sm text-slate-700">
-                                {request.note ? (
-                                  <p className="line-clamp-2">{request.note}</p>
-                                ) : (
-                                  <span className="text-slate-400">—</span>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+              <div className="space-y-4">
+                {myRequests.map((request, index) => {
+                  const statusConfig: Record<string, {
+                    textColor: string;
+                    bgColor: string;
+                    label: string;
+                  }> = {
+                    pending: {
+                      textColor: 'text-yellow-800',
+                      bgColor: 'bg-yellow-100 border-yellow-300',
+                      label: 'Đang chờ',
+                    },
+                    approved: {
+                      textColor: 'text-emerald-800',
+                      bgColor: 'bg-emerald-100 border-emerald-300',
+                      label: 'Đã duyệt',
+                    },
+                    rejected: {
+                      textColor: 'text-red-800',
+                      bgColor: 'bg-red-100 border-red-300',
+                      label: 'Đã từ chối',
+                    },
+                  };
+                  const status = request.status?.toLowerCase() || 'pending';
+                  const config = statusConfig[status] || statusConfig.pending;
+                  const date = new Date(request.requestDate);
+                  const formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`;
+                  
+                  return (
+                    <div
+                      key={request.id}
+                      className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md hover:border-slate-300"
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4 flex-1">
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-100 text-slate-600 font-semibold">
+                            #{index + 1}
+                          </div>
+                          <div className="flex items-center gap-3 flex-1">
+                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                              <Icons.Clock />
+                              <span className="font-medium">{formattedDate}</span>
+                            </div>
+                            <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold ${config.bgColor} ${config.textColor}`}>
+                              {config.label}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="secondary"
+                          onClick={() => {
+                            setSelectedRequest(request);
+                            setIsDetailModalOpen(true);
+                          }}
+                          className="shrink-0"
+                        >
+                          <Icons.Eye />
+                          <span className="ml-2">Chi tiết</span>
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-12 text-center">
@@ -418,6 +444,70 @@ function StudentBecomeLeaderPage() {
           </div>
         </div>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Chi tiết yêu cầu</DialogTitle>
+            {selectedRequest && (
+              <div className="mt-4 space-y-6">
+                <div className="flex items-center gap-4 text-sm text-slate-600">
+                  <span className="flex items-center gap-1">
+                    <Icons.Clock />
+                    Ngày gửi: {(() => {
+                      const date = new Date(selectedRequest.requestDate);
+                      return `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`;
+                    })()}
+                  </span>
+                  <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${
+                    selectedRequest.status === 'pending' ? 'bg-yellow-100 border-yellow-300 text-yellow-800' :
+                    selectedRequest.status === 'approved' ? 'bg-emerald-100 border-emerald-300 text-emerald-800' :
+                    'bg-red-100 border-red-300 text-red-800'
+                  }`}>
+                    {selectedRequest.status === 'pending' ? 'Đang chờ' :
+                     selectedRequest.status === 'approved' ? 'Đã duyệt' : 'Đã từ chối'}
+                  </span>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <h4 className="font-semibold text-slate-900 mb-2">Động lực muốn trở thành Club Leader</h4>
+                    <p className="text-slate-700 whitespace-pre-wrap">{selectedRequest.motivation}</p>
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <h4 className="font-semibold text-slate-900 mb-2">Kinh nghiệm lãnh đạo / hoạt động ngoại khóa</h4>
+                    <p className="text-slate-700 whitespace-pre-wrap">{selectedRequest.experience}</p>
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <h4 className="font-semibold text-slate-900 mb-2">Tầm nhìn cho câu lạc bộ</h4>
+                    <p className="text-slate-700 whitespace-pre-wrap">{selectedRequest.vision}</p>
+                  </div>
+
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <h4 className="font-semibold text-slate-900 mb-2">Cam kết đồng hành</h4>
+                    <p className="text-slate-700 whitespace-pre-wrap">{selectedRequest.commitment}</p>
+                  </div>
+
+                  {selectedRequest.note && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                      <h4 className="font-semibold text-amber-900 mb-2">Ghi chú từ admin</h4>
+                      <p className="text-amber-800 whitespace-pre-wrap">{selectedRequest.note}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </DialogHeader>
+          <div className="mt-6 flex justify-end">
+            <DialogClose asChild>
+              <Button variant="secondary">Đóng</Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
     </StudentLayout>
   );
 }

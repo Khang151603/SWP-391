@@ -21,6 +21,10 @@ export interface ClubListItem {
   memberCount?: number;
   membershipFee: number;
   status: 'Active' | 'Unactive' | string;
+  location?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  activityFrequency?: string | null;
 }
 
 export interface LeaderClubListItem {
@@ -61,7 +65,10 @@ export interface ClubMember {
 }
 
 export interface CreateLeaderRequest {
-  reason: string;
+  motivation: string;
+  experience: string;
+  vision: string;
+  commitment: string;
 }
 
 export interface CreateLeaderClubRequest {
@@ -70,6 +77,10 @@ export interface CreateLeaderClubRequest {
   establishedDate: string; // ISO date string
   imageClubsUrl: string;
   membershipFee?: number;
+  location?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  activityFrequency?: string;
 }
 
 export interface UpdateLeaderClubRequest {
@@ -79,13 +90,20 @@ export interface UpdateLeaderClubRequest {
   imageClubsUrl: string;
   membershipFee: number;
   status: 'Active' | 'Unactive';
+  location?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  activityFrequency?: string;
 }
 
 export interface LeaderRequest {
   id: number;
   requestDate: string;
   status: 'pending' | 'approved' | 'rejected';
-  reason: string;
+  motivation: string;
+  experience: string;
+  vision: string;
+  commitment: string;
   note?: string;
   processedBy?: number;
   processedAt?: string;

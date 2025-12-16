@@ -19,18 +19,27 @@ type ClubProfile = {
   status: string;
   memberCount: number | null;
   totalRevenue: number | null;
+  location?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  activityFrequency?: string | null;
 };
 
 type ExtendedLeaderClubListItem = LeaderClubListItem & {
   avatarPublicId?: string | null;
   memberCount?: number | null;
   totalRevenue?: number | null;
+  location?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  activityFrequency?: string | null;
 };
 
 function ClubLeaderInfoPage() {
   const [clubs, setClubs] = useState<ClubProfile[]>([]);
   const [selectedClubId, setSelectedClubId] = useState<string>('');
   const [showDetailView, setShowDetailView] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,6 +107,10 @@ function ClubLeaderInfoPage() {
               status: club.status,
               memberCount,
               totalRevenue,
+              location: club.location || null,
+              contactEmail: club.contactEmail || null,
+              contactPhone: club.contactPhone || null,
+              activityFrequency: club.activityFrequency || null,
             };
           })
         );
@@ -124,6 +137,10 @@ function ClubLeaderInfoPage() {
     establishedDate: new Date().toISOString(),
     imageClubsUrl: '',
     membershipFee: undefined,
+    location: '',
+    contactEmail: '',
+    contactPhone: '',
+    activityFrequency: '',
   });
 
   const selectedClub = useMemo(
@@ -154,11 +171,26 @@ function ClubLeaderInfoPage() {
       setSelectedClubId(clubId);
       setFormData(club);
       setShowDetailView(true);
+      setIsEditMode(false);
     }
   };
 
   const handleCloseDetail = () => {
     setShowDetailView(false);
+    setIsEditMode(false);
+  };
+
+  const handleEditMode = () => {
+    setIsEditMode(true);
+  };
+
+  const handleCancelEdit = () => {
+    // Reset form data to original club data
+    const club = clubs.find((c) => c.id === selectedClubId);
+    if (club) {
+      setFormData({ ...club });
+    }
+    setIsEditMode(false);
   };
 
   const handleUpdateClub = async () => {
@@ -168,9 +200,11 @@ function ClubLeaderInfoPage() {
       return;
     }
 
-    // Normalize status to ensure it's 'Active' or 'Unactive'
-    const normalizedStatus = formData.status 
-      ? (formData.status.toLowerCase() === 'active' ? 'Active' : 'Unactive')
+    // Get original status from selectedClub (don't allow updating status)
+    const originalClub = clubs.find((c) => c.id === formData.id);
+    const statusToUse = originalClub?.status || formData.status || 'Active';
+    const normalizedStatus = statusToUse 
+      ? (statusToUse.toLowerCase() === 'active' ? 'Active' : 'Unactive')
       : 'Active';
 
     const payload: UpdateLeaderClubRequest = {
@@ -180,6 +214,10 @@ function ClubLeaderInfoPage() {
       imageClubsUrl: formData.imageClubsUrl || '',
       membershipFee: formData.membershipFee,
       status: normalizedStatus as UpdateLeaderClubRequest['status'],
+      location: formData.location || undefined,
+      contactEmail: formData.contactEmail || undefined,
+      contactPhone: formData.contactPhone || undefined,
+      activityFrequency: formData.activityFrequency || undefined,
     };
 
     setIsLoading(true);
@@ -199,13 +237,17 @@ function ClubLeaderInfoPage() {
         status: normalizedStatus,
         memberCount: formData.memberCount,
         totalRevenue: formData.totalRevenue,
+        location: formData.location,
+        contactEmail: formData.contactEmail,
+        contactPhone: formData.contactPhone,
+        activityFrequency: formData.activityFrequency,
       };
       
       // Update clubs list
       setClubs((prev) => prev.map((club) => (club.id === updatedProfile.id ? updatedProfile : club)));
       
       setFormData(updatedProfile);
-      setShowDetailView(false);
+      setIsEditMode(false);
       
       // Show success message
       setSuccessMessage('Cập nhật thông tin CLB thành công!');
@@ -249,6 +291,10 @@ function ClubLeaderInfoPage() {
         status: newClub.status || 'active',
         memberCount: extendedClub.memberCount ?? null,
         totalRevenue: extendedClub.totalRevenue ?? null,
+        location: createFormData.location || null,
+        contactEmail: createFormData.contactEmail || null,
+        contactPhone: createFormData.contactPhone || null,
+        activityFrequency: createFormData.activityFrequency || null,
       };
 
       setClubs((prev) => [...prev, clubProfile]);
@@ -265,6 +311,10 @@ function ClubLeaderInfoPage() {
         establishedDate: today.toISOString(),
         imageClubsUrl: '',
         membershipFee: 0,
+        location: '',
+        contactEmail: '',
+        contactPhone: '',
+        activityFrequency: '',
       });
       setDateInputValue(formatDateToDDMMYYYY(today.toISOString()));
     } catch (err) {
@@ -470,6 +520,10 @@ function ClubLeaderInfoPage() {
                       establishedDate: today.toISOString(),
                       imageClubsUrl: '',
                       membershipFee: 0,
+                      location: '',
+                      contactEmail: '',
+                      contactPhone: '',
+                      activityFrequency: '',
                     });
                     setDateInputValue(formatDateToDDMMYYYY(today.toISOString()));
                   }}
@@ -524,7 +578,51 @@ function ClubLeaderInfoPage() {
                       min="0"
                     />
                   </label>
+                  <label className="block text-sm text-slate-800">
+                    Địa điểm
+                    <input
+                      type="text"
+                      value={createFormData.location ?? ''}
+                      onChange={(e) => handleCreateFormChange('location', e.target.value)}
+                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                      placeholder="Ví dụ: Phòng A101, Tòa nhà B"
+                    />
+                  </label>
                 </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="block text-sm text-slate-800">
+                    Email liên hệ
+                    <input
+                      type="email"
+                      value={createFormData.contactEmail ?? ''}
+                      onChange={(e) => handleCreateFormChange('contactEmail', e.target.value)}
+                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                      placeholder="club@example.com"
+                    />
+                  </label>
+                  <label className="block text-sm text-slate-800">
+                    Số điện thoại liên hệ
+                    <input
+                      type="tel"
+                      value={createFormData.contactPhone ?? ''}
+                      onChange={(e) => handleCreateFormChange('contactPhone', e.target.value)}
+                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                      placeholder="0123456789"
+                    />
+                  </label>
+                </div>
+
+                <label className="block text-sm text-slate-800">
+                  Tần suất hoạt động
+                  <input
+                    type="text"
+                    value={createFormData.activityFrequency ?? ''}
+                    onChange={(e) => handleCreateFormChange('activityFrequency', e.target.value)}
+                    className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none"
+                    placeholder="Ví dụ: Hàng tuần, 2 lần/tháng, Hàng tháng"
+                  />
+                </label>
 
                 <label className="block text-sm text-slate-800">
                   Ngày thành lập
@@ -650,9 +748,6 @@ function ClubLeaderInfoPage() {
                       </svg>
                     </button>
                   </div>
-                  <p className="mt-1.5 text-xs text-slate-500">
-                    Nhập ngày thành lập theo định dạng DD/MM/YYYY hoặc click vào icon lịch để chọn ngày (không thể chọn ngày trong tương lai)
-                  </p>
                 </label>
 
                 <div className="flex justify-end gap-3 pt-4">
@@ -768,21 +863,190 @@ function ClubLeaderInfoPage() {
           </section>
         )}
 
-        {/* Detail View: form + live preview */}
-        {showDetailView && formData && (
+        {/* Detail View: View Mode (Read-only) */}
+        {showDetailView && formData && !isEditMode && (
           <>
-            {/* Back Button Header */}
-            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between">
+            {/* Header with Breadcrumb */}
+            <section className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-6 shadow-sm">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-4">
                   <button
                     onClick={handleCloseDetail}
-                    className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    className="group flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
                   >
-                    ← Quay lại danh sách
+                    <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Quay lại
                   </button>
+                  <div className="h-6 w-px bg-slate-300"></div>
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-900">Chỉnh sửa: {formData.name || 'CLB mới'}</h2>
+                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Chi tiết CLB</p>
+                    <h2 className="mt-1 text-2xl font-bold text-slate-900">{formData.name || 'CLB mới'}</h2>
+                  </div>
+                </div>
+                <button
+                  onClick={handleEditMode}
+                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  Chỉnh sửa
+                </button>
+              </div>
+            </section>
+
+            {/* View Mode Content */}
+            <section className="space-y-6">
+              {/* Hero Section with Image and Status */}
+              <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                {formData.imageClubsUrl && (
+                  <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 md:h-80">
+                    <img
+                      src={formData.imageClubsUrl}
+                      alt={formData.name}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                    <div className="absolute bottom-4 right-4">
+                      {(() => {
+                        const statusLower = (formData.status || 'active').toLowerCase();
+                        const isActive = statusLower === 'active';
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold shadow-lg backdrop-blur-sm ${
+                            isActive 
+                              ? 'bg-emerald-500/90 text-white ring-2 ring-emerald-300/50' 
+                              : 'bg-red-500/90 text-white ring-2 ring-red-300/50'
+                          }`}>
+                            <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-emerald-200' : 'bg-red-200'}`}></span>
+                            {formData.status || 'active'}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+                {!formData.imageClubsUrl && (
+                  <div className="flex h-48 items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 md:h-64">
+                    <div className="text-center">
+                      <svg className="mx-auto h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="mt-2 text-sm text-slate-400">Chưa có ảnh đại diện</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Main Info Card */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="mb-6">
+                  <h3 className="mb-4 text-lg font-bold text-slate-900">
+                    Thông tin chung
+                  </h3>
+                  
+                  {/* Description */}
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Mô tả</p>
+                    <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">{formData.description || 'Chưa có mô tả'}</p>
+                  </div>
+                </div>
+
+                {/* Contact Information Grid */}
+                <div className="grid gap-4 border-t border-slate-200 pt-6 md:grid-cols-2">
+                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Địa điểm</p>
+                    <p className="text-sm font-medium text-slate-900">{formData.location || 'Chưa cập nhật'}</p>
+                  </div>
+
+                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Tần suất hoạt động</p>
+                    <p className="text-sm font-medium text-slate-900">{formData.activityFrequency || 'Chưa cập nhật'}</p>
+                  </div>
+
+                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Email liên hệ</p>
+                    {formData.contactEmail ? (
+                      <a href={`mailto:${formData.contactEmail}`} className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
+                        {formData.contactEmail}
+                      </a>
+                    ) : (
+                      <p className="text-sm font-medium text-slate-400">Chưa cập nhật</p>
+                    )}
+                  </div>
+
+                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Số điện thoại</p>
+                    {formData.contactPhone ? (
+                      <a href={`tel:${formData.contactPhone}`} className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
+                        {formData.contactPhone}
+                      </a>
+                    ) : (
+                      <p className="text-sm font-medium text-slate-400">Chưa cập nhật</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Statistics Card */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="mb-6 text-lg font-bold text-slate-900">
+                  Thống kê
+                </h3>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-blue-50 to-blue-100/50 p-5 transition-all hover:border-blue-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày thành lập</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      {formData.establishedDate ? new Date(formData.establishedDate).toLocaleDateString('vi-VN') : '--'}
+                    </p>
+                  </div>
+
+                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-5 transition-all hover:border-emerald-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Phí thành viên</p>
+                    <p className="text-lg font-bold text-slate-900">{formatCurrency(formData.membershipFee)}</p>
+                  </div>
+
+                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-purple-50 to-purple-100/50 p-5 transition-all hover:border-purple-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Số thành viên</p>
+                    <p className="text-lg font-bold text-slate-900">{formData.memberCount ?? '--'}</p>
+                  </div>
+
+                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-orange-50 to-orange-100/50 p-5 transition-all hover:border-orange-300 hover:shadow-md">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Tổng doanh thu</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      {formData.totalRevenue !== null ? formatCurrency(formData.totalRevenue) : '--'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* Detail View: Edit Mode */}
+        {showDetailView && formData && isEditMode && (
+          <>
+            {/* Back Button Header */}
+            <section className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-blue-50/30 p-6 shadow-sm">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={handleCancelEdit}
+                    className="group flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50"
+                  >
+                    <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Hủy chỉnh sửa
+                  </button>
+                  <div className="h-6 w-px bg-slate-300"></div>
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Chế độ chỉnh sửa</p>
+                    <h2 className="mt-1 text-2xl font-bold text-slate-900">{formData.name || 'CLB mới'}</h2>
                   </div>
                 </div>
               </div>
@@ -790,36 +1054,63 @@ function ClubLeaderInfoPage() {
 
             {/* Main layout: form editable */}
             <section className="space-y-6">
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
-                <div className="grid gap-4 md:grid-cols-1">
-                  <label className="block text-sm text-slate-800">
-                    Tên CLB <span className="text-red-500">*</span>
+              {/* Basic Information Section */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="mb-6 text-lg font-bold text-slate-900">
+                  Thông tin cơ bản
+                </h3>
+                <div className="space-y-5">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">
+                      Tên CLB <span className="text-red-500">*</span>
+                    </span>
                     <input
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                       placeholder="Ví dụ: CLB Truyền thông"
                     />
                   </label>
+
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">Mô tả</span>
+                    <textarea
+                      value={formData.description}
+                      onChange={(e) => handleInputChange('description', e.target.value)}
+                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                      rows={5}
+                      placeholder="Tóm tắt sứ mệnh, hoạt động nổi bật, văn hoá của CLB..."
+                    />
+                  </label>
                 </div>
+              </div>
 
-                <label className="block text-sm text-slate-800">
-                  Mô tả
-                  <textarea
-                    value={formData.description}
-                    onChange={(e) => handleInputChange('description', e.target.value)}
-                    className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                    rows={4}
-                    placeholder="Tóm tắt sứ mệnh, hoạt động nổi bật, văn hoá."
-                  />
-                </label>
-
-                <div className="grid gap-4 md:grid-cols-3">
-                  <div className="block text-sm text-slate-800 md:col-span-2 space-y-3">
-                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                      <p className="text-sm font-medium text-slate-700 mb-2">Hoặc upload ảnh từ máy tính</p>
+              {/* Image & Media Section */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="mb-6 text-lg font-bold text-slate-900">
+                  Ảnh đại diện
+                </h3>
+                <div className="space-y-4">
+                  {formData.imageClubsUrl && (
+                    <div className="relative overflow-hidden rounded-xl border-2 border-slate-200">
+                      <img
+                        src={formData.imageClubsUrl}
+                        alt={formData.name}
+                        className="h-64 w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
+                  <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-6">
+                    <div className="flex flex-col items-center gap-4 md:flex-row">
+                      <div className="flex-1">
+                        <p className="mb-2 text-sm font-semibold text-slate-700">Upload ảnh mới</p>
+                        <p className="text-xs text-slate-500">Chấp nhận file ảnh (jpg, png, gif, ...), tối đa 5MB</p>
+                      </div>
                       <div className="flex items-center gap-3">
-                        <label className="flex-1">
+                        <label>
                           <input
                             type="file"
                             accept="image/*"
@@ -829,9 +1120,9 @@ function ClubLeaderInfoPage() {
                           />
                           <label
                             htmlFor="club-image-upload"
-                            className="cursor-pointer inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                            className="cursor-pointer inline-flex items-center gap-2 rounded-xl border-2 border-blue-300 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 transition-all hover:bg-blue-100 hover:border-blue-400 active:scale-95"
                           >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                             {selectedImageFile ? selectedImageFile.name : 'Chọn ảnh'}
@@ -841,57 +1132,127 @@ function ClubLeaderInfoPage() {
                           <button
                             onClick={handleUploadImage}
                             disabled={isUploadingImage}
-                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isUploadingImage ? 'Đang upload...' : 'Upload'}
+                            {isUploadingImage ? (
+                              <>
+                                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Đang upload...
+                              </>
+                            ) : (
+                              <>
+                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                Upload
+                              </>
+                            )}
                           </button>
                         )}
                       </div>
-                      <p className="mt-2 text-xs text-slate-500">Chấp nhận file ảnh (jpg, png, gif, ...), tối đa 5MB</p>
                     </div>
-
-                    {formData.imageClubsUrl ? (
-                      <img
-                        src={formData.imageClubsUrl}
-                        alt={formData.name}
-                        className="mt-3 h-56 w-full rounded-xl object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    ) : (
-                      <p className="mt-2 text-xs text-slate-500">Chưa có ảnh</p>
-                    )}
                   </div>
+                </div>
+              </div>
 
-                  <div className="space-y-4">
-                    <label className="block text-sm text-slate-800">
-                      Phí thành viên
+              {/* Settings Section */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="mb-6 text-lg font-bold text-slate-900">
+                  Cài đặt & Thông tin liên hệ
+                </h3>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">Phí thành viên</span>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">VNĐ</span>
                       <input
                         type="number"
                         value={formData.membershipFee}
                         onChange={(e) => handleInputChange('membershipFee', Number(e.target.value))}
-                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                        className="w-full rounded-xl border-2 border-slate-300 bg-white pl-16 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
                         min="0"
+                        placeholder="0"
                       />
-                    </label>
+                    </div>
+                  </label>
 
-                    <label className="block text-sm text-slate-800">
-                      Trạng thái
-                      <select
-                        value={formData.status || 'Active'}
-                        onChange={(e) => handleInputChange('status', e.target.value)}
-                        className="mt-2 w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                      >
-                        <option value="Active">Hoạt động</option>
-                        <option value="Unactive">Không hoạt động</option>
-                      </select>
-                    </label>
-                  </div>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">Trạng thái</span>
+                    <div className="rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3">
+                      {(() => {
+                        const statusLower = (formData.status || 'active').toLowerCase();
+                        const isActive = statusLower === 'active';
+                        return (
+                          <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold ${
+                            isActive 
+                              ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-200' 
+                              : 'bg-red-100 text-red-700 ring-2 ring-red-200'
+                          }`}>
+                            <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                            {formData.status || 'active'}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                  </label>
                 </div>
-                <label className="block text-sm text-slate-800">
+
+                {/* Contact Information */}
+                <div className="grid gap-6 md:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">Địa điểm</span>
+                    <input
+                      type="text"
+                      value={formData.location || ''}
+                      onChange={(e) => handleInputChange('location', e.target.value)}
+                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                      placeholder="Ví dụ: Phòng A101, Tòa nhà B"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">Tần suất hoạt động</span>
+                    <input
+                      type="text"
+                      value={formData.activityFrequency || ''}
+                      onChange={(e) => handleInputChange('activityFrequency', e.target.value)}
+                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                      placeholder="Ví dụ: Hàng tuần, 2 lần/tháng"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">Email liên hệ</span>
+                    <input
+                      type="email"
+                      value={formData.contactEmail || ''}
+                      onChange={(e) => handleInputChange('contactEmail', e.target.value)}
+                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                      placeholder="club@example.com"
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-slate-700">Số điện thoại liên hệ</span>
+                    <input
+                      type="tel"
+                      value={formData.contactPhone || ''}
+                      onChange={(e) => handleInputChange('contactPhone', e.target.value)}
+                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
+                      placeholder="0123456789"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Date Section */}
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="mb-6 text-lg font-bold text-slate-900">
                   Ngày thành lập
-                  <div className="mt-2 relative">
+                </h3>
+                <label className="block">
+                  <span className="mb-2 block text-sm font-semibold text-slate-700">Ngày thành lập</span>
+                  <div className="relative mt-2">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
                       <svg
                         className="w-5 h-5 text-slate-400"
@@ -1032,23 +1393,48 @@ function ClubLeaderInfoPage() {
             </section>
 
             {/* Action bar */}
-            <section className="flex flex-col justify-between gap-3 border-t border-slate-200 pt-4 text-sm md:flex-row md:items-center">
-              <div className="flex items-center gap-2 text-xs text-slate-500" />
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={handleCloseDetail}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                  disabled={isLoading}
-                >
-                  Đóng
-                </button>
-                <button
-                  onClick={handleUpdateClub}
-                  disabled={isLoading}
-                  className="rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
-                </button>
+            <section className="sticky bottom-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Vui lòng kiểm tra kỹ thông tin trước khi lưu</span>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={handleCancelEdit}
+                    className="flex items-center gap-2 rounded-xl border-2 border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50 active:scale-95"
+                    disabled={isLoading}
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Hủy
+                  </button>
+                  <button
+                    onClick={handleUpdateClub}
+                    disabled={isLoading}
+                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+                  >
+                    {isLoading ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Đang lưu...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Lưu thay đổi
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </section>
           </>

@@ -32,6 +32,8 @@ export interface StudentMembershipRequest {
   fullName: string;
   email: string;
   phone: string;
+  major?: string;
+  skills?: string;
 }
 
 export interface StudentMembershipRequestResponse {

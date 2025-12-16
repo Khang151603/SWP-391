@@ -298,6 +298,40 @@ function StudentClubsPage() {
                       <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
                       <p className="mt-1 text-sm text-slate-900">{memberCount ?? '--'}</p>
                     </div>
+                    {item.clubDetails?.location && (
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Địa điểm</p>
+                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{item.clubDetails.location}</p>
+                      </div>
+                    )}
+                    {item.clubDetails?.contactEmail && (
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Email</p>
+                        <a 
+                          href={`mailto:${item.clubDetails.contactEmail}`}
+                          className="mt-1 text-sm text-blue-600 hover:text-blue-700 hover:underline line-clamp-1"
+                        >
+                          {item.clubDetails.contactEmail}
+                        </a>
+                      </div>
+                    )}
+                    {item.clubDetails?.contactPhone && (
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Điện thoại</p>
+                        <a 
+                          href={`tel:${item.clubDetails.contactPhone}`}
+                          className="mt-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          {item.clubDetails.contactPhone}
+                        </a>
+                      </div>
+                    )}
+                    {item.clubDetails?.activityFrequency && (
+                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                        <p className="text-[10px] uppercase text-slate-500">Tần suất hoạt động</p>
+                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{item.clubDetails.activityFrequency}</p>
+                      </div>
+                    )}
                     <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                       <p className="text-[10px] uppercase text-slate-500">Ngày tham gia</p>
                       <p className="mt-1 text-sm text-slate-900">

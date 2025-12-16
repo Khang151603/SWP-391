@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
 import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
@@ -19,6 +19,7 @@ function ClubLeaderMembersPage() {
   const [members, setMembers] = useState<ClubMemberDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'locked' | 'pending'>('all');
   
   // Modal state for members
   const [selectedMember, setSelectedMember] = useState<SelectedMember | null>(null);
@@ -27,7 +28,7 @@ function ClubLeaderMembersPage() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Fetch clubs
-  const fetchClubs = async () => {
+  const fetchClubs = useCallback(async () => {
     try {
       const data = await clubService.getMyLeaderClubs();
       setClubs(data);
@@ -38,10 +39,10 @@ function ClubLeaderMembersPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể tải danh sách CLB');
     }
-  };
+  }, [selectedClubId]);
 
   // Fetch members
-  const fetchMembers = async (clubId: number | null) => {
+  const fetchMembers = useCallback(async (clubId: number | null) => {
     if (!clubId) {
       setMembers([]);
       return;
@@ -52,23 +53,21 @@ function ClubLeaderMembersPage() {
       if (Array.isArray(data)) {
         setMembers(data);
         // Clear any previous errors when successfully fetching
-        if (error && error.includes('thành viên')) {
-          setError(null);
-        }
+        setError((prev) => (prev && prev.includes('thành viên') ? null : prev));
       } else {
         setMembers([]);
       }
-    } catch (err) {
+    } catch {
       setError('Không thể tải danh sách thành viên. Vui lòng thử lại sau.');
       // Set empty array on error to prevent display issues
       setMembers([]);
     }
-  };
+  }, []);
 
   // Load clubs on mount
   useEffect(() => {
     fetchClubs();
-  }, []);
+  }, [fetchClubs]);
 
   // Load members when club is selected
   useEffect(() => {
@@ -86,7 +85,7 @@ function ClubLeaderMembersPage() {
     } else {
       setIsLoading(false);
     }
-  }, [selectedClubId]);
+  }, [selectedClubId, fetchMembers]);
 
   // Format date from ISO string to DD/MM/YYYY
   const formatDate = (dateString: string | null): string => {
@@ -108,12 +107,24 @@ function ClubLeaderMembersPage() {
     return statusLower === 'locked' || statusLower === 'inactive';
   };
 
-  const totalMembers = members.length;
-  const activeMembers = members.filter((m) => 
-    m.member.status?.toLowerCase() === 'active' || 
-    m.member.status?.toLowerCase() === 'approved'
-  ).length;
-  const lockedMembers = members.filter((m) => isLocked(m.member.status)).length;
+  const statusLabelClass = (status?: string) => {
+    const normalized = status?.toLowerCase();
+    if (normalized === 'active' || normalized === 'approved') {
+      return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    }
+    if (normalized === 'pending') {
+      return 'bg-amber-50 text-amber-700 border border-amber-200';
+    }
+    if (normalized === 'locked' || normalized === 'inactive') {
+      return 'bg-red-50 text-red-700 border border-red-200';
+    }
+    return 'bg-slate-100 text-slate-700 border border-slate-300';
+  };
+
+  const selectedClub = useMemo(
+    () => clubs.find((club) => club.id === selectedClubId),
+    [clubs, selectedClubId]
+  );
 
   // Handle lock/unlock/delete actions
   const handleOpenMemberModal = (member: ClubMemberDto, type: 'lock' | 'unlock' | 'delete') => {
@@ -150,7 +161,7 @@ function ClubLeaderMembersPage() {
       await fetchMembers(selectedClubId);
       
       handleCloseModal();
-    } catch (err) {
+    } catch {
       const actionNames: Record<Exclude<ActionType, null>, string> = {
         lock: 'khóa',
         unlock: 'mở khóa',
@@ -172,9 +183,17 @@ function ClubLeaderMembersPage() {
           (member.member.email?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
           String(member.member.accountId).includes(search);
 
-        return matchSearch;
+        const normalizedStatus = member.member.status?.toLowerCase();
+        const matchStatus =
+          statusFilter === 'all' ||
+          (statusFilter === 'active' &&
+            (normalizedStatus === 'active' || normalizedStatus === 'approved')) ||
+          (statusFilter === 'pending' && normalizedStatus === 'pending') ||
+          (statusFilter === 'locked' && isLocked(member.member.status));
+
+        return matchSearch && matchStatus;
       }),
-    [search, members]
+    [search, members, statusFilter]
   );
 
   return (
@@ -182,56 +201,24 @@ function ClubLeaderMembersPage() {
       title="Quản lý thành viên"
       subtitle="Quản lý thành viên các câu lạc bộ"
     >
-      <div className="space-y-8">
-        {error && (
-          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        {/* Top overview cards */}
-        <section className="grid gap-4 md:grid-cols-3">
-          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Tổng thành viên</p>
-            </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{totalMembers}</p>
-          </div>
-
-          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Thành viên đang hoạt động</p>
-            </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{activeMembers}</p>
-          </div>
-
-          <div className="group rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-300 hover:shadow-md">
-            <div className="flex items-center justify-between">
-              <p className="text-xs uppercase tracking-[0.25em] text-slate-500">Thành viên bị khóa</p>
-            </div>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{lockedMembers}</p>
-          </div>
-        </section>
-
-        {/* Members table */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="space-y-6">
+        {/* Banner / context */}
+        <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-indigo-50 px-6 py-5 shadow-sm">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Đội ngũ hiện tại</p>
-              <h3 className="mt-1 text-lg font-semibold text-slate-900">Danh sách thành viên CLB</h3>
+              <p className="text-xs uppercase tracking-[0.35em] text-blue-600">Tổng quan thành viên</p>
+              <h3 className="mt-1 text-2xl font-semibold text-slate-900">
+                {selectedClub?.name || 'Chọn CLB để xem thành viên'}
+              </h3>
+              <p className="text-sm text-slate-600">
+                Theo dõi nhanh tình trạng tham gia và hành động quản lý thành viên.
+              </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <input
-                type="text"
-                placeholder="Tìm theo tên hoặc email..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 md:w-52"
-              />
+            <div className="flex flex-wrap items-center gap-2">
               <select
                 value={selectedClubId || ''}
                 onChange={(e) => setSelectedClubId(e.target.value ? Number(e.target.value) : null)}
-                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
               >
                 <option value="">Chọn CLB</option>
                 {clubs.map((club) => (
@@ -240,12 +227,74 @@ function ClubLeaderMembersPage() {
                   </option>
                 ))}
               </select>
+              <button
+                onClick={() => fetchMembers(selectedClubId)}
+                disabled={!selectedClubId || isLoading}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <span className="text-lg">↻</span>
+                Làm mới
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+        {/* Filters + search */}
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Thành viên</p>
+              <h3 className="mt-1 text-lg font-semibold text-slate-900">Danh sách và thao tác nhanh</h3>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên, email hoặc ID..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 bg-white px-10 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 md:w-64"
+                />
+                <span className="absolute left-3 top-2.5 text-slate-400">🔍</span>
+              </div>
             </div>
           </div>
 
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: 'all', label: 'Tất cả' },
+              { key: 'active', label: 'Đang hoạt động' },
+              { key: 'pending', label: 'Đang chờ' },
+              { key: 'locked', label: 'Đã khóa' },
+            ].map((item) => (
+              <button
+                key={item.key}
+                onClick={() => setStatusFilter(item.key as typeof statusFilter)}
+                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                  statusFilter === item.key
+                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-200 hover:text-blue-700'
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Members table */}
           {isLoading ? (
-            <div className="mt-4 flex items-center justify-center py-8">
-              <p className="text-slate-500">Đang tải danh sách thành viên...</p>
+            <div className="grid gap-3">
+              {[...Array(5)].map((_, idx) => (
+                <div
+                  key={idx}
+                  className="h-14 animate-pulse rounded-lg bg-slate-100/80"
+                />
+              ))}
             </div>
           ) : error && error.includes('thành viên') ? (
             <div className="mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3">
@@ -258,79 +307,76 @@ function ClubLeaderMembersPage() {
               </button>
             </div>
           ) : filteredMembers.length === 0 ? (
-            <div className="mt-4 flex items-center justify-center py-8">
-              <p className="text-slate-500">
+            <div className="mt-2 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 py-10 text-center text-slate-600">
+              <span className="text-3xl">🧭</span>
+              <p className="text-base font-semibold text-slate-800">
                 {members.length === 0 ? 'Chưa có thành viên nào trong CLB' : 'Không tìm thấy thành viên phù hợp với bộ lọc'}
               </p>
+              <p className="text-sm text-slate-500">Hãy thử thay đổi bộ lọc hoặc tìm kiếm khác.</p>
             </div>
           ) : (
-            <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+            <div className="mt-2 overflow-hidden rounded-2xl border border-slate-200">
               <table className="w-full text-left text-sm">
                 <thead className="bg-slate-50 text-xs uppercase tracking-[0.3em] text-slate-600">
                   <tr>
-                    <th className="w-1/4 min-w-[180px] px-4 py-3">Thành viên</th>
+                    <th className="w-1/4 min-w-[200px] px-4 py-3">Thành viên</th>
                     <th className="w-1/6 px-4 py-3">Email</th>
                     <th className="w-1/6 px-4 py-3">Ngày gia nhập</th>
                     <th className="w-1/6 px-4 py-3">Trạng thái</th>
                     <th className="w-1/4 px-4 py-3 text-right">Hành động</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-slate-100">
                   {filteredMembers.map((member) => {
                     const locked = isLocked(member.member.status);
                     return (
-                      <tr key={member.membershipId} className="border-t border-slate-200 hover:bg-slate-50">
-                        <td className="w-1/4 min-w-[180px] px-4 py-3">
-                          <div className="flex flex-col">
+                      <tr key={member.membershipId} className="bg-white hover:bg-slate-50/60">
+                        <td className="w-1/4 min-w-[200px] px-4 py-4">
+                          <div className="flex flex-col gap-1">
                             <span className="text-sm font-semibold text-slate-900">
                               {member.member.fullName || `Account #${member.member.accountId}`}
                             </span>
-                            {member.member.phone && (
-                              <span className="text-[0.72rem] text-slate-500">{member.member.phone}</span>
-                            )}
+                            <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                              {member.member.phone && <span>📞 {member.member.phone}</span>}
+                              <span className="rounded-full bg-slate-100 px-2 py-[2px] text-[0.72rem]">
+                                ID: {member.member.accountId}
+                              </span>
+                            </div>
                           </div>
                         </td>
-                        <td className="w-1/6 px-4 py-3 whitespace-nowrap text-slate-700">{member.member.email || '--'}</td>
-                        <td className="w-1/6 px-4 py-3 whitespace-nowrap text-slate-700">
+                        <td className="w-1/6 px-4 py-4 whitespace-nowrap text-slate-700">{member.member.email || '--'}</td>
+                        <td className="w-1/6 px-4 py-4 whitespace-nowrap text-slate-700">
                           {formatDate(member.joinDate)}
                         </td>
-                        <td className="w-1/6 px-4 py-3 text-right">
+                        <td className="w-1/6 px-4 py-4">
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
-                              member.member.status?.toLowerCase() === 'active' || member.member.status?.toLowerCase() === 'approved'
-                                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                : locked
-                                  ? 'bg-red-50 text-red-700 border border-red-200'
-                                  : member.member.status?.toLowerCase() === 'pending'
-                                    ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                                    : 'bg-slate-100 text-slate-700 border border-slate-300'
-                            }`}
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusLabelClass(member.member.status)}`}
                           >
                             {member.member.status || '--'}
                           </span>
                         </td>
-                        <td className="w-1/4 px-4 py-3 text-right">
+                        <td className="w-1/4 px-4 py-4">
                           <div className="flex flex-wrap justify-end gap-2">
                             {locked ? (
                               <button
                                 onClick={() => handleOpenMemberModal(member, 'unlock')}
-                                className="rounded-lg border border-blue-300 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                                className="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
                               >
-                                Mở khóa
+                                🔓 Mở khóa
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleOpenMemberModal(member, 'lock')}
-                                className="rounded-lg border border-orange-300 bg-orange-50 px-3 py-1 text-xs font-semibold text-orange-700 hover:bg-orange-100 transition-colors"
+                                className="inline-flex items-center gap-1 rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700 hover:bg-orange-100 transition-colors"
                               >
-                                Khóa
+                                🔒 Khóa
                               </button>
                             )}
                             <button
                               onClick={() => handleOpenMemberModal(member, 'delete')}
-                              className="rounded-lg border border-red-300 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                              className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
                             >
-                              Xóa
+                              🗑️ Xóa
                             </button>
                           </div>
                         </td>
