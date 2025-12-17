@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { clubService } from '../api/services/club.service';
+import { useAppContext } from '../context/AppContext';
 import type { ClubListItem } from '../api/types/club.types';
 
 function HomePage() {
+  const navigate = useNavigate();
+  const { isAuthenticated, logout, selectedRole } = useAppContext();
   const [clubs, setClubs] = useState<ClubListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,24 +101,57 @@ function HomePage() {
 
             {/* CTA Buttons */}
             <div className="hidden lg:flex items-center gap-3">
-              <Link
-                to="/login"
-                className="px-5 py-2.5 text-sm font-semibold text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                Đăng nhập
-              </Link>
-              <Link
-                to="/register"
-                className="group relative px-6 py-2.5 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 overflow-hidden"
-              >
-                <span className="relative z-10 flex items-center gap-2 text-white">
-                  <span className="text-white">Đăng ký</span>
-                  <svg className="h-4 w-4 text-white transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <button
+                    onClick={() => {
+                      const normalizedRole = selectedRole?.toLowerCase().replace(/\s+/g, '') || '';
+                      if (normalizedRole === 'student') {
+                        navigate('/student');
+                      } else if (normalizedRole === 'clubleader') {
+                        navigate('/leader');
+                      } else {
+                        navigate('/select-role');
+                      }
+                    }}
+                    className="px-5 py-2.5 text-sm font-semibold text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    Dashboard
+                  </button>
+                  <button
+                    onClick={async () => {
+                      await logout();
+                      navigate('/');
+                    }}
+                    className="group relative px-6 py-2.5 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center gap-2 text-white">
+                      <span className="text-white">Đăng xuất</span>
+                    </span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-5 py-2.5 text-sm font-semibold text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 hover:border-slate-400 transition-all duration-200 shadow-sm hover:shadow-md"
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="group relative px-6 py-2.5 text-sm font-semibold text-white rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 overflow-hidden"
+                  >
+                    <span className="relative z-10 flex items-center gap-2 text-white">
+                      <span className="text-white">Đăng ký</span>
+                      <svg className="h-4 w-4 text-white transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
+                    </span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Menu Button */}
@@ -157,18 +193,53 @@ function HomePage() {
                   Liên hệ
                 </a>
                 <div className="pt-2 space-y-2 border-t border-slate-200">
-                  <Link
-                    to="/login"
-                    className="block w-full px-4 py-3 text-sm font-semibold text-center text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 transition-colors"
-                  >
-                    Đăng nhập
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="block w-full px-4 py-3 text-sm font-semibold text-center text-white rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all"
-                  >
-                    Đăng ký tài khoản
-                  </Link>
+                  {isAuthenticated ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          const normalizedRole = selectedRole?.toLowerCase().replace(/\s+/g, '') || '';
+                          if (normalizedRole === 'student') {
+                            navigate('/student');
+                          } else if (normalizedRole === 'clubleader') {
+                            navigate('/leader');
+                          } else {
+                            navigate('/select-role');
+                          }
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="block w-full px-4 py-3 text-sm font-semibold text-center text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 transition-colors"
+                      >
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await logout();
+                          navigate('/');
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="block w-full px-4 py-3 text-sm font-semibold text-center text-white rounded-xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 transition-all"
+                      >
+                        Đăng xuất
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link
+                        to="/login"
+                        className="block w-full px-4 py-3 text-sm font-semibold text-center text-slate-700 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 transition-colors"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Đăng nhập
+                      </Link>
+                      <Link
+                        to="/register"
+                        className="block w-full px-4 py-3 text-sm font-semibold text-center text-white rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 transition-all"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        Đăng ký tài khoản
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -263,12 +334,21 @@ function HomePage() {
                             {club.status === 'Active' ? 'Đang tuyển thành viên' : club.status}
                           </p>
                         </div>
-                        <Link
-                          to="/register"
-                          className="block w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg"
-                        >
-                          Tham gia ngay
-                        </Link>
+                        {isAuthenticated ? (
+                          <Link
+                            to="/student/explore"
+                            className="block w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg"
+                          >
+                            Xem chi tiết
+                          </Link>
+                        ) : (
+                          <Link
+                            to="/register"
+                            className="block w-full rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white shadow-md transition hover:bg-blue-700 hover:shadow-lg"
+                          >
+                            Tham gia ngay
+                          </Link>
+                        )}
                       </div>
                     </div>
                   ))}
