@@ -120,7 +120,7 @@ export const authService = {
    * Update user profile
    */
   async updateProfile(data: UpdateProfileRequest): Promise<AuthResponse> {
-    const response = await httpClient.put<AuthResponse>('/api/Account/profile', data);
+    const response = await httpClient.put<AuthResponse>(AUTH_ENDPOINTS.UPDATE_PROFILE, data);
 
     // Update token and user info if returned
     if (response.token) {
