@@ -12,7 +12,6 @@ function ClubLeaderActivitiesPage() {
   const [activitiesLoading, setActivitiesLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showParticipantsModal, setShowParticipantsModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [participants, setParticipants] = useState<ActivityParticipant[]>([]);
@@ -377,24 +376,6 @@ function ClubLeaderActivitiesPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!selectedActivity) return;
-    
-    setIsLoading(true);
-    setMessage(null);
-    try {
-      await activityService.delete(selectedActivity.id);
-      setMessage({ type: 'success', text: 'Xóa hoạt động thành công' });
-      await loadActivities(form.clubId);
-      setShowDeleteConfirm(false);
-      setSelectedActivity(null);
-    } catch {
-      setMessage({ type: 'error', text: 'Không thể xóa hoạt động. Vui lòng thử lại sau.' });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const handleOpenRegistration = async (activity: Activity) => {
     setIsLoading(true);
     setMessage(null);
@@ -618,17 +599,6 @@ function ClubLeaderActivitiesPage() {
                             className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
                           >
                             Sửa
-                          </button>
-                        )}
-                        {status === 'completed' && (
-                          <button
-                            onClick={() => {
-                              setSelectedActivity(act);
-                              setShowDeleteConfirm(true);
-                            }}
-                            className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                          >
-                            Xóa
                           </button>
                         )}
                         {(status === 'pending' || status === 'notyetopen') && (
@@ -1157,36 +1127,6 @@ function ClubLeaderActivitiesPage() {
                   </button>
                 </div>
               </form>
-            </div>
-          </div>
-        )}
-
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirm && selectedActivity && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 max-w-md w-full shadow-xl">
-              <h3 className="text-lg font-semibold text-slate-900 mb-2">Xác nhận xóa hoạt động</h3>
-              <p className="text-sm text-slate-600 mb-6">
-                Bạn có chắc chắn muốn xóa hoạt động "{selectedActivity.title}"? Hành động này không thể hoàn tác.
-              </p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={() => {
-                    setShowDeleteConfirm(false);
-                    setSelectedActivity(null);
-                  }}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={isLoading}
-                  className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
-                  {isLoading ? 'Đang xóa...' : 'Xóa hoạt động'}
-                </button>
-              </div>
             </div>
           </div>
         )}

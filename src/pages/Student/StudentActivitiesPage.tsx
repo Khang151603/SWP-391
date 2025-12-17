@@ -102,6 +102,16 @@ function StudentActivitiesPage() {
         dotColor: 'bg-amber-500',
       };
     }
+    // Đóng đăng ký (Active_Closed, Closed, ...)
+    if (statusLower.includes('active_closed') || statusLower.includes('closed')) {
+      return {
+        label: 'Đã đóng đăng ký',
+        bgColor: 'bg-slate-100',
+        textColor: 'text-slate-700',
+        borderColor: 'border-slate-300',
+        dotColor: 'bg-slate-500',
+      };
+    }
     if (statusLower.includes('active') || statusLower.includes('opened')) {
       return {
         label: 'Đã mở đăng ký',
@@ -164,13 +174,19 @@ function StudentActivitiesPage() {
 
   const canRegister = (activity: StudentActivity) => {
     const statusLower = activity.status.toLowerCase();
-    // Only allow registration for Active or Open activities (not Not_yet_open)
+    // Chỉ cho đăng ký khi đang mở (Active / opened), không phải Not_yet_open, không bị đóng / đang diễn ra / đã kết thúc
     const isOpenForRegistration = statusLower.includes('active') || statusLower.includes('open');
     const isNotYetOpen = statusLower.includes('not_yet_open') || statusLower.includes('notyetopen');
-    
+    const isClosed = statusLower.includes('active_closed') || statusLower.includes('closed');
+    const isOngoing = statusLower.includes('ongoing');
+    const isCompleted = statusLower.includes('completed') || statusLower.includes('cancel');
+
     return (
       isOpenForRegistration &&
       !isNotYetOpen &&
+      !isClosed &&
+      !isOngoing &&
+      !isCompleted &&
       !activity.isRegistered &&
       (!activity.maxParticipants || !activity.registeredCount || activity.registeredCount < activity.maxParticipants)
     );

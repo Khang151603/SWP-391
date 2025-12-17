@@ -67,6 +67,14 @@ function ClubLeaderInfoPage() {
       maximumFractionDigits: 0,
     });
 
+  const getStatusLabel = (status: string | null | undefined): string => {
+    if (!status) return 'Đang hoạt động';
+    const statusLower = status.toLowerCase();
+    if (statusLower === 'active') return 'Đang hoạt động';
+    if (statusLower === 'unactive' || statusLower === 'inactive') return 'Bị khoá';
+    return status; // Giữ nguyên nếu không match
+  };
+
   // Load clubs of current leader on mount
   useEffect(() => {
     const loadClubs = async () => {
@@ -819,7 +827,7 @@ function ClubLeaderInfoPage() {
                               ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
                               : 'bg-red-50 text-red-700 ring-red-200'
                           }`}>
-                            {club.status || 'active'}
+                            {getStatusLabel(club.status)}
                           </span>
                         );
                       })()}
@@ -923,7 +931,7 @@ function ClubLeaderInfoPage() {
                               : 'bg-red-500/90 text-white ring-2 ring-red-300/50'
                           }`}>
                             <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-emerald-200' : 'bg-red-200'}`}></span>
-                            {formData.status || 'active'}
+                            {getStatusLabel(formData.status)}
                           </span>
                         );
                       })()}
@@ -1192,7 +1200,7 @@ function ClubLeaderInfoPage() {
                               : 'bg-red-100 text-red-700 ring-2 ring-red-200'
                           }`}>
                             <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-                            {formData.status || 'active'}
+                            {getStatusLabel(formData.status)}
                           </span>
                         );
                       })()}
