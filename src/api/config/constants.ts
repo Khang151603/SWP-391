@@ -1,15 +1,15 @@
 // API Base URL
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7124';
+// Chỉ sử dụng giá trị từ biến môi trường VITE_API_BASE_URL
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 // External Payment (PayOS) API Base URL
-export const PAYOS_API_BASE_URL =
-  import.meta.env.VITE_PAYOS_API_BASE_URL || 'https://ximena-unaccountable-carmelina.ngrok-free.dev';
+// Chỉ sử dụng giá trị từ biến môi trường VITE_PAYOS_API_BASE_URL
+export const PAYOS_API_BASE_URL = import.meta.env.VITE_PAYOS_API_BASE_URL as string;
 
 // Auth Endpoints
 export const AUTH_ENDPOINTS = {
   REGISTER: '/api/Auth/register',
   LOGIN: '/api/Auth/login',
-  LOGOUT: '/api/Auth/logout',
   REFRESH_TOKEN: '/api/Auth/refresh-token',
   CHANGE_PASSWORD: '/api/Auth/change-password',
   UPDATE_PROFILE: '/api/Account/profile',

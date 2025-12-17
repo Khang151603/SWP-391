@@ -72,19 +72,6 @@ export const authService = {
   },
 
   /**
-   * Logout user
-   */
-  async logout(): Promise<void> {
-    try {
-      await httpClient.post<void>(AUTH_ENDPOINTS.LOGOUT);
-    } catch (error) {
-      // Even if API call fails, clear local storage
-    } finally {
-      tokenManager.clear();
-    }
-  },
-
-  /**
    * Refresh access token
    */
   async refreshToken(): Promise<AuthResponse> {
@@ -145,6 +132,14 @@ export const authService = {
    */
   isAuthenticated(): boolean {
     return tokenManager.isAuthenticated();
+  },
+
+  /**
+   * Logout user
+   * - Clear token, roles and user info from localStorage
+   */
+  async logout(): Promise<void> {
+    tokenManager.clear();
   },
 
   /**

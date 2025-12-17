@@ -78,7 +78,17 @@ function LoginPage() {
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      // Hiển thị thông báo lỗi thân thiện cho người dùng
+      if (err instanceof Error) {
+        // Map thông báo mặc định từ BE sang tiếng Việt
+        if (err.message === 'Invalid username or password.') {
+          setError('Tên đăng nhập hoặc mật khẩu không đúng.');
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+      }
     } finally {
       setLoading(false);
     }

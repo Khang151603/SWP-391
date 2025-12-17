@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../api';
 import type { UserInfo } from '../api/types/auth.types';
@@ -15,37 +16,35 @@ type AppContextValue = {
   setUser: (user: UserInfo | null) => void;
   updateUser: (updates: Partial<UserInfo>) => void;
   setSelectedRole: (role: string) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
 };
 
 const AppContext = createContext<AppContextValue | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
-  const [user, setUser] = useState<UserInfo | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [selectedRole, setSelectedRoleState] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() =>
+    authService.isAuthenticated()
+  );
+  const [user, setUser] = useState<UserInfo | null>(() => {
+    if (!authService.isAuthenticated()) return null;
 
-  // Load user info from localStorage on mount
-  useEffect(() => {
-    const isAuth = authService.isAuthenticated();
-    setIsAuthenticated(isAuth);
+    const userInfo = authService.getUserInfo();
+    const roles = authService.getRoles();
+    const currentRole = authService.getSelectedRole();
 
-    if (isAuth) {
-      const userInfo = authService.getUserInfo();
-      const roles = authService.getRoles();
-      const currentRole = authService.getSelectedRole();
+    if (!userInfo) return null;
 
-      if (userInfo) {
-        setUser({
-          ...userInfo,
-          roles,
-          selectedRole: currentRole || undefined,
-        });
-        setSelectedRoleState(currentRole);
-      }
-    }
-  }, []);
+    return {
+      ...userInfo,
+      roles,
+      selectedRole: currentRole || undefined,
+    };
+  });
+  const [selectedRole, setSelectedRoleState] = useState<string | null>(() => {
+    if (!authService.isAuthenticated()) return null;
+    return authService.getSelectedRole();
+  });
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
