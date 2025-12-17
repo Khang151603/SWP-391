@@ -23,13 +23,14 @@ function StudentActivitiesPage() {
         const myClubs = await membershipService.getStudentMyClubs();
         
         // Get activities from all clubs student is member of (no status filter)
+        // Use getStudentViewByClub to get activities with isRegistered status
         const allActivitiesPromises = myClubs.map(async (clubMembership) => {
           try {
-            const clubActivities = await activityService.getByClub(clubMembership.club.id);
-            // Add club name to each activity
+            const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
+            // Add club name to each activity (in case it's not included in response)
             return clubActivities.map((activity: any) => ({
               ...activity,
-              clubName: clubMembership.club.name,
+              clubName: activity.clubName || clubMembership.club.name,
             }));
           } catch (err) {
             console.error(`Failed to fetch activities for club ${clubMembership.club.id}:`, err);
@@ -216,12 +217,13 @@ function StudentActivitiesPage() {
       // Refresh activities to update registration status
       const myClubs = await membershipService.getStudentMyClubs();
       
+      // Use getStudentViewByClub to get activities with isRegistered status
       const allActivitiesPromises = myClubs.map(async (clubMembership) => {
         try {
-          const clubActivities = await activityService.getByClub(clubMembership.club.id);
+          const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
           return clubActivities.map((activity: any) => ({
             ...activity,
-            clubName: clubMembership.club.name,
+            clubName: activity.clubName || clubMembership.club.name,
           }));
         } catch (err) {
           return [];
