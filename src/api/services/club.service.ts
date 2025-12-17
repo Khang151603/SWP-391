@@ -1,5 +1,5 @@
 import { httpClient } from '../config/client';
-import { CLUB_ENDPOINTS } from '../config/constants';
+import { API_BASE_URL, CLUB_ENDPOINTS } from '../config/constants';
 import type {
   ClubListItem,
   LeaderClubListItem,
@@ -92,7 +92,6 @@ export const clubService = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7124';
     const response = await fetch(`${API_BASE_URL}${CLUB_ENDPOINTS.UPLOAD_CLUB_IMAGE(id)}`, {
       method: 'POST',
       headers,

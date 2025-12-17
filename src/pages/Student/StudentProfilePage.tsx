@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { authService } from '../../api';
 import { useAppContext } from '../../context/AppContext';
 import { httpClient } from '../../api/config/client';
+import { USER_ENDPOINTS } from '../../api/config/constants';
 
 function StudentProfilePage() {
   const { user, updateUser } = useAppContext();
@@ -161,10 +162,10 @@ function StudentProfilePage() {
       const formData = new FormData();
       formData.append('file', file);
 
-      // Call API upload avatar: POST /api/Account/upload-avatar
+      // Call API upload avatar
       // Không set Content-Type header để browser tự động set với boundary
       const response = await httpClient.post<{ message?: string; avatarUrl: string; publicId: string }>(
-        '/api/Account/upload-avatar',
+        USER_ENDPOINTS.UPLOAD_AVATAR,
         formData,
         {
           skipContentType: true, // Quan trọng: để browser tự động set Content-Type với boundary

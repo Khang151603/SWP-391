@@ -1,6 +1,10 @@
 // API Base URL
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://localhost:7124';
 
+// External Payment (PayOS) API Base URL
+export const PAYOS_API_BASE_URL =
+  import.meta.env.VITE_PAYOS_API_BASE_URL || 'https://ximena-unaccountable-carmelina.ngrok-free.dev';
+
 // Auth Endpoints
 export const AUTH_ENDPOINTS = {
   REGISTER: '/api/Auth/register',
@@ -8,6 +12,7 @@ export const AUTH_ENDPOINTS = {
   LOGOUT: '/api/Auth/logout',
   REFRESH_TOKEN: '/api/Auth/refresh-token',
   CHANGE_PASSWORD: '/api/Auth/change-password',
+  UPDATE_PROFILE: '/api/Account/profile',
 } as const;
 
 // Club Endpoints
@@ -39,12 +44,27 @@ export const ACTIVITY_ENDPOINTS = {
   STUDENT_VIEW_CLUB: (clubId: number | string) => `/api/student/activities/view-club/${clubId}`,
   STUDENT_REGISTER: (id: number | string) => `/api/student/activities/${id}/register`,
   STUDENT_FOR_REGISTRATION: '/api/student/activities/for-registration',
+  STUDENT_HISTORY: '/api/student/activities/history',
 } as const;
 
 // User/Account Endpoints
 export const USER_ENDPOINTS = {
   GET_PROFILE: '/api/User/profile',
   UPDATE_PROFILE: '/api/User/profile',
+  UPLOAD_AVATAR: '/api/Account/upload-avatar',
+} as const;
+
+// Payment Endpoints
+export const PAYMENT_ENDPOINTS = {
+  STUDENT_PAID: '/api/student/payment/paid',
+  STUDENT_DEBTS: '/api/student/payment/debts',
+  STUDENT_HISTORY: '/api/student/payment/history',
+} as const;
+
+// Notification Endpoints
+export const NOTIFICATION_ENDPOINTS = {
+  UNREAD: '/notification',
+  MARK_AS_READ: (notificationId: string) => `/notification/read/${notificationId}`,
 } as const;
 
 // Membership Endpoints

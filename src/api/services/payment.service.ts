@@ -1,4 +1,5 @@
 import { httpClient } from '../config/client';
+import { PAYOS_API_BASE_URL, PAYMENT_ENDPOINTS } from '../config/constants';
 import type {
   PayOSCreatePaymentRequest,
     PayOSPaymentResponse,
@@ -6,9 +7,6 @@ import type {
   StudentPaidPayment,
   StudentDebt,
 } from '../types/payment.types';
-
-// PayOS API Base URL
-const PAYOS_API_BASE_URL = 'https://ximena-unaccountable-carmelina.ngrok-free.dev';
 
 /**
  * Payment Service
@@ -86,21 +84,21 @@ export const paymentService = {
    * Student: Get paid payments
    */
   async getStudentPaidPayments(): Promise<StudentPaidPayment[]> {
-    return httpClient.get<StudentPaidPayment[]>('/api/student/payment/paid');
+    return httpClient.get<StudentPaidPayment[]>(PAYMENT_ENDPOINTS.STUDENT_PAID);
   },
 
   /**
    * Student: Get debts
    */
   async getStudentDebts(): Promise<StudentDebt[]> {
-    return httpClient.get<StudentDebt[]>('/api/student/payment/debts');
+    return httpClient.get<StudentDebt[]>(PAYMENT_ENDPOINTS.STUDENT_DEBTS);
   },
 
   /**
    * Student: Get payment history (all statuses)
    */
   async getStudentPaymentHistory(): Promise<StudentPaidPayment[]> {
-    return httpClient.get<StudentPaidPayment[]>('/api/student/payment/history');
+    return httpClient.get<StudentPaidPayment[]>(PAYMENT_ENDPOINTS.STUDENT_HISTORY);
   },
 };
 
