@@ -19,38 +19,120 @@ function StudentActivitiesPage() {
         setLoading(true);
         setError(null);
         
-        // Get clubs that student is member of
-        const myClubs = await membershipService.getStudentMyClubs();
+        // Strategy: Fetch from multiple sources to ensure we get all activities
+        // 1. Get activities from view-all endpoint (student view)
+        // 2. Get activities from each club using student endpoint
+        // 3. Also try to get activities using leader endpoint (GET_BY_CLUB) as fallback
+        // 4. Merge and deduplicate by activity ID
         
-        // Get activities from all clubs student is member of (no status filter)
-        // Use getStudentViewByClub to get activities with isRegistered status
-        const allActivitiesPromises = myClubs.map(async (clubMembership) => {
+        const [viewAllActivities, myClubs] = await Promise.all([
+          activityService.getStudentViewAll().catch(() => []),
+          membershipService.getStudentMyClubs().catch(() => []),
+        ]);
+        
+        // Fetch activities from each club using student endpoint
+        const clubActivitiesPromises = myClubs.map(async (clubMembership) => {
           try {
             const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
-            // Add club name to each activity (in case it's not included in response)
+            // Add club name to each activity if not present
             return clubActivities.map((activity: any) => ({
               ...activity,
               clubName: activity.clubName || clubMembership.club.name,
             }));
           } catch (err) {
-            console.error(`Failed to fetch activities for club ${clubMembership.club.id}:`, err);
             return [];
           }
         });
         
-        const activitiesArrays = await Promise.all(allActivitiesPromises);
-        const allActivities = activitiesArrays.flat();
+        // Also try to fetch using leader endpoint (GET_BY_CLUB) as additional source
+        // This might return more activities if student endpoints are filtered
+        const leaderActivitiesPromises = myClubs.map(async (clubMembership) => {
+          try {
+            const leaderActivities = await activityService.getByClub(clubMembership.club.id);
+            // Add club name and convert to StudentActivity format
+            return leaderActivities.map((activity: any) => ({
+              ...activity,
+              clubName: activity.clubName || clubMembership.club.name,
+              // Ensure isRegistered is set (might not be in leader endpoint)
+              isRegistered: activity.isRegistered || false,
+            }));
+          } catch (err) {
+            // This is expected to fail for students, so we silently catch
+            return [];
+          }
+        });
         
-        // Sort by start time (newest first)
+        const [clubActivitiesArrays, leaderActivitiesArrays] = await Promise.all([
+          Promise.all(clubActivitiesPromises),
+          Promise.all(leaderActivitiesPromises),
+        ]);
+        
+        const clubActivities = clubActivitiesArrays.flat();
+        const leaderActivities = leaderActivitiesArrays.flat();
+        
+        // Merge all sources and deduplicate by activity ID
+        // Use a more robust approach: collect all activities first, then deduplicate
+        const allActivitiesList: StudentActivity[] = [];
+        
+        // Helper function to safely add activity
+        const addActivitySafely = (activity: any) => {
+          if (activity && activity.id && activity.startTime) {
+            allActivitiesList.push(activity);
+          }
+        };
+        
+        // Add all activities from view-all endpoint
+        viewAllActivities.forEach(addActivitySafely);
+        
+        // Add all activities from club-by-club student endpoint fetch
+        clubActivities.forEach(addActivitySafely);
+        
+        // Add all activities from leader endpoint (if accessible)
+        leaderActivities.forEach(addActivitySafely);
+        
+        // Deduplicate by activity ID, keeping the most complete version
+        const activitiesMap = new Map<number, StudentActivity>();
+        allActivitiesList.forEach((activity) => {
+          const existing = activitiesMap.get(activity.id);
+          if (existing) {
+            // Merge: prefer the one with more complete data
+            // Priority: isRegistered > clubName > other fields
+            activitiesMap.set(activity.id, {
+              ...existing,
+              ...activity,
+              // Preserve isRegistered status (important for UI)
+              isRegistered: activity.isRegistered !== undefined ? activity.isRegistered : existing.isRegistered,
+              // Prefer non-empty clubName
+              clubName: activity.clubName || existing.clubName,
+              // Preserve other important fields
+              registeredCount: activity.registeredCount !== undefined ? activity.registeredCount : existing.registeredCount,
+              maxParticipants: activity.maxParticipants !== undefined ? activity.maxParticipants : existing.maxParticipants,
+            });
+          } else {
+            activitiesMap.set(activity.id, activity);
+          }
+        });
+        
+        // Convert map to array - this ensures we have all unique activities
+        const allActivities = Array.from(activitiesMap.values());
+        
+        // Sort by start time (newest first) with error handling
         allActivities.sort((a, b) => {
-          const dateA = new Date(a.startTime).getTime();
-          const dateB = new Date(b.startTime).getTime();
-          return dateB - dateA;
+          try {
+            const dateA = new Date(a.startTime).getTime();
+            const dateB = new Date(b.startTime).getTime();
+            // Handle invalid dates
+            if (isNaN(dateA) && isNaN(dateB)) return 0;
+            if (isNaN(dateA)) return 1; // Invalid dates go to end
+            if (isNaN(dateB)) return -1;
+            return dateB - dateA; // Newest first
+          } catch {
+            return 0; // Keep order if comparison fails
+          }
         });
         
         setActivities(allActivities);
       } catch (err) {
-        console.error('Error fetching activities:', err);
         setError('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -214,11 +296,13 @@ function StudentActivitiesPage() {
       // Hiển thị message thành công
       setRegistrationSuccess('Đăng ký tham gia thành công');
       
-      // Refresh activities to update registration status
-      const myClubs = await membershipService.getStudentMyClubs();
+      // Refresh activities to update registration status using the same strategy as initial fetch
+      const [viewAllActivities, myClubs] = await Promise.all([
+        activityService.getStudentViewAll().catch(() => []),
+        membershipService.getStudentMyClubs().catch(() => []),
+      ]);
       
-      // Use getStudentViewByClub to get activities with isRegistered status
-      const allActivitiesPromises = myClubs.map(async (clubMembership) => {
+      const clubActivitiesPromises = myClubs.map(async (clubMembership) => {
         try {
           const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
           return clubActivities.map((activity: any) => ({
@@ -230,13 +314,72 @@ function StudentActivitiesPage() {
         }
       });
       
-      const activitiesArrays = await Promise.all(allActivitiesPromises);
-      const allActivities = activitiesArrays.flat();
+      const leaderActivitiesPromises = myClubs.map(async (clubMembership) => {
+        try {
+          const leaderActivities = await activityService.getByClub(clubMembership.club.id);
+          return leaderActivities.map((activity: any) => ({
+            ...activity,
+            clubName: activity.clubName || clubMembership.club.name,
+            isRegistered: activity.isRegistered || false,
+          }));
+        } catch (err) {
+          return [];
+        }
+      });
       
+      const [clubActivitiesArrays, leaderActivitiesArrays] = await Promise.all([
+        Promise.all(clubActivitiesPromises),
+        Promise.all(leaderActivitiesPromises),
+      ]);
+      
+      const clubActivities = clubActivitiesArrays.flat();
+      const leaderActivities = leaderActivitiesArrays.flat();
+      
+      // Merge all sources with same robust logic as initial fetch
+      const allActivitiesList: StudentActivity[] = [];
+      
+      // Helper function to safely add activity
+      const addActivitySafely = (activity: any) => {
+        if (activity && activity.id && activity.startTime) {
+          allActivitiesList.push(activity);
+        }
+      };
+      
+      viewAllActivities.forEach(addActivitySafely);
+      clubActivities.forEach(addActivitySafely);
+      leaderActivities.forEach(addActivitySafely);
+      
+      // Deduplicate with same merge logic
+      const activitiesMap = new Map<number, StudentActivity>();
+      allActivitiesList.forEach((activity) => {
+        const existing = activitiesMap.get(activity.id);
+        if (existing) {
+          activitiesMap.set(activity.id, {
+            ...existing,
+            ...activity,
+            isRegistered: activity.isRegistered !== undefined ? activity.isRegistered : existing.isRegistered,
+            clubName: activity.clubName || existing.clubName,
+            registeredCount: activity.registeredCount !== undefined ? activity.registeredCount : existing.registeredCount,
+            maxParticipants: activity.maxParticipants !== undefined ? activity.maxParticipants : existing.maxParticipants,
+          });
+        } else {
+          activitiesMap.set(activity.id, activity);
+        }
+      });
+      
+      const allActivities = Array.from(activitiesMap.values());
+      // Sort with error handling
       allActivities.sort((a, b) => {
-        const dateA = new Date(a.startTime).getTime();
-        const dateB = new Date(b.startTime).getTime();
-        return dateB - dateA;
+        try {
+          const dateA = new Date(a.startTime).getTime();
+          const dateB = new Date(b.startTime).getTime();
+          if (isNaN(dateA) && isNaN(dateB)) return 0;
+          if (isNaN(dateA)) return 1;
+          if (isNaN(dateB)) return -1;
+          return dateB - dateA;
+        } catch {
+          return 0;
+        }
       });
       
       setActivities(allActivities);
