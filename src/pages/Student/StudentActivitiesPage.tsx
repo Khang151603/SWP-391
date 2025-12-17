@@ -9,6 +9,7 @@ function StudentActivitiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -193,8 +194,24 @@ function StudentActivitiesPage() {
   };
 
   const handleJoinActivity = async (activityId: number) => {
+    // Tìm activity trong danh sách hiện tại
+    const activity = activities.find(a => a.id === activityId);
+    
+    // Kiểm tra nếu đã đăng ký rồi
+    if (activity?.isRegistered) {
+      setRegistrationError('Bạn đã đăng ký rồi');
+      setRegistrationSuccess(null);
+      return;
+    }
+    
     try {
+      setRegistrationError(null);
+      setRegistrationSuccess(null);
+      
       await activityService.registerStudent(activityId);
+      
+      // Hiển thị message thành công
+      setRegistrationSuccess('Đăng ký tham gia thành công');
       
       // Refresh activities to update registration status
       const myClubs = await membershipService.getStudentMyClubs();
@@ -207,7 +224,6 @@ function StudentActivitiesPage() {
             clubName: clubMembership.club.name,
           }));
         } catch (err) {
-          console.error(`Failed to fetch activities for club ${clubMembership.club.id}:`, err);
           return [];
         }
       });
@@ -222,15 +238,35 @@ function StudentActivitiesPage() {
       });
       
       setActivities(allActivities);
-      setRegistrationError(null);
-    } catch (err) {
-      setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
+      
+      // Tự động ẩn message thành công sau 3 giây
+      setTimeout(() => {
+        setRegistrationSuccess(null);
+      }, 3000);
+    } catch (err: any) {
+      // Xử lý lỗi từ API
+      const errorMessage = err?.message || err?.toString() || '';
+      
+      // Kiểm tra nếu lỗi là do đã đăng ký rồi
+      if (errorMessage.toLowerCase().includes('đã đăng ký') || 
+          errorMessage.toLowerCase().includes('already registered') ||
+          errorMessage.toLowerCase().includes('already exists')) {
+        setRegistrationError('Bạn đã đăng ký rồi');
+      } else {
+        setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
+      }
+      setRegistrationSuccess(null);
     }
   };
 
   return (
     <StudentLayout title="Hoạt động" subtitle="Khám phá và đăng ký tham gia các hoạt động">
       <div className="space-y-8">
+        {registrationSuccess && (
+          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {registrationSuccess}
+          </div>
+        )}
         {registrationError && (
           <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
             {registrationError}
@@ -331,10 +367,11 @@ function StudentActivitiesPage() {
               const startDateTime = formatDateTime(activity.startTime);
               const endDateTime = formatDateTime(activity.endTime);
               const canJoin = canRegister(activity);
-              const isFull =
+              const isFull = !!(
                 activity.maxParticipants &&
                 activity.registeredCount &&
-                activity.registeredCount >= activity.maxParticipants;
+                activity.registeredCount >= activity.maxParticipants
+              );
 
               return (
                 <div
@@ -492,12 +529,12 @@ function StudentActivitiesPage() {
                     {/* Action Button */}
                     <button
                       onClick={() => handleJoinActivity(activity.id)}
-                      disabled={!canJoin}
-                      className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all ${
-                        canJoin
-                          ? 'bg-blue-600 shadow-md hover:bg-blue-700 active:scale-95'
-                          : activity.isRegistered
-                            ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                      disabled={!canJoin && !activity.isRegistered && isFull}
+                      className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                        activity.isRegistered
+                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer'
+                          : canJoin
+                            ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700 active:scale-95'
                             : isFull
                               ? 'bg-amber-100 text-amber-700 cursor-not-allowed'
                               : 'bg-slate-200 text-slate-500 cursor-not-allowed'
