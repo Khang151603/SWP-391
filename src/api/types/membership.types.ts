@@ -44,7 +44,9 @@ export interface StudentMembershipRequestResponse {
   requestDate: string;
   paymentId: number | null;
   amount: number | null;
-  orderCode?: number;
+  orderCode?: number | null;
+  major?: string | null;
+  skills?: string | null;
 }
 
 // Leader pending membership request types
@@ -102,6 +104,12 @@ export interface StudentMyClub {
     status: string;
     membershipFee: number | null;
     imageClubsUrl?: string | null;
+    memberCount?: number;
+    establishedDate?: string;
+    location?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
+    activityFrequency?: string | null;
   };
 }
 

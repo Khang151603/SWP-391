@@ -33,22 +33,9 @@ function StudentClubsPage() {
           try {
             const clubDetails = await clubService.getClubDetailsById(item.club.id);
             
-            // Fetch member count for each club
-            let memberCount = 0;
-            try {
-              const members = await membershipService.getLeaderClubMembers(item.club.id);
-              // Count only active members
-              memberCount = members.filter(m => 
-                m.member.status?.toLowerCase() === 'active'
-              ).length;
-            } catch (error) {
-              console.log(`Could not fetch members for club ${item.club.id}:`, error);
-            }
-            
             return {
               ...item,
               clubDetails,
-              memberCount,
             };
           } catch {
             // Return item without details if fetch fails
@@ -217,10 +204,14 @@ function StudentClubsPage() {
             {filteredClubs.map((item) => {
               const clubName = item.clubDetails?.name || item.club.name;
               const clubDescription = item.clubDetails?.description || item.club.description || '';
-              const memberCount = item.memberCount ?? item.clubDetails?.memberCount;
+              const memberCount = item.memberCount ?? item.clubDetails?.memberCount ?? item.club.memberCount;
               const membershipFee = item.clubDetails?.membershipFee ?? item.club.membershipFee;
               const imageUrl = item.clubDetails?.imageUrl || item.clubDetails?.imageClubsUrl || item.club.imageClubsUrl;
-              const establishedDate = item.clubDetails?.establishedDate;
+              const establishedDate = item.clubDetails?.establishedDate ?? item.club.establishedDate;
+              const location = item.clubDetails?.location ?? item.club.location;
+              const contactEmail = item.clubDetails?.contactEmail ?? item.club.contactEmail;
+              const contactPhone = item.clubDetails?.contactPhone ?? item.club.contactPhone;
+              const activityFrequency = item.clubDetails?.activityFrequency ?? item.club.activityFrequency;
               
               return (
                 <div
@@ -298,38 +289,38 @@ function StudentClubsPage() {
                       <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
                       <p className="mt-1 text-sm text-slate-900">{memberCount ?? '--'}</p>
                     </div>
-                    {item.clubDetails?.location && (
+                    {location && (
                       <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <p className="text-[10px] uppercase text-slate-500">Địa điểm</p>
-                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{item.clubDetails.location}</p>
+                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{location}</p>
                       </div>
                     )}
-                    {item.clubDetails?.contactEmail && (
+                    {contactEmail && (
                       <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <p className="text-[10px] uppercase text-slate-500">Email</p>
                         <a 
-                          href={`mailto:${item.clubDetails.contactEmail}`}
+                          href={`mailto:${contactEmail}`}
                           className="mt-1 text-sm text-blue-600 hover:text-blue-700 hover:underline line-clamp-1"
                         >
-                          {item.clubDetails.contactEmail}
+                          {contactEmail}
                         </a>
                       </div>
                     )}
-                    {item.clubDetails?.contactPhone && (
+                    {contactPhone && (
                       <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <p className="text-[10px] uppercase text-slate-500">Điện thoại</p>
                         <a 
-                          href={`tel:${item.clubDetails.contactPhone}`}
+                          href={`tel:${contactPhone}`}
                           className="mt-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
                         >
-                          {item.clubDetails.contactPhone}
+                          {contactPhone}
                         </a>
                       </div>
                     )}
-                    {item.clubDetails?.activityFrequency && (
+                    {activityFrequency && (
                       <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <p className="text-[10px] uppercase text-slate-500">Tần suất hoạt động</p>
-                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{item.clubDetails.activityFrequency}</p>
+                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{activityFrequency}</p>
                       </div>
                     )}
                     <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">

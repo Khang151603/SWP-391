@@ -115,10 +115,19 @@ function ClubLeaderMembersPage() {
     if (normalized === 'pending') {
       return 'bg-amber-50 text-amber-700 border border-amber-200';
     }
-    if (normalized === 'locked' || normalized === 'inactive') {
+    if (normalized === 'locked' || normalized === 'inactive' || normalized === 'removed') {
       return 'bg-red-50 text-red-700 border border-red-200';
     }
     return 'bg-slate-100 text-slate-700 border border-slate-300';
+  };
+
+  const statusLabelText = (status?: string) => {
+    const normalized = status?.toLowerCase();
+    if (normalized === 'active' || normalized === 'approved') return 'Đang hoạt động';
+    if (normalized === 'pending') return 'Đang chờ duyệt';
+    if (normalized === 'locked' || normalized === 'inactive') return 'Đã khóa';
+    if (normalized === 'removed') return 'Đã xóa';
+    return 'Không rõ';
   };
 
   const selectedClub = useMemo(
@@ -204,17 +213,19 @@ function ClubLeaderMembersPage() {
       <div className="space-y-6">
         {/* Banner / context */}
         <div className="rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 via-white to-indigo-50 px-6 py-5 shadow-sm">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.35em] text-blue-600">Tổng quan thành viên</p>
-              <h3 className="mt-1 text-2xl font-semibold text-slate-900">
-                {selectedClub?.name || 'Chọn CLB để xem thành viên'}
-              </h3>
-              <p className="text-sm text-slate-600">
-                Theo dõi nhanh tình trạng tham gia và hành động quản lý thành viên.
-              </p>
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-2">
+              <p className="text-[0.7rem] uppercase tracking-[0.35em] text-blue-600">Tổng quan thành viên</p>
+              <div className="flex flex-col gap-1">
+                <h3 className="text-2xl font-semibold text-slate-900">
+                  {selectedClub?.name || 'Chọn CLB để xem thành viên'}
+                </h3>
+                <p className="text-sm text-slate-600">
+                  Quản lý trạng thái tham gia, khóa/mở và xóa thành viên trong CLB.
+                </p>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
               <select
                 value={selectedClubId || ''}
                 onChange={(e) => setSelectedClubId(e.target.value ? Number(e.target.value) : null)}
@@ -232,8 +243,7 @@ function ClubLeaderMembersPage() {
                 disabled={!selectedClubId || isLoading}
                 className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <span className="text-lg">↻</span>
-                Làm mới
+                Làm mới danh sách
               </button>
             </div>
           </div>
@@ -258,9 +268,8 @@ function ClubLeaderMembersPage() {
                   placeholder="Tìm theo tên, email hoặc ID..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-xl border border-slate-300 bg-white px-10 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 md:w-64"
+                  className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 md:w-64"
                 />
-                <span className="absolute left-3 top-2.5 text-slate-400">🔍</span>
               </div>
             </div>
           </div>
@@ -308,7 +317,6 @@ function ClubLeaderMembersPage() {
             </div>
           ) : filteredMembers.length === 0 ? (
             <div className="mt-2 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-200 bg-slate-50 py-10 text-center text-slate-600">
-              <span className="text-3xl">🧭</span>
               <p className="text-base font-semibold text-slate-800">
                 {members.length === 0 ? 'Chưa có thành viên nào trong CLB' : 'Không tìm thấy thành viên phù hợp với bộ lọc'}
               </p>
@@ -337,10 +345,7 @@ function ClubLeaderMembersPage() {
                               {member.member.fullName || `Account #${member.member.accountId}`}
                             </span>
                             <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                              {member.member.phone && <span>📞 {member.member.phone}</span>}
-                              <span className="rounded-full bg-slate-100 px-2 py-[2px] text-[0.72rem]">
-                                ID: {member.member.accountId}
-                              </span>
+                              {member.member.phone && <span>{member.member.phone}</span>}
                             </div>
                           </div>
                         </td>
@@ -352,7 +357,7 @@ function ClubLeaderMembersPage() {
                           <span
                             className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusLabelClass(member.member.status)}`}
                           >
-                            {member.member.status || '--'}
+                            {statusLabelText(member.member.status)}
                           </span>
                         </td>
                         <td className="w-1/4 px-4 py-4">
@@ -362,22 +367,16 @@ function ClubLeaderMembersPage() {
                                 onClick={() => handleOpenMemberModal(member, 'unlock')}
                                 className="inline-flex items-center gap-1 rounded-lg border border-blue-300 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
                               >
-                                🔓 Mở khóa
+                                Mở khóa
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleOpenMemberModal(member, 'lock')}
                                 className="inline-flex items-center gap-1 rounded-lg border border-orange-300 bg-orange-50 px-3 py-2 text-xs font-semibold text-orange-700 hover:bg-orange-100 transition-colors"
                               >
-                                🔒 Khóa
+                                Khóa
                               </button>
                             )}
-                            <button
-                              onClick={() => handleOpenMemberModal(member, 'delete')}
-                              className="inline-flex items-center gap-1 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                            >
-                              🗑️ Xóa
-                            </button>
                           </div>
                         </td>
                       </tr>

@@ -55,7 +55,7 @@ export const membershipService = {
    * Leader: Get all membership requests (pending, approved, rejected)
    */
   async getLeaderAllRequests(): Promise<LeaderPendingMembershipRequest[]> {
-    return httpClient.get<LeaderPendingMembershipRequest[]>('/api/leader/membership/requests');
+    return httpClient.get<LeaderPendingMembershipRequest[]>(MEMBERSHIP_ENDPOINTS.LEADER_ALL_REQUESTS);
   },
 
   /**

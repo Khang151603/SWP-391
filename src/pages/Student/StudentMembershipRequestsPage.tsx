@@ -10,6 +10,7 @@ function StudentMembershipRequestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<number | null>(null);
+  const [selectedRequest, setSelectedRequest] = useState<StudentMembershipRequestResponse | null>(null);
 
   useEffect(() => {
     const fetchMembershipRequests = async () => {
@@ -306,41 +307,68 @@ function StudentMembershipRequestsPage() {
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
-                          {isPaymentCompleted(request) ? (
-                            <span className="text-xs text-slate-400">—</span>
-                          ) : canMakePayment(request) ? (
+                          <div className="flex items-center gap-2">
                             <button
-                              onClick={() => handlePayment(request)}
-                              disabled={processingPayment === request.id}
-                              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                              onClick={() => setSelectedRequest(request)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                             >
-                              {processingPayment === request.id ? (
-                                <>
-                                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                  <span>Đang xử lý...</span>
-                                </>
-                              ) : (
-                                <>
-                                  <svg
-                                    className="h-4 w-4"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                                    />
-                                  </svg>
-                                  <span>Thanh toán</span>
-                                </>
-                              )}
+                              <svg
+                                className="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                              </svg>
+                              <span>Xem chi tiết</span>
                             </button>
-                          ) : (
-                            <span className="text-xs text-slate-400">—</span>
-                          )}
+                            {isPaymentCompleted(request) ? (
+                              <span className="text-xs text-slate-400">—</span>
+                            ) : canMakePayment(request) ? (
+                              <button
+                                onClick={() => handlePayment(request)}
+                                disabled={processingPayment === request.id}
+                                className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {processingPayment === request.id ? (
+                                  <>
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                    <span>Đang xử lý...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg
+                                      className="h-4 w-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                                      />
+                                    </svg>
+                                    <span>Thanh toán</span>
+                                  </>
+                                )}
+                              </button>
+                            ) : (
+                              <span className="text-xs text-slate-400">—</span>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -351,6 +379,82 @@ function StudentMembershipRequestsPage() {
           </div>
         )}
       </div>
+
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Chi tiết yêu cầu</p>
+                <h3 className="mt-1 text-xl font-semibold text-slate-900">{selectedRequest.clubName}</h3>
+              </div>
+              <button
+                onClick={() => setSelectedRequest(null)}
+                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              >
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Trạng thái</span>
+                  <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(selectedRequest)}`}>
+                    {getStatusLabel(selectedRequest)}
+                  </span>
+                </div>
+                <div className="text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900">Ngày gửi</p>
+                  <p>
+                    {(() => {
+                      const date = new Date(selectedRequest.requestDate);
+                      const day = String(date.getUTCDate()).padStart(2, '0');
+                      const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                      const year = date.getUTCFullYear();
+                      const hours = String(date.getUTCHours()).padStart(2, '0');
+                      const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+                      return `${day}/${month}/${year} ${hours}:${minutes}`;
+                    })()}
+                  </p>
+                </div>
+                <div className="text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900">Phí tham gia</p>
+                  <p>{selectedRequest.amount !== null && selectedRequest.amount > 0 ? `${selectedRequest.amount.toLocaleString('vi-VN')}đ` : 'Miễn phí'}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+                <div className="text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900">Lý do tham gia</p>
+                  <p className="mt-1 whitespace-pre-line">
+                    {selectedRequest.note ? selectedRequest.note : 'Không có ghi chú'}
+                  </p>
+                </div>
+                <div className="text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900">Chuyên ngành</p>
+                  <p className="mt-1">{selectedRequest.major || '—'}</p>
+                </div>
+                <div className="text-sm text-slate-700">
+                  <p className="font-semibold text-slate-900">Kỹ năng</p>
+                  <p className="mt-1">{selectedRequest.skills || '—'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setSelectedRequest(null)}
+                className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </StudentLayout>
   );
 }

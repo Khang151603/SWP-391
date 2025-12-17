@@ -56,6 +56,7 @@ export const MEMBERSHIP_ENDPOINTS = {
   STUDENT_ACCOUNT_INFO: '/api/student/membership/account-info',
   // Leader membership request endpoints
   LEADER_PENDING: '/api/leader/membership/pending',
+  LEADER_ALL_REQUESTS: '/api/leader/membership/requests',
   LEADER_MEMBERS: '/api/leader/membership/members',
   LEADER_CLUB_MEMBERS: (clubId: number | string) => `/api/leader/membership/clubs/${clubId}/members`,
   LEADER_APPROVE: (id: number | string) => `/api/leader/membership/${id}/approve`,
