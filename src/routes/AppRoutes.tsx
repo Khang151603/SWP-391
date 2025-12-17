@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from '../components/ProtectedRoute';
 
 const HomePage = lazy(() => import('../pages/HomePage'));
@@ -14,7 +14,6 @@ const ClubLeaderRequestsPage = lazy(() => import('../pages/ClubLeader/ClubLeader
 const StudentActivitiesPage = lazy(() => import('../pages/Student/StudentActivitiesPage'));
 const StudentMyActivitiesPage = lazy(() => import('../pages/Student/StudentMyActivitiesPage'));
 const StudentClubsPage = lazy(() => import('../pages/Student/StudentClubsPage'));
-const StudentDashboardPage = lazy(() => import('../pages/Student/StudentDashboardPage'));
 const StudentExplorePage = lazy(() => import('../pages/Student/StudentExplorePage'));
 const StudentExploreDetailPage = lazy(() => import('../pages/Student/StudentExploreDetailPage'));
 const StudentBecomeLeaderPage = lazy(() => import('../pages/Student/StudentBecomeLeaderPage'));
@@ -50,7 +49,7 @@ function AppRoutes() {
           path="/student" 
           element={
             <ProtectedRoute requiredRole="student">
-              <StudentDashboardPage />
+              <Navigate to="/student/clubs" replace />
             </ProtectedRoute>
           } 
         />

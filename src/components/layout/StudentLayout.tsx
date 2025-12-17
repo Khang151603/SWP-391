@@ -128,7 +128,6 @@ function StudentLayout({
   };
 
   const menuItems: MenuItem[] = [
-    { label: 'Trang chủ', path: '/student', icon: <Icons.Dashboard /> },
     { label: 'CLB của tôi', path: '/student/clubs', icon: <Icons.Clubs /> },
     { label: 'Khám phá', path: '/student/explore', icon: <Icons.Explore /> },
     { 
@@ -149,7 +148,7 @@ function StudentLayout({
         <div className="mx-auto max-w-[1536px] px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex h-20 items-center gap-6 overflow-hidden">
             {/* Logo */}
-            <Link to="/student" className="flex items-center gap-3 group flex-shrink-0">
+            <Link to="/student/clubs" className="flex items-center gap-3 group flex-shrink-0">
               <div className="relative">
                 <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 opacity-75 blur group-hover:opacity-100 transition-opacity"></div>
                 <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-lg font-bold text-white shadow-lg">
@@ -167,10 +166,7 @@ function StudentLayout({
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {menuItems.map((item) => {
-                const isBasePath = item.path === '/student';
-                const isActive = isBasePath
-                  ? location.pathname === item.path
-                  : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+                const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
                 return (
                   <Link
                     key={item.path}
@@ -227,13 +223,6 @@ function StudentLayout({
                     <RoleSwitcher />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
-                      onClick={() => navigate('/student')}
-                      className="cursor-pointer"
-                    >
-                      <Icons.Dashboard />
-                      <span>Trang chủ</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
                       onClick={() => navigate('/student/profile')}
                       className="cursor-pointer"
                     >
@@ -268,10 +257,7 @@ function StudentLayout({
           <div className="lg:hidden border-t border-slate-200 bg-white">
             <div className="px-4 py-4 space-y-1">
               {menuItems.map((item) => {
-                const isBasePath = item.path === '/student';
-                const isActive = isBasePath
-                  ? location.pathname === item.path
-                  : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
+                const isActive = location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
                 return (
                   <Link
                     key={item.path}
@@ -303,7 +289,7 @@ function StudentLayout({
       {/* Main Content */}
       <main className="overflow-x-hidden pt-20">
         {/* Page Header */}
-        {location.pathname !== '/student' && (
+        {location.pathname !== '/student/clubs' && (
           <div className="border-b border-slate-200 bg-white">
             <div className="mx-auto max-w-[1536px] px-4 py-8 sm:px-6 lg:px-8 xl:px-12">
               <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">{title}</h1>
