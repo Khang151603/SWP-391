@@ -271,15 +271,29 @@ function StudentActivitiesPage() {
 
   const canRegister = (activity: StudentActivity) => {
     const statusLower = activity.status.toLowerCase();
-    // Chỉ cho đăng ký khi đang mở (Active / opened), không phải Not_yet_open, không bị đóng / đang diễn ra / đã kết thúc
-    const isOpenForRegistration = statusLower.includes('active') || statusLower.includes('open');
-    const isNotYetOpen = statusLower.includes('not_yet_open') || statusLower.includes('notyetopen');
-    const isClosed = statusLower.includes('active_closed') || statusLower.includes('closed');
+    
+    // Chỉ cho đăng ký khi status = "Active" (đã mở đăng ký)
+    // Không cho đăng ký khi:
+    // - Not_yet_open / pending (chưa mở)
+    // - Active_Closed / closed (đã đóng đăng ký)
+    // - Ongoing (đang diễn ra)
+    // - Completed / Cancelled (đã kết thúc / đã hủy)
+    
+    const isNotYetOpen = statusLower.includes('not_yet_open') || 
+                         statusLower.includes('notyetopen') || 
+                         statusLower === 'pending';
+    const isClosed = statusLower.includes('active_closed') || 
+                     statusLower === 'closed';
     const isOngoing = statusLower.includes('ongoing');
-    const isCompleted = statusLower.includes('completed') || statusLower.includes('cancel');
+    const isCompleted = statusLower.includes('completed') || 
+                        statusLower.includes('cancel');
+    
+    // Chỉ cho đăng ký khi status = "Active" (chính xác là "active" hoặc "opened")
+    // và không phải các trạng thái trên
+    const isActive = statusLower === 'active' || statusLower === 'opened';
 
     return (
-      isOpenForRegistration &&
+      isActive &&
       !isNotYetOpen &&
       !isClosed &&
       !isOngoing &&
@@ -412,18 +426,48 @@ function StudentActivitiesPage() {
       setTimeout(() => {
         setRegistrationSuccess(null);
       }, 3000);
-    } catch (err: unknown) {
+    } catch (err: any) {
       // Xử lý lỗi từ API
-      const errorMessage = err instanceof Error ? err.message : String(err || '');
+      const errorMessage = err?.message || err?.toString() || '';
       
       // Kiểm tra nếu lỗi là do đã đăng ký rồi
       if (errorMessage.toLowerCase().includes('đã đăng ký') || 
           errorMessage.toLowerCase().includes('already registered') ||
           errorMessage.toLowerCase().includes('already exists')) {
         setRegistrationError('Bạn đã đăng ký rồi');
+      } else if (errorLower.includes('chưa phải thành viên') ||
+                 errorLower.includes('chưa là member') ||
+                 errorLower.includes('vui lòng gửi yêu cầu tham gia')) {
+        setRegistrationError(errorMessage); // Hiển thị message chi tiết từ backend
+      } else if (errorLower.includes('đã được đóng') ||
+                 errorLower.includes('đã đóng')) {
+        setRegistrationError('Đăng ký cho hoạt động này đã được đóng.');
+      } else if (errorLower.includes('chưa mở đăng ký') ||
+                 errorLower.includes('not yet open')) {
+        setRegistrationError('Hoạt động này chưa mở đăng ký.');
+      } else if (errorLower.includes('đã hoàn thành') ||
+                 errorLower.includes('completed')) {
+        setRegistrationError('Hoạt động này đã hoàn thành.');
+      } else if (errorLower.includes('đang diễn ra') ||
+                 errorLower.includes('ongoing')) {
+        setRegistrationError('Hoạt động này đang diễn ra, không thể đăng ký thêm.');
+      } else if (errorLower.includes('đã bị hủy') ||
+                 errorLower.includes('cancelled')) {
+        setRegistrationError('Hoạt động này đã bị hủy.');
+      } else if (errorLower.includes('không tồn tại') ||
+                 errorLower.includes('not found')) {
+        setRegistrationError('Hoạt động không tồn tại.');
+      } else if (err?.status === 401 || errorLower.includes('unauthorized')) {
+        setRegistrationError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      } else if (err?.status === 403 || errorLower.includes('forbidden')) {
+        setRegistrationError('Bạn không có quyền thực hiện thao tác này.');
+      } else if (err?.status === 0 || errorLower.includes('network') || errorLower.includes('fetch')) {
+        setRegistrationError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng và thử lại.');
       } else {
-        setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
+        // Hiển thị message từ backend nếu có, nếu không thì dùng message mặc định
+        setRegistrationError(errorMessage || 'Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
       }
+      
       setRegistrationSuccess(null);
     }
   };

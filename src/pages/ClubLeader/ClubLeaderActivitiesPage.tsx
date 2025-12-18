@@ -594,44 +594,59 @@ function ClubLeaderActivitiesPage() {
                       </div>
 
                       <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                        {status !== 'completed' && (
+                        {/* Khi completed: chỉ hiển thị "Xem thành viên" */}
+                        {status === 'completed' ? (
                           <button
-                            onClick={() => handleEdit(act)}
-                            className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                            onClick={() => handleViewParticipants(act)}
+                            className="rounded-lg bg-purple-50 border border-purple-200 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
                           >
-                            Sửa
+                            Xem thành viên
                           </button>
+                        ) : (
+                          <>
+                            {/* Nút Sửa: hiển thị khi chưa completed */}
+                            <button
+                              onClick={() => handleEdit(act)}
+                              className="rounded-lg bg-blue-50 border border-blue-200 px-3 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                            >
+                              Sửa
+                            </button>
+                            {/* Nút Mở đăng ký: chỉ hiển thị khi status = notyetopen hoặc pending */}
+                            {(status === 'pending' || status === 'notyetopen') && (
+                              <button
+                                onClick={() => handleOpenRegistration(act)}
+                                className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                              >
+                                Mở đăng ký
+                              </button>
+                            )}
+                            {/* Nút Bắt đầu: chỉ hiển thị khi status = active (đã mở đăng ký) */}
+                            {status === 'active' && (
+                              <button
+                                onClick={() => handleStartActivity(act)}
+                                className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
+                              >
+                                Bắt đầu
+                              </button>
+                            )}
+                            {/* Nút Dừng: chỉ hiển thị khi status = ongoing */}
+                            {(status === 'ongoing' || act.status?.toLowerCase().includes('ongoing')) && (
+                              <button
+                                onClick={() => handleStopActivity(act)}
+                                className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
+                              >
+                                Dừng
+                              </button>
+                            )}
+                            {/* Nút Xem thành viên: luôn hiển thị (trừ khi completed đã xử lý ở trên) */}
+                            <button
+                              onClick={() => handleViewParticipants(act)}
+                              className="rounded-lg bg-purple-50 border border-purple-200 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
+                            >
+                              Xem thành viên
+                            </button>
+                          </>
                         )}
-                        {(status === 'pending' || status === 'notyetopen') && (
-                          <button
-                            onClick={() => handleOpenRegistration(act)}
-                            className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
-                          >
-                            Mở đăng ký
-                          </button>
-                        )}
-                        {status === 'active' && (
-                          <button
-                            onClick={() => handleStartActivity(act)}
-                            className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-colors"
-                          >
-                            Bắt đầu
-                          </button>
-                        )}
-                        {(status === 'ongoing' || act.status?.toLowerCase().includes('ongoing')) && (
-                          <button
-                            onClick={() => handleStopActivity(act)}
-                            className="rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-100 transition-colors"
-                          >
-                            Dừng
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleViewParticipants(act)}
-                          className="rounded-lg bg-purple-50 border border-purple-200 px-3 py-1.5 text-xs font-semibold text-purple-700 hover:bg-purple-100 transition-colors"
-                        >
-                          Xem thành viên
-                        </button>
                       </div>
                     </div>
                   </div>

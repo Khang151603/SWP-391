@@ -38,6 +38,7 @@ function StudentClubsPage() {
       const myClubs = await membershipService.getStudentMyClubs();
       
       // Fetch detailed information for each club using /api/clubs/{id}
+      // Note: This endpoint may require leader role, so we catch errors gracefully
       const clubsWithDetails = await Promise.all(
         myClubs.map(async (item) => {
           try {
@@ -46,9 +47,12 @@ function StudentClubsPage() {
             return {
               ...item,
               clubDetails,
+              // Ensure memberCount is preserved from clubDetails if available
+              memberCount: clubDetails.memberCount ?? item.club.memberCount,
             };
-          } catch {
-            // Return item without details if fetch fails
+          } catch (err) {
+            // Return item without details if fetch fails (e.g., student doesn't have leader permission)
+            // The memberCount from item.club.memberCount should still be available if API returns it
             return item;
           }
         })
@@ -220,7 +224,8 @@ function StudentClubsPage() {
             {filteredClubs.map((item) => {
               const clubName = item.clubDetails?.name || item.club.name;
               const clubDescription = item.clubDetails?.description || item.club.description || '';
-              const memberCount = item.memberCount ?? item.clubDetails?.memberCount ?? item.club.memberCount;
+              // Ưu tiên lấy memberCount từ clubDetails (nếu có), sau đó từ club, cuối cùng từ item.memberCount
+              const memberCount = item.clubDetails?.memberCount ?? item.club.memberCount ?? item.memberCount;
               const membershipFee = item.clubDetails?.membershipFee ?? item.club.membershipFee;
               const imageUrl = item.clubDetails?.imageUrl || item.clubDetails?.imageClubsUrl || item.club.imageClubsUrl;
               const establishedDate = item.clubDetails?.establishedDate ?? item.club.establishedDate;
@@ -300,7 +305,9 @@ function StudentClubsPage() {
                     </div>
                     <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                       <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
-                      <p className="mt-1 text-sm text-slate-900">{memberCount ?? '--'}</p>
+                      <p className="mt-1 text-sm text-slate-900">
+                        {memberCount !== undefined && memberCount !== null ? memberCount : '--'}
+                      </p>
                     </div>
                     {location && (
                       <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
