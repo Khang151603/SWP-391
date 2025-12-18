@@ -256,6 +256,7 @@ function StudentExplorePage() {
         phone: formData.phone,
         major: formData.major || undefined,
         skills: formData.skills || undefined,
+        requestDate: new Date().toISOString(),
       });
 
       setRegistrationSuccess(true);

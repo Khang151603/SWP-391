@@ -34,6 +34,7 @@ export interface StudentMembershipRequest {
   phone: string;
   major?: string;
   skills?: string;
+  requestDate?: string; // ISO datetime string
 }
 
 export interface StudentMembershipRequestResponse {
