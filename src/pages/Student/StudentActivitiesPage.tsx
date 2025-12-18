@@ -3,6 +3,7 @@ import StudentLayout from '../../components/layout/StudentLayout';
 import { activityService } from '../../api/services/activity.service';
 import { membershipService } from '../../api/services/membership.service';
 import type { StudentActivity } from '../../api/types/activity.types';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
 
 function StudentActivitiesPage() {
   const [activities, setActivities] = useState<StudentActivity[]>([]);
@@ -12,6 +13,7 @@ function StudentActivitiesPage() {
   const [registrationSuccess, setRegistrationSuccess] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedActivity, setSelectedActivity] = useState<StudentActivity | null>(null);
 
   useEffect(() => {
     const fetchActivities = async () => {
@@ -35,11 +37,11 @@ function StudentActivitiesPage() {
           try {
             const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
             // Add club name to each activity if not present
-            return clubActivities.map((activity: any) => ({
+            return clubActivities.map((activity: StudentActivity) => ({
               ...activity,
               clubName: activity.clubName || clubMembership.club.name,
             }));
-          } catch (err) {
+          } catch {
             return [];
           }
         });
@@ -50,13 +52,24 @@ function StudentActivitiesPage() {
           try {
             const leaderActivities = await activityService.getByClub(clubMembership.club.id);
             // Add club name and convert to StudentActivity format
-            return leaderActivities.map((activity: any) => ({
-              ...activity,
-              clubName: activity.clubName || clubMembership.club.name,
+            return leaderActivities.map((activity): StudentActivity => ({
+              id: activity.id,
+              clubId: activity.clubId,
+              clubName: clubMembership.club.name,
+              title: activity.title,
+              description: activity.description,
+              startTime: activity.startTime,
+              endTime: activity.endTime,
+              location: activity.location,
+              status: activity.status,
+              imageActsUrl: activity.imageActsUrl,
               // Ensure isRegistered is set (might not be in leader endpoint)
-              isRegistered: activity.isRegistered || false,
+              isRegistered: false,
+              category: undefined,
+              registeredCount: undefined,
+              maxParticipants: undefined,
             }));
-          } catch (err) {
+          } catch {
             // This is expected to fail for students, so we silently catch
             return [];
           }
@@ -75,9 +88,9 @@ function StudentActivitiesPage() {
         const allActivitiesList: StudentActivity[] = [];
         
         // Helper function to safely add activity
-        const addActivitySafely = (activity: any) => {
+        const addActivitySafely = (activity: StudentActivity | Partial<StudentActivity>) => {
           if (activity && activity.id && activity.startTime) {
-            allActivitiesList.push(activity);
+            allActivitiesList.push(activity as StudentActivity);
           }
         };
         
@@ -132,7 +145,7 @@ function StudentActivitiesPage() {
         });
         
         setActivities(allActivities);
-      } catch (err) {
+      } catch {
         setError('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -305,11 +318,11 @@ function StudentActivitiesPage() {
       const clubActivitiesPromises = myClubs.map(async (clubMembership) => {
         try {
           const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
-          return clubActivities.map((activity: any) => ({
+          return clubActivities.map((activity: StudentActivity) => ({
             ...activity,
             clubName: activity.clubName || clubMembership.club.name,
           }));
-        } catch (err) {
+        } catch {
           return [];
         }
       });
@@ -317,12 +330,23 @@ function StudentActivitiesPage() {
       const leaderActivitiesPromises = myClubs.map(async (clubMembership) => {
         try {
           const leaderActivities = await activityService.getByClub(clubMembership.club.id);
-          return leaderActivities.map((activity: any) => ({
-            ...activity,
-            clubName: activity.clubName || clubMembership.club.name,
-            isRegistered: activity.isRegistered || false,
+          return leaderActivities.map((activity): StudentActivity => ({
+            id: activity.id,
+            clubId: activity.clubId,
+            clubName: clubMembership.club.name,
+            title: activity.title,
+            description: activity.description,
+            startTime: activity.startTime,
+            endTime: activity.endTime,
+            location: activity.location,
+            status: activity.status,
+            imageActsUrl: activity.imageActsUrl,
+            isRegistered: false,
+            category: undefined,
+            registeredCount: undefined,
+            maxParticipants: undefined,
           }));
-        } catch (err) {
+        } catch {
           return [];
         }
       });
@@ -339,9 +363,9 @@ function StudentActivitiesPage() {
       const allActivitiesList: StudentActivity[] = [];
       
       // Helper function to safely add activity
-      const addActivitySafely = (activity: any) => {
+      const addActivitySafely = (activity: StudentActivity | Partial<StudentActivity>) => {
         if (activity && activity.id && activity.startTime) {
-          allActivitiesList.push(activity);
+          allActivitiesList.push(activity as StudentActivity);
         }
       };
       
@@ -388,9 +412,9 @@ function StudentActivitiesPage() {
       setTimeout(() => {
         setRegistrationSuccess(null);
       }, 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Xử lý lỗi từ API
-      const errorMessage = err?.message || err?.toString() || '';
+      const errorMessage = err instanceof Error ? err.message : String(err || '');
       
       // Kiểm tra nếu lỗi là do đã đăng ký rồi
       if (errorMessage.toLowerCase().includes('đã đăng ký') || 
@@ -521,7 +545,7 @@ function StudentActivitiesPage() {
               return (
                 <div
                   key={activity.id}
-                  className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-lg"
+                  className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:border-blue-300 hover:shadow-lg"
                 >
                   {/* Activity Image */}
                   {activity.imageActsUrl && (
@@ -593,7 +617,7 @@ function StudentActivitiesPage() {
                   )}
                   
                   {/* Content */}
-                  <div className="p-5">
+                  <div className="flex flex-1 flex-col p-5">
                     {/* Category and Title */}
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       {activity.category && (
@@ -609,7 +633,7 @@ function StudentActivitiesPage() {
                     )}
 
                     {/* Activity Details */}
-                    <div className="mb-4 space-y-2.5 border-t border-slate-100 pt-4">
+                    <div className="mb-4 flex-1 space-y-2.5 border-t border-slate-100 pt-4">
                       <div className="flex items-start gap-2 text-sm">
                         <svg className="mt-0.5 h-4 w-4 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path
@@ -671,12 +695,200 @@ function StudentActivitiesPage() {
                       )}
                     </div>
 
-                    {/* Action Button */}
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-2 mt-auto">
+                      <button
+                        onClick={() => setSelectedActivity(activity)}
+                        className="w-full rounded-xl border border-blue-600 bg-white px-4 py-2.5 text-sm font-semibold text-blue-600 transition-all hover:bg-blue-50 active:scale-95"
+                      >
+                        Xem chi tiết
+                      </button>
+                      <button
+                        onClick={() => handleJoinActivity(activity.id)}
+                        disabled={!canJoin && !activity.isRegistered && isFull}
+                        className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                          activity.isRegistered
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer'
+                            : canJoin
+                              ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700 active:scale-95'
+                              : isFull
+                                ? 'bg-amber-100 text-amber-700 cursor-not-allowed'
+                                : 'bg-slate-200 text-slate-500 cursor-not-allowed'
+                        }`}
+                      >
+                        {activity.isRegistered
+                          ? 'Đã đăng ký'
+                          : isFull
+                            ? 'Đã đầy'
+                            : canJoin
+                              ? 'Đăng ký tham gia'
+                              : 'Không thể đăng ký'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Activity Detail Dialog */}
+      <Dialog open={selectedActivity !== null} onOpenChange={(open) => !open && setSelectedActivity(null)}>
+        {selectedActivity && (
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-slate-900">
+                {selectedActivity.title}
+              </DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {/* Image */}
+              {selectedActivity.imageActsUrl && (
+                <div className="relative h-64 w-full overflow-hidden rounded-xl">
+                  <img 
+                    src={selectedActivity.imageActsUrl} 
+                    alt={selectedActivity.title}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Status and Club */}
+              <div className="flex flex-wrap items-center gap-3">
+                {(() => {
+                  const statusConfig = getStatusConfig(selectedActivity.status);
+                  return (
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${statusConfig.bgColor} ${statusConfig.borderColor} ${statusConfig.textColor}`}
+                    >
+                      <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor}`}></div>
+                      {statusConfig.label}
+                    </span>
+                  );
+                })()}
+                {selectedActivity.category && (
+                  <span className="inline-flex rounded-full bg-blue-600 px-3 py-1 text-xs font-semibold text-white">
+                    {selectedActivity.category}
+                  </span>
+                )}
+                {selectedActivity.clubName && (
+                  <div className="flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1">
+                    <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
+                    </svg>
+                    <span className="text-sm font-semibold text-blue-700">{selectedActivity.clubName}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Description */}
+              {selectedActivity.description && (
+                <div>
+                  <h4 className="mb-2 text-sm font-semibold text-slate-900">Mô tả</h4>
+                  <p className="text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
+                    {selectedActivity.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Details Grid */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span>Thời gian</span>
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    <div className="font-medium">{formatDateTime(selectedActivity.startTime).date}</div>
+                    <div className="text-slate-500">
+                      {formatDateTime(selectedActivity.startTime).time} - {formatDateTime(selectedActivity.endTime).time}
+                    </div>
+                    {formatDateTime(selectedActivity.startTime).date !== formatDateTime(selectedActivity.endTime).date && (
+                      <div className="text-slate-500 mt-1">
+                        Đến: {formatDateTime(selectedActivity.endTime).date}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                    <svg className="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Địa điểm</span>
+                  </div>
+                  <div className="text-sm text-slate-600">{selectedActivity.location}</div>
+                </div>
+
+                {selectedActivity.maxParticipants && (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                    <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <svg className="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                      <span>Số lượng</span>
+                    </div>
+                    <div className="text-sm text-slate-600">
+                      <span className="font-medium text-slate-900">
+                        {selectedActivity.registeredCount || 0}/{selectedActivity.maxParticipants}
+                      </span>
+                      <span className="text-slate-500"> người đã đăng ký</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-4 border-t border-slate-200">
+                <button
+                  onClick={() => setSelectedActivity(null)}
+                  className="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Đóng
+                </button>
+                {(() => {
+                  const canJoin = canRegister(selectedActivity);
+                  const isFull = !!(
+                    selectedActivity.maxParticipants &&
+                    selectedActivity.registeredCount &&
+                    selectedActivity.registeredCount >= selectedActivity.maxParticipants
+                  );
+                  
+                  return (
                     <button
-                      onClick={() => handleJoinActivity(activity.id)}
-                      disabled={!canJoin && !activity.isRegistered && isFull}
-                      className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
-                        activity.isRegistered
+                      onClick={() => {
+                        handleJoinActivity(selectedActivity.id);
+                        setSelectedActivity(null);
+                      }}
+                      disabled={!canJoin && !selectedActivity.isRegistered && isFull}
+                      className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                        selectedActivity.isRegistered
                           ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer'
                           : canJoin
                             ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700 active:scale-95'
@@ -685,7 +897,7 @@ function StudentActivitiesPage() {
                               : 'bg-slate-200 text-slate-500 cursor-not-allowed'
                       }`}
                     >
-                      {activity.isRegistered
+                      {selectedActivity.isRegistered
                         ? 'Đã đăng ký'
                         : isFull
                           ? 'Đã đầy'
@@ -693,13 +905,13 @@ function StudentActivitiesPage() {
                             ? 'Đăng ký tham gia'
                             : 'Không thể đăng ký'}
                     </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </DialogContent>
         )}
-      </div>
+      </Dialog>
     </StudentLayout>
   );
 }

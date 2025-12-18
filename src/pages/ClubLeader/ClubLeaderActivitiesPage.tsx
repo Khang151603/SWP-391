@@ -1183,10 +1183,6 @@ function ClubLeaderActivitiesPage() {
                       </p>
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-slate-500">Account ID</label>
-                      <p className="mt-1 text-sm text-slate-700">{viewingParticipant.accountId}</p>
-                    </div>
-                    <div>
                       <label className="text-xs font-medium text-slate-500">Email</label>
                       <p className="mt-1 text-sm text-slate-700">{viewingParticipant.email}</p>
                     </div>
@@ -1201,22 +1197,7 @@ function ClubLeaderActivitiesPage() {
 
                 {/* Registration Info Section */}
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
-                    Thông tin đăng ký
-                  </h4>
                   <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="text-xs font-medium text-slate-500">Registration ID</label>
-                      <p className="mt-1 text-sm text-slate-700">{viewingParticipant.id}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-slate-500">Activity ID</label>
-                      <p className="mt-1 text-sm text-slate-700">{viewingParticipant.activityId}</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-slate-500">Membership ID</label>
-                      <p className="mt-1 text-sm text-slate-700">{viewingParticipant.membershipId}</p>
-                    </div>
                     <div>
                       <label className="text-xs font-medium text-slate-500">Thời gian đăng ký</label>
                       <p className="mt-1 text-sm text-slate-700">

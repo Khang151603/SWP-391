@@ -5,6 +5,14 @@ import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
 import type { StudentMyClub } from '../../api/types/membership.types';
 import type { ClubListItem } from '../../api/types/club.types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '../../components/ui/Dialog';
 
 interface ClubWithDetails extends StudentMyClub {
   clubDetails?: ClubListItem;
@@ -17,6 +25,8 @@ function StudentClubsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [selectedClub, setSelectedClub] = useState<ClubWithDetails | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   // Function to fetch clubs data
   const fetchMyClubs = async () => {
@@ -76,6 +86,12 @@ function StudentClubsPage() {
   // Manual refresh handler
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1);
+  };
+
+  // Handle view details
+  const handleViewDetails = (club: ClubWithDetails) => {
+    setSelectedClub(club);
+    setIsDetailDialogOpen(true);
   };
 
   const filteredClubs = useMemo(() => {
@@ -209,9 +225,6 @@ function StudentClubsPage() {
               const imageUrl = item.clubDetails?.imageUrl || item.clubDetails?.imageClubsUrl || item.club.imageClubsUrl;
               const establishedDate = item.clubDetails?.establishedDate ?? item.club.establishedDate;
               const location = item.clubDetails?.location ?? item.club.location;
-              const contactEmail = item.clubDetails?.contactEmail ?? item.club.contactEmail;
-              const contactPhone = item.clubDetails?.contactPhone ?? item.club.contactPhone;
-              const activityFrequency = item.clubDetails?.activityFrequency ?? item.club.activityFrequency;
               
               return (
                 <div
@@ -295,34 +308,6 @@ function StudentClubsPage() {
                         <p className="mt-1 text-sm text-slate-900 line-clamp-1">{location}</p>
                       </div>
                     )}
-                    {contactEmail && (
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Email</p>
-                        <a 
-                          href={`mailto:${contactEmail}`}
-                          className="mt-1 text-sm text-blue-600 hover:text-blue-700 hover:underline line-clamp-1"
-                        >
-                          {contactEmail}
-                        </a>
-                      </div>
-                    )}
-                    {contactPhone && (
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Điện thoại</p>
-                        <a 
-                          href={`tel:${contactPhone}`}
-                          className="mt-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-                        >
-                          {contactPhone}
-                        </a>
-                      </div>
-                    )}
-                    {activityFrequency && (
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Tần suất hoạt động</p>
-                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{activityFrequency}</p>
-                      </div>
-                    )}
                     <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                       <p className="text-[10px] uppercase text-slate-500">Ngày tham gia</p>
                       <p className="mt-1 text-sm text-slate-900">
@@ -339,11 +324,224 @@ function StudentClubsPage() {
                       </p>
                     </div>
                   </div>
+
+                  {/* Nút xem chi tiết */}
+                  <button
+                    onClick={() => handleViewDetails(item)}
+                    className="mt-2 w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
+                  >
+                    Xem chi tiết
+                  </button>
                 </div>
               );
             })}
           </div>
         )}
+
+        {/* Dialog chi tiết CLB */}
+        <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            {selectedClub && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>
+                    {selectedClub.clubDetails?.name || selectedClub.club.name}
+                  </DialogTitle>
+                  <DialogDescription>
+                    Thông tin chi tiết về câu lạc bộ
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-6">
+                  {/* Hình ảnh CLB */}
+                  <div className="w-full h-64 rounded-lg overflow-hidden bg-slate-200 relative">
+                    {(() => {
+                      const imageUrl = selectedClub.clubDetails?.imageUrl || 
+                                      selectedClub.clubDetails?.imageClubsUrl || 
+                                      selectedClub.club.imageClubsUrl;
+                      return imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={selectedClub.clubDetails?.name || selectedClub.club.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-400"><svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                          <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      );
+                    })()}
+                    {/* Status Badge */}
+                    {selectedClub.membership.status && (
+                      <div className="absolute right-3 top-3 z-10">
+                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ${
+                          selectedClub.membership.status.toLowerCase() === 'active' 
+                            ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
+                            : selectedClub.membership.status.toLowerCase() === 'pending_payment'
+                            ? 'bg-amber-50 text-amber-700 ring-amber-200'
+                            : 'bg-slate-50 text-slate-700 ring-slate-200'
+                        }`}>
+                          {selectedClub.membership.status.toLowerCase() === 'active' 
+                            ? 'Đang hoạt động' 
+                            : selectedClub.membership.status.toLowerCase() === 'pending_payment'
+                            ? 'Chờ thanh toán'
+                            : selectedClub.membership.status}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mô tả */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900 mb-2">Mô tả</h3>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {selectedClub.clubDetails?.description || selectedClub.club.description || 'Chưa có mô tả'}
+                    </p>
+                  </div>
+
+                  {/* Thông tin chi tiết */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900 mb-3">Thông tin chi tiết</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(() => {
+                        const establishedDate = selectedClub.clubDetails?.establishedDate ?? selectedClub.club.establishedDate;
+                        return establishedDate && (
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-xs uppercase text-slate-500 mb-1">Ngày thành lập</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {new Date(establishedDate).toLocaleDateString('vi-VN', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </p>
+                          </div>
+                        );
+                      })()}
+                      
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <p className="text-xs uppercase text-slate-500 mb-1">Phí thành viên</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {(() => {
+                            const membershipFee = selectedClub.clubDetails?.membershipFee ?? selectedClub.club.membershipFee;
+                            return membershipFee === 0 || !membershipFee ? 'Miễn phí' : membershipFee.toLocaleString('vi-VN') + ' đ';
+                          })()}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <p className="text-xs uppercase text-slate-500 mb-1">Số thành viên</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {selectedClub.memberCount ?? selectedClub.clubDetails?.memberCount ?? selectedClub.club.memberCount ?? '--'}
+                        </p>
+                      </div>
+
+                      {(() => {
+                        const location = selectedClub.clubDetails?.location ?? selectedClub.club.location;
+                        return location && (
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-xs uppercase text-slate-500 mb-1">Địa điểm</p>
+                            <p className="text-sm font-medium text-slate-900">{location}</p>
+                          </div>
+                        );
+                      })()}
+
+                      {(() => {
+                        const contactEmail = selectedClub.clubDetails?.contactEmail ?? selectedClub.club.contactEmail;
+                        return contactEmail && (
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-xs uppercase text-slate-500 mb-1">Email liên hệ</p>
+                            <a 
+                              href={`mailto:${contactEmail}`}
+                              className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline break-all"
+                            >
+                              {contactEmail}
+                            </a>
+                          </div>
+                        );
+                      })()}
+
+                      {(() => {
+                        const contactPhone = selectedClub.clubDetails?.contactPhone ?? selectedClub.club.contactPhone;
+                        return contactPhone && (
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-xs uppercase text-slate-500 mb-1">Điện thoại</p>
+                            <a 
+                              href={`tel:${contactPhone}`}
+                              className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                            >
+                              {contactPhone}
+                            </a>
+                          </div>
+                        );
+                      })()}
+
+                      {(() => {
+                        const activityFrequency = selectedClub.clubDetails?.activityFrequency ?? selectedClub.club.activityFrequency;
+                        return activityFrequency && (
+                          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                            <p className="text-xs uppercase text-slate-500 mb-1">Tần suất hoạt động</p>
+                            <p className="text-sm font-medium text-slate-900">{activityFrequency}</p>
+                          </div>
+                        );
+                      })()}
+
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <p className="text-xs uppercase text-slate-500 mb-1">Ngày tham gia</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {(() => {
+                            if (!selectedClub.membership.joinDate) return '--';
+                            try {
+                              const date = new Date(selectedClub.membership.joinDate);
+                              if (isNaN(date.getTime())) return '--';
+                              return date.toLocaleDateString('vi-VN', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              });
+                            } catch {
+                              return '--';
+                            }
+                          })()}
+                        </p>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                        <p className="text-xs uppercase text-slate-500 mb-1">Trạng thái thành viên</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {selectedClub.membership.status.toLowerCase() === 'active' 
+                            ? 'Đang hoạt động' 
+                            : selectedClub.membership.status.toLowerCase() === 'pending_payment'
+                            ? 'Chờ thanh toán'
+                            : selectedClub.membership.status}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nút đóng */}
+                <div className="mt-6 flex justify-end">
+                  <DialogClose asChild>
+                    <button className="rounded-xl bg-slate-200 px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">
+                      Đóng
+                    </button>
+                  </DialogClose>
+                </div>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </StudentLayout>
   );
