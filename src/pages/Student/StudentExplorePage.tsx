@@ -392,11 +392,11 @@ function StudentExplorePage() {
                 {filteredClubs.map((club) => (
                   <div
                     key={club.id}
-                    className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 hover:border-blue-200 transition"
+                    className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 hover:border-blue-200 transition h-full"
                   >
                     {/* Hình ảnh CLB ở đầu card */}
-                    {club.imageUrl && (
-                      <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200">
+                    {club.imageUrl ? (
+                      <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
                         <img
                           src={club.imageUrl}
                           alt={club.name}
@@ -407,11 +407,13 @@ function StudentExplorePage() {
                           }}
                         />
                       </div>
+                    ) : (
+                      <div className="w-full h-40 rounded-lg bg-slate-200 flex-shrink-0"></div>
                     )}
 
                     {/* Thông tin CLB */}
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
+                    <div className="flex items-start justify-between gap-3 flex-shrink-0">
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-slate-900">
                           {club.name}
                         </p>
@@ -420,14 +422,14 @@ function StudentExplorePage() {
                         </p>
                       </div>
                       {club.recruiting && (
-                        <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200">
+                        <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200 flex-shrink-0">
                           Đang tuyển
                         </span>
                       )}
                     </div>
 
                     {/* Thông tin chi tiết */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600 flex-shrink-0">
                       <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
                         <p className="text-[10px] uppercase text-slate-500">
                           Ngày thành lập
@@ -463,7 +465,7 @@ function StudentExplorePage() {
                     </div>
 
                     {/* Nút hành động */}
-                    <div className="pt-2 flex gap-2">
+                    <div className="pt-2 flex gap-2 mt-auto">
                       <button
                         onClick={async () => {
                           setViewDetailsClub(club);

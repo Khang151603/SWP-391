@@ -27,7 +27,7 @@ function ClubLeaderReportsPage() {
         if (data.length > 0) {
           setSelectedClubId(data[0].club.clubId);
         }
-      } catch (err) {
+      } catch {
         setError('Không thể tải báo cáo. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
