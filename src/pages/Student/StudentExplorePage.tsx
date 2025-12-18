@@ -22,6 +22,7 @@ interface DisplayClub {
   contactPhone?: string | null;
   activityFrequency?: string | null;
   totalRevenue?: number;
+  status?: string;
 }
 
 // Detailed club response from API
@@ -124,21 +125,27 @@ function StudentExplorePage() {
             contactPhone?: string | null;
             activityFrequency?: string | null;
             totalRevenue?: number;
-          }) => ({
-            id: club.id.toString(),
-            name: club.name,
-            description: club.description,
-            members: club.memberCount,
-            fee: club.membershipFee,
-            recruiting: club.status?.toLowerCase() === "active",
-            imageUrl: club.imageClubsUrl,
-            establishedDate: club.establishedDate,
-            location: club.location,
-            contactEmail: club.contactEmail,
-            contactPhone: club.contactPhone,
-            activityFrequency: club.activityFrequency,
-            totalRevenue: club.totalRevenue,
-          })
+          }) => {
+            const statusLower = club.status?.toLowerCase() || '';
+            const isActive = statusLower === 'active' || statusLower === 'danghoatdong';
+            const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || (!isActive && statusLower !== '');
+            return {
+              id: club.id.toString(),
+              name: club.name,
+              description: club.description,
+              members: club.memberCount,
+              fee: club.membershipFee,
+              recruiting: isActive && !isLocked,
+              imageUrl: club.imageClubsUrl,
+              establishedDate: club.establishedDate,
+              location: club.location,
+              contactEmail: club.contactEmail,
+              contactPhone: club.contactPhone,
+              activityFrequency: club.activityFrequency,
+              totalRevenue: club.totalRevenue,
+              status: club.status,
+            };
+          }
         );
 
         setClubs(mappedClubs);
@@ -172,6 +179,15 @@ function StudentExplorePage() {
   });
 
   const handleRegister = (club: DisplayClub) => {
+    // Check if club is locked
+    const statusLower = club.status?.toLowerCase() || '';
+    const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || 
+      (statusLower !== 'active' && statusLower !== 'danghoatdong' && statusLower !== '');
+    if (isLocked) {
+      showErrorToast('CLB này đã bị khóa. Bạn không thể đăng ký vào CLB đã bị khóa.');
+      return;
+    }
+
     // Check if already a member
     const clubId = parseInt(club.id);
     console.log(
@@ -428,11 +444,26 @@ function StudentExplorePage() {
                           {club.description || "Chưa có mô tả"}
                         </p>
                       </div>
-                      {club.recruiting && (
-                        <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200 flex-shrink-0">
-                          Đang tuyển
-                        </span>
-                      )}
+                      {(() => {
+                        const statusLower = club.status?.toLowerCase() || '';
+                        const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || 
+                          (statusLower !== 'active' && statusLower !== 'danghoatdong' && statusLower !== '');
+                        if (isLocked) {
+                          return (
+                            <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 bg-red-50 text-red-700 ring-red-200 flex-shrink-0">
+                              Bị khóa
+                            </span>
+                          );
+                        }
+                        if (club.recruiting) {
+                          return (
+                            <span className="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200 flex-shrink-0">
+                              Đang tuyển
+                            </span>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
 
                     {/* Thông tin chi tiết */}
@@ -486,7 +517,9 @@ function StudentExplorePage() {
                               description: detailedClub.description,
                               members: detailedClub.memberCount ?? club.members,
                               fee: detailedClub.membershipFee ?? club.fee ?? 0,
-                              recruiting: detailedClub.status?.toLowerCase() === "active",
+                              recruiting: (detailedClub.status?.toLowerCase() === "active" || detailedClub.status?.toLowerCase() === "danghoatdong") && 
+                                detailedClub.status?.toLowerCase() !== "locked" && detailedClub.status?.toLowerCase() !== "tamdung",
+                              status: detailedClub.status,
                               imageUrl: detailedClub.imageClubsUrl ?? club.imageUrl,
                               establishedDate: detailedClub.establishedDate ?? club.establishedDate,
                               location: detailedClub.location ?? club.location,
@@ -506,14 +539,32 @@ function StudentExplorePage() {
                       >
                         Xem chi tiết
                       </button>
-                      {club.recruiting && (
-                        <button
-                          onClick={() => handleRegister(club)}
-                          className="flex-1 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
-                        >
-                          Đăng ký ngay
-                        </button>
-                      )}
+                      {(() => {
+                        const statusLower = club.status?.toLowerCase() || '';
+                        const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || 
+                          (statusLower !== 'active' && statusLower !== 'danghoatdong' && statusLower !== '');
+                        if (isLocked) {
+                          return (
+                            <button
+                              disabled
+                              className="flex-1 rounded-xl bg-slate-300 px-3 py-2 text-xs font-semibold text-slate-500 cursor-not-allowed"
+                            >
+                              CLB đã bị khóa
+                            </button>
+                          );
+                        }
+                        if (club.recruiting) {
+                          return (
+                            <button
+                              onClick={() => handleRegister(club)}
+                              className="flex-1 rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
+                            >
+                              Đăng ký ngay
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   </div>
                 ))}
@@ -554,11 +605,26 @@ function StudentExplorePage() {
                               {club.description || "Chưa có mô tả"}
                             </p>
                           </div>
-                          {club.recruiting && (
-                            <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200">
-                              Đang tuyển
-                            </span>
-                          )}
+                          {(() => {
+                            const statusLower = club.status?.toLowerCase() || '';
+                            const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || 
+                              (statusLower !== 'active' && statusLower !== 'danghoatdong' && statusLower !== '');
+                            if (isLocked) {
+                              return (
+                                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 bg-red-50 text-red-700 ring-red-200">
+                                  Bị khóa
+                                </span>
+                              );
+                            }
+                            if (club.recruiting) {
+                              return (
+                                <span className="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 bg-emerald-50 text-emerald-700 ring-emerald-200">
+                                  Đang tuyển
+                                </span>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
 
                         {/* Thông tin chi tiết */}
@@ -612,7 +678,9 @@ function StudentExplorePage() {
                                   description: detailedClub.description,
                                   members: detailedClub.memberCount ?? club.members,
                                   fee: detailedClub.membershipFee ?? club.fee ?? 0,
-                                  recruiting: detailedClub.status?.toLowerCase() === "active",
+                                  recruiting: (detailedClub.status?.toLowerCase() === "active" || detailedClub.status?.toLowerCase() === "danghoatdong") && 
+                                detailedClub.status?.toLowerCase() !== "locked" && detailedClub.status?.toLowerCase() !== "tamdung",
+                              status: detailedClub.status,
                                   imageUrl: detailedClub.imageClubsUrl ?? club.imageUrl,
                                   establishedDate: detailedClub.establishedDate ?? club.establishedDate,
                                   location: detailedClub.location ?? club.location,
@@ -632,14 +700,32 @@ function StudentExplorePage() {
                           >
                             Xem chi tiết
                           </button>
-                          {club.recruiting && (
-                            <button
-                              onClick={() => handleRegister(club)}
-                              className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
-                            >
-                              Đăng ký ngay
-                            </button>
-                          )}
+                          {(() => {
+                            const statusLower = club.status?.toLowerCase() || '';
+                            const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || 
+                              (statusLower !== 'active' && statusLower !== 'danghoatdong' && statusLower !== '');
+                            if (isLocked) {
+                              return (
+                                <button
+                                  disabled
+                                  className="rounded-xl bg-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-500 cursor-not-allowed"
+                                >
+                                  CLB đã bị khóa
+                                </button>
+                              );
+                            }
+                            if (club.recruiting) {
+                              return (
+                                <button
+                                  onClick={() => handleRegister(club)}
+                                  className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
+                                >
+                                  Đăng ký ngay
+                                </button>
+                              );
+                            }
+                            return null;
+                          })()}
                         </div>
                       </div>
                     </div>

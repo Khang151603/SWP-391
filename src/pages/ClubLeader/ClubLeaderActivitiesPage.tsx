@@ -278,6 +278,19 @@ function ClubLeaderActivitiesPage() {
       showErrorToast('Thời gian kết thúc phải sau thời gian bắt đầu');
       return;
     }
+    
+    // Check if club is locked
+    const selectedClub = clubs.find(c => c.id === form.clubId);
+    if (selectedClub) {
+      const statusLower = selectedClub.status?.toLowerCase() || '';
+      const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || 
+        (statusLower !== 'active' && statusLower !== 'danghoatdong' && statusLower !== '');
+      if (isLocked) {
+        showErrorToast('CLB này đã bị khóa. Bạn không thể tạo hoạt động mới.');
+        return;
+      }
+    }
+    
     setIsLoading(true);
     try {
       const newActivity = await activityService.create(form);
@@ -312,9 +325,14 @@ function ClubLeaderActivitiesPage() {
         fileInputRef.current.value = '';
       }
       setShowCreateModal(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create activity:', error);
-      showErrorToast('Không thể tạo hoạt động mới. Vui lòng thử lại sau.');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Không thể tạo hoạt động mới. Vui lòng thử lại sau.';
+      if (errorMessage.includes('locked') || errorMessage.includes('khóa')) {
+        showErrorToast('CLB này đã bị khóa. Bạn không thể tạo hoạt động mới.');
+      } else {
+        showErrorToast(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -475,6 +493,16 @@ function ClubLeaderActivitiesPage() {
               </select>
               <button
                 onClick={() => {
+                  const selectedClub = clubs.find(c => c.id === form.clubId);
+                  if (selectedClub) {
+                    const statusLower = selectedClub.status?.toLowerCase() || '';
+                    const isLocked = statusLower === 'locked' || statusLower === 'tamdung' || 
+                      (statusLower !== 'active' && statusLower !== 'danghoatdong' && statusLower !== '');
+                    if (isLocked) {
+                      showErrorToast('CLB của bạn đang bị khóa, không thể tạo hoạt động mới');
+                      return;
+                    }
+                  }
                   resetCreateForm();
                   setShowCreateModal(true);
                 }}

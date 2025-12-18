@@ -77,10 +77,16 @@ function LoginPage() {
           navigate('/');
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       // Hiển thị thông báo lỗi thân thiện cho người dùng
-      if (err instanceof Error) {
-          showErrorToast(err.message);
+      if (err?.response?.status === 403 || 
+          err?.response?.data?.message?.includes('khóa') || 
+          err?.response?.data?.message?.includes('locked') ||
+          err?.message?.includes('khóa') ||
+          err?.message?.includes('locked')) {
+        showErrorToast('Account của bạn đã bị khóa do vi phạm, liên hệ admin để được hỗ trợ');
+      } else if (err instanceof Error) {
+        showErrorToast(err.message);
       } else {
         showErrorToast('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
       }
