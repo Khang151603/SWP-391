@@ -1,11 +1,11 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import LeaderLayout from '../../components/layout/LeaderLayout';
 import { clubService } from '../../api/services/club.service';
 import { membershipService } from '../../api/services/membership.service';
 import type {
   CreateLeaderClubRequest,
   LeaderClubListItem,
-  UpdateLeaderClubRequest,
 } from '../../api/types/club.types';
 
 type ClubProfile = {
@@ -36,16 +36,11 @@ type ExtendedLeaderClubListItem = LeaderClubListItem & {
 };
 
 function ClubLeaderInfoPage() {
+  const navigate = useNavigate();
   const [clubs, setClubs] = useState<ClubProfile[]>([]);
-  const [selectedClubId, setSelectedClubId] = useState<string>('');
-  const [showDetailView, setShowDetailView] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const stats = useMemo(
     () => ({
@@ -124,10 +119,6 @@ function ClubLeaderInfoPage() {
         );
         
         setClubs(clubsWithData);
-        if (clubsWithData.length > 0) {
-          setSelectedClubId(clubsWithData[0].id);
-          setFormData(clubsWithData[0]);
-        }
       } catch {
         setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
       } finally {
@@ -151,122 +142,8 @@ function ClubLeaderInfoPage() {
     activityFrequency: '',
   });
 
-  const selectedClub = useMemo(
-    () => clubs.find((club) => club.id === selectedClubId) || null,
-    [clubs, selectedClubId]
-  );
-  
-  const [formData, setFormData] = useState<ClubProfile | null>(selectedClub);
-
-  // Update form data when selected club changes
-  useEffect(() => {
-    const club = clubs.find((c) => c.id === selectedClubId);
-    if (club) {
-      setFormData({ ...club });
-    } else {
-      setFormData(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedClubId]);
-
-  const handleInputChange = (field: keyof ClubProfile, value: string | number | null) => {
-    setFormData((prev) => (prev ? { ...prev, [field]: value ?? '' } : prev));
-  };
-
   const handleViewDetail = (clubId: string) => {
-    const club = clubs.find((c) => c.id === clubId);
-    if (club) {
-      setSelectedClubId(clubId);
-      setFormData(club);
-      setShowDetailView(true);
-      setIsEditMode(false);
-    }
-  };
-
-  const handleCloseDetail = () => {
-    setShowDetailView(false);
-    setIsEditMode(false);
-  };
-
-  const handleEditMode = () => {
-    setIsEditMode(true);
-  };
-
-  const handleCancelEdit = () => {
-    // Reset form data to original club data
-    const club = clubs.find((c) => c.id === selectedClubId);
-    if (club) {
-      setFormData({ ...club });
-    }
-    setIsEditMode(false);
-  };
-
-  const handleUpdateClub = async () => {
-    if (!formData) return;
-    if (!formData.name || !formData.description) {
-      setError('Tên và mô tả CLB là bắt buộc');
-      return;
-    }
-
-    // Get original status from selectedClub (don't allow updating status)
-    const originalClub = clubs.find((c) => c.id === formData.id);
-    const statusToUse = originalClub?.status || formData.status || 'Active';
-    const normalizedStatus = statusToUse 
-      ? (statusToUse.toLowerCase() === 'active' ? 'Active' : 'Unactive')
-      : 'Active';
-
-    const payload: UpdateLeaderClubRequest = {
-      name: formData.name,
-      description: formData.description,
-      establishedDate: formData.establishedDate,
-      imageClubsUrl: formData.imageClubsUrl || '',
-      membershipFee: formData.membershipFee,
-      status: normalizedStatus as UpdateLeaderClubRequest['status'],
-      location: formData.location || undefined,
-      contactEmail: formData.contactEmail || undefined,
-      contactPhone: formData.contactPhone || undefined,
-      activityFrequency: formData.activityFrequency || undefined,
-    };
-
-    setIsLoading(true);
-    setError(null);
-    try {
-      await clubService.updateLeaderClub(Number(formData.id), payload);
-      
-      // API only returns "Updated" string, so use formData as the source of truth
-      const updatedProfile: ClubProfile = {
-        id: formData.id,
-        name: formData.name,
-        description: formData.description,
-        establishedDate: formData.establishedDate,
-        imageClubsUrl: formData.imageClubsUrl,
-        avatarPublicId: formData.avatarPublicId,
-        membershipFee: formData.membershipFee,
-        status: normalizedStatus,
-        memberCount: formData.memberCount,
-        totalRevenue: formData.totalRevenue,
-        location: formData.location,
-        contactEmail: formData.contactEmail,
-        contactPhone: formData.contactPhone,
-        activityFrequency: formData.activityFrequency,
-      };
-      
-      // Update clubs list
-      setClubs((prev) => prev.map((club) => (club.id === updatedProfile.id ? updatedProfile : club)));
-      
-      setFormData(updatedProfile);
-      setIsEditMode(false);
-      
-      // Show success message
-      setSuccessMessage('Cập nhật thông tin CLB thành công!');
-      setTimeout(() => setSuccessMessage(null), 3000);
-    } catch (err) {
-      console.error('=== UPDATE FAILED ===');
-      console.error('Error details:', err);
-      setError('Không thể cập nhật thông tin CLB. Vui lòng thử lại sau.');
-    } finally {
-      setIsLoading(false);
-    }
+    navigate(`/leader/club-info/${clubId}`);
   };
 
   const handleCreateClub = async () => {
@@ -306,9 +183,9 @@ function ClubLeaderInfoPage() {
       };
 
       setClubs((prev) => [...prev, clubProfile]);
-      setSelectedClubId(clubProfile.id);
-      setFormData(clubProfile);
       setShowCreateForm(false);
+      // Navigate to detail page
+      navigate(`/leader/club-info/${clubProfile.id}`);
       
       // Reset form
       const today = new Date();
@@ -339,56 +216,10 @@ function ClubLeaderInfoPage() {
     }));
   };
 
-  const handleUploadImage = async () => {
-    if (!selectedImageFile || !formData) return;
-    
-    setIsUploadingImage(true);
-    setError(null);
-    
-    try {
-      const result = await clubService.uploadClubImage(formData.id, selectedImageFile);
-      
-      // Update formData and clubs state with new image URL
-      const updatedFormData = { ...formData, imageClubsUrl: result.imageUrl };
-      setFormData(updatedFormData);
-      setClubs((prev) => prev.map((club) => (club.id === formData.id ? updatedFormData : club)));
-      
-      // Clear selected file after successful upload
-      setSelectedImageFile(null);
-      
-      // Show success message briefly
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể upload ảnh');
-    } finally {
-      setIsUploadingImage(false);
-    }
-  };
-
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        setError('Vui lòng chọn file ảnh (jpg, png, gif, ...)');
-        return;
-      }
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Kích thước ảnh không được vượt quá 5MB');
-        return;
-      }
-      setSelectedImageFile(file);
-      setError(null);
-    }
-  };
-
   // State for date input display value (DD/MM/YYYY format)
   const [dateInputValue, setDateInputValue] = useState<string>('');
-  const [editDateInputValue, setEditDateInputValue] = useState<string>('');
   // Ref for hidden date picker
   const datePickerRef = useRef<HTMLInputElement>(null);
-  const editDatePickerRef = useRef<HTMLInputElement>(null);
 
   // Format date to DD/MM/YYYY
   const formatDateToDDMMYYYY = (dateString: string): string => {
@@ -440,78 +271,150 @@ function ClubLeaderInfoPage() {
     }
   }, [showCreateForm]);
 
-  // Initialize edit date input value when detail view opens
-  useEffect(() => {
-    if (showDetailView && formData?.establishedDate) {
-      setEditDateInputValue(formatDateToDDMMYYYY(formData.establishedDate));
-    } else {
-      setEditDateInputValue('');
-    }
-  }, [showDetailView, formData?.establishedDate]);
   return (
-    <LeaderLayout
-      title="Quản lý hồ sơ CLB"
-      subtitle="Thiết lập nhanh thông tin hiển thị"
-    >
-      {/* Success Toast Notification */}
-      {successMessage && (
-        <div className="fixed top-4 right-4 z-50 animate-slide-in">
-          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]">
-            <svg className="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <p className="flex-1 text-sm font-medium">{successMessage}</p>
-            <button
-              onClick={() => setSuccessMessage(null)}
-              className="flex-shrink-0 hover:bg-green-600 rounded p-1 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+    <>
+      <LeaderLayout
+        title="Quản lý hồ sơ CLB"
+        subtitle="Thiết lập nhanh thông tin hiển thị"
+      >
+        <div className="space-y-8">
+          {/* Header with Create Button and quick stats */}
+          {!showCreateForm && (
+            <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Tổng quan</p>
+                <h2 className="text-xl font-semibold text-slate-900 mt-2">CLB của bạn</h2>
+              </div>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+              >
+                + Tạo CLB mới
+              </button>
+            </section>
+          )}
+
+          {!showCreateForm && (
+            <section className="grid gap-3 md:grid-cols-3">
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs text-slate-500">Tổng CLB</p>
+                <p className="mt-2 text-2xl font-semibold text-slate-900">{stats.total}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs text-slate-500">Đang hoạt động</p>
+                <p className="mt-2 text-2xl font-semibold text-emerald-700">{stats.active}</p>
+              </div>
+              <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                <p className="text-xs text-slate-500">Phí TB</p>
+                <p className="mt-2 text-2xl font-semibold text-blue-700">{formatCurrency(stats.feeAvg)}</p>
+              </div>
+            </section>
+          )}
+
+          {/* Clubs Table */}
+          {(
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900">Danh sách CLB</h3>
+                <p className="text-xs text-slate-600">Nhấn "Chi tiết" để xem thông tin</p>
+              </div>
+
+              {clubs.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-slate-600 text-sm">Chưa có CLB nào. Hãy tạo CLB mới để bắt đầu.</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {clubs.map((club) => (
+                    <div
+                      key={club.id}
+                      className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 h-full hover:border-blue-200 transition"
+                    >
+                      {/* Image section - always present with fixed height */}
+                      <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
+                        {club.imageClubsUrl ? (
+                          <img
+                            src={club.imageClubsUrl}
+                            alt={club.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-start justify-between gap-3 flex-shrink-0">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 truncate">{club.name}</p>
+                          <p className="text-xs text-slate-600 mt-1 line-clamp-2">{club.description || 'Chưa có mô tả'}</p>
+                        </div>
+                        {(() => {
+                          const statusLower = (club.status || 'active').toLowerCase();
+                          const isActive = statusLower === 'active';
+                          return (
+                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 flex-shrink-0 ${
+                              isActive 
+                                ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
+                                : 'bg-red-50 text-red-700 ring-red-200'
+                            }`}>
+                              {getStatusLabel(club.status)}
+                            </span>
+                          );
+                        })()}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 flex-shrink-0">
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                          <p className="text-[10px] uppercase text-slate-500">Ngày thành lập</p>
+                          <p className="mt-1 text-sm text-slate-900">
+                            {club.establishedDate ? new Date(club.establishedDate).toLocaleDateString('vi-VN') : '--'}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                          <p className="text-[10px] uppercase text-slate-500">Phí thành viên</p>
+                          <p className="mt-1 text-sm text-slate-900">{club.membershipFee.toLocaleString('vi-VN')} đ</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                          <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
+                          <p className="mt-1 text-sm text-slate-900">{club.memberCount ?? '--'}</p>
+                        </div>
+                        <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
+                          <p className="text-[10px] uppercase text-slate-500">Tổng doanh thu</p>
+                          <p className="mt-1 text-sm text-slate-900">
+                            {club.totalRevenue !== null ? formatCurrency(club.totalRevenue) : '--'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2 mt-auto">
+                        <button
+                          onClick={() => handleViewDetail(club.id)}
+                          className="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
+                        >
+                          Chi tiết
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
         </div>
-      )}
+      </LeaderLayout>
 
-      <div className="space-y-8">{/* Header with Create Button and quick stats */}
-        {/* Header with Create Button and quick stats */}
-        {!showDetailView && !showCreateForm && (
-          <section className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.28em] text-slate-500">Tổng quan</p>
-              <h2 className="text-xl font-semibold text-slate-900 mt-2">CLB của bạn</h2>
-            </div>
-            <button
-              onClick={() => setShowCreateForm(true)}
-              className="rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition"
-            >
-              + Tạo CLB mới
-            </button>
-          </section>
-        )}
-
-        {!showDetailView && !showCreateForm && (
-          <section className="grid gap-3 md:grid-cols-3">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs text-slate-500">Tổng CLB</p>
-              <p className="mt-2 text-2xl font-semibold text-slate-900">{stats.total}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs text-slate-500">Đang hoạt động</p>
-              <p className="mt-2 text-2xl font-semibold text-emerald-700">{stats.active}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-              <p className="text-xs text-slate-500">Phí TB</p>
-              <p className="mt-2 text-2xl font-semibold text-blue-700">{formatCurrency(stats.feeAvg)}</p>
-            </div>
-          </section>
-        )}
-
-        {/* Create Club Modal */}
-        {showCreateForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-            <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl">
-              <div className="flex items-center justify-between mb-4">
+      {/* Create Club Modal - Outside Layout */}
+      {showCreateForm && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+            <div className="w-full max-w-3xl max-h-[90vh] rounded-2xl border border-slate-200 bg-white shadow-xl flex flex-col overflow-hidden">
+              <div className="flex items-center justify-between p-6 pb-4 flex-shrink-0">
                 <div>
                   <p className="text-xs uppercase tracking-[0.35em] text-slate-500">Tạo CLB</p>
                   <h2 className="text-xl font-semibold text-slate-900 mt-1">Thông tin cơ bản</h2>
@@ -542,12 +445,12 @@ function ClubLeaderInfoPage() {
               </div>
 
               {error && (
-                <div className="mb-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                <div className="mx-6 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 flex-shrink-0">
                   {error}
                 </div>
               )}
 
-              <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-1">
+              <div className="space-y-4 overflow-y-auto px-6 py-6 flex-1 min-h-0">
                 <label className="block text-sm text-slate-800">
                   Tên CLB <span className="text-red-500">*</span>
                   <input
@@ -757,707 +660,32 @@ function ClubLeaderInfoPage() {
                     </button>
                   </div>
                 </label>
+              </div>
 
-                <div className="flex justify-end gap-3 pt-4">
-                  <button
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      setError(null);
-                    }}
-                    className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
-                    disabled={isLoading}
-                  >
-                    Hủy
-                  </button>
-                  <button
-                    onClick={handleCreateClub}
-                    disabled={isLoading}
-                    className="rounded-xl bg-blue-600 px-6 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? 'Đang tạo...' : 'Tạo CLB'}
-                  </button>
-                </div>
+              <div className="flex justify-end gap-3 px-6 py-4 border-t border-slate-200 flex-shrink-0">
+                <button
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setError(null);
+                  }}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                  disabled={isLoading}
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={handleCreateClub}
+                  disabled={isLoading}
+                  className="rounded-xl bg-blue-600 px-6 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Đang tạo...' : 'Tạo CLB'}
+                </button>
               </div>
             </div>
           </div>
         )}
-
-        {/* Clubs Table */}
-        {!showDetailView && (
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">Danh sách CLB</h3>
-              <p className="text-xs text-slate-600">Nhấn "Chi tiết" để xem thông tin</p>
-            </div>
-
-            {clubs.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-slate-600 text-sm">Chưa có CLB nào. Hãy tạo CLB mới để bắt đầu.</p>
-              </div>
-            ) : (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {clubs.map((club) => (
-                  <div
-                    key={club.id}
-                    className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 h-full hover:border-blue-200 transition"
-                  >
-                    {/* Image section - always present with fixed height */}
-                    <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0">
-                      {club.imageClubsUrl ? (
-                        <img
-                          src={club.imageClubsUrl}
-                          alt={club.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex items-start justify-between gap-3 flex-shrink-0">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 truncate">{club.name}</p>
-                        <p className="text-xs text-slate-600 mt-1 line-clamp-2">{club.description || 'Chưa có mô tả'}</p>
-                      </div>
-                      {(() => {
-                        const statusLower = (club.status || 'active').toLowerCase();
-                        const isActive = statusLower === 'active';
-                        return (
-                          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 flex-shrink-0 ${
-                            isActive 
-                              ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
-                              : 'bg-red-50 text-red-700 ring-red-200'
-                          }`}>
-                            {getStatusLabel(club.status)}
-                          </span>
-                        );
-                      })()}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 flex-shrink-0">
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Ngày thành lập</p>
-                        <p className="mt-1 text-sm text-slate-900">
-                          {club.establishedDate ? new Date(club.establishedDate).toLocaleDateString('vi-VN') : '--'}
-                        </p>
-                      </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Phí thành viên</p>
-                        <p className="mt-1 text-sm text-slate-900">{club.membershipFee.toLocaleString('vi-VN')} đ</p>
-                      </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
-                        <p className="mt-1 text-sm text-slate-900">{club.memberCount ?? '--'}</p>
-                      </div>
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Tổng doanh thu</p>
-                        <p className="mt-1 text-sm text-slate-900">
-                          {club.totalRevenue !== null ? formatCurrency(club.totalRevenue) : '--'}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2 mt-auto">
-                      <button
-                        onClick={() => handleViewDetail(club.id)}
-                        className="rounded-xl bg-blue-50 border border-blue-200 px-3 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors"
-                      >
-                        Chi tiết
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Detail View: View Mode (Read-only) */}
-        {showDetailView && formData && !isEditMode && (
-          <>
-            {/* Header with Breadcrumb */}
-            <section className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-slate-50 p-6 shadow-sm">
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={handleCloseDetail}
-                    className="group flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700"
-                  >
-                    <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Quay lại
-                  </button>
-                  <div className="h-6 w-px bg-slate-300"></div>
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Chi tiết CLB</p>
-                    <h2 className="mt-1 text-2xl font-bold text-slate-900">{formData.name || 'CLB mới'}</h2>
-                  </div>
-                </div>
-                <button
-                  onClick={handleEditMode}
-                  className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Chỉnh sửa
-                </button>
-              </div>
-            </section>
-
-            {/* View Mode Content */}
-            <section className="space-y-6">
-              {/* Hero Section with Image and Status */}
-              <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                {formData.imageClubsUrl && (
-                  <div className="relative h-64 w-full overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200 md:h-80">
-                    <img
-                      src={formData.imageClubsUrl}
-                      alt={formData.name}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                    <div className="absolute bottom-4 right-4">
-                      {(() => {
-                        const statusLower = (formData.status || 'active').toLowerCase();
-                        const isActive = statusLower === 'active';
-                        return (
-                          <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold shadow-lg backdrop-blur-sm ${
-                            isActive 
-                              ? 'bg-emerald-500/90 text-white ring-2 ring-emerald-300/50' 
-                              : 'bg-red-500/90 text-white ring-2 ring-red-300/50'
-                          }`}>
-                            <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-emerald-200' : 'bg-red-200'}`}></span>
-                            {getStatusLabel(formData.status)}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                )}
-                {!formData.imageClubsUrl && (
-                  <div className="flex h-48 items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 md:h-64">
-                    <div className="text-center">
-                      <svg className="mx-auto h-16 w-16 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <p className="mt-2 text-sm text-slate-400">Chưa có ảnh đại diện</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Main Info Card */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <div className="mb-6">
-                  <h3 className="mb-4 text-lg font-bold text-slate-900">
-                    Thông tin chung
-                  </h3>
-                  
-                  {/* Description */}
-                  <div className="rounded-xl bg-slate-50 p-4">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Mô tả</p>
-                    <p className="text-sm leading-relaxed text-slate-700 whitespace-pre-wrap">{formData.description || 'Chưa có mô tả'}</p>
-                  </div>
-                </div>
-
-                {/* Contact Information Grid */}
-                <div className="grid gap-4 border-t border-slate-200 pt-6 md:grid-cols-2">
-                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Địa điểm</p>
-                    <p className="text-sm font-medium text-slate-900">{formData.location || 'Chưa cập nhật'}</p>
-                  </div>
-
-                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Tần suất hoạt động</p>
-                    <p className="text-sm font-medium text-slate-900">{formData.activityFrequency || 'Chưa cập nhật'}</p>
-                  </div>
-
-                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Email liên hệ</p>
-                    {formData.contactEmail ? (
-                      <a href={`mailto:${formData.contactEmail}`} className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                        {formData.contactEmail}
-                      </a>
-                    ) : (
-                      <p className="text-sm font-medium text-slate-400">Chưa cập nhật</p>
-                    )}
-                  </div>
-
-                  <div className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-blue-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Số điện thoại</p>
-                    {formData.contactPhone ? (
-                      <a href={`tel:${formData.contactPhone}`} className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                        {formData.contactPhone}
-                      </a>
-                    ) : (
-                      <p className="text-sm font-medium text-slate-400">Chưa cập nhật</p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Statistics Card */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-6 text-lg font-bold text-slate-900">
-                  Thống kê
-                </h3>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-blue-50 to-blue-100/50 p-5 transition-all hover:border-blue-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Ngày thành lập</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      {formData.establishedDate ? new Date(formData.establishedDate).toLocaleDateString('vi-VN') : '--'}
-                    </p>
-                  </div>
-
-                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 p-5 transition-all hover:border-emerald-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Phí thành viên</p>
-                    <p className="text-lg font-bold text-slate-900">{formatCurrency(formData.membershipFee)}</p>
-                  </div>
-
-                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-purple-50 to-purple-100/50 p-5 transition-all hover:border-purple-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Số thành viên</p>
-                    <p className="text-lg font-bold text-slate-900">{formData.memberCount ?? '--'}</p>
-                  </div>
-
-                  <div className="group rounded-xl border border-slate-200 bg-gradient-to-br from-orange-50 to-orange-100/50 p-5 transition-all hover:border-orange-300 hover:shadow-md">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-600">Tổng doanh thu</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      {formData.totalRevenue !== null ? formatCurrency(formData.totalRevenue) : '--'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-
-        {/* Detail View: Edit Mode */}
-        {showDetailView && formData && isEditMode && (
-          <>
-            {/* Back Button Header */}
-            <section className="rounded-2xl border border-slate-200 bg-gradient-to-r from-white to-blue-50/30 p-6 shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={handleCancelEdit}
-                    className="group flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50"
-                  >
-                    <svg className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Hủy chỉnh sửa
-                  </button>
-                  <div className="h-6 w-px bg-slate-300"></div>
-                  <div>
-                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Chế độ chỉnh sửa</p>
-                    <h2 className="mt-1 text-2xl font-bold text-slate-900">{formData.name || 'CLB mới'}</h2>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Main layout: form editable */}
-            <section className="space-y-6">
-              {/* Basic Information Section */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-6 text-lg font-bold text-slate-900">
-                  Thông tin cơ bản
-                </h3>
-                <div className="space-y-5">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">
-                      Tên CLB <span className="text-red-500">*</span>
-                    </span>
-                    <input
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                      placeholder="Ví dụ: CLB Truyền thông"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Mô tả</span>
-                    <textarea
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                      rows={5}
-                      placeholder="Tóm tắt sứ mệnh, hoạt động nổi bật, văn hoá của CLB..."
-                    />
-                  </label>
-                </div>
-              </div>
-
-              {/* Image & Media Section */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-6 text-lg font-bold text-slate-900">
-                  Ảnh đại diện
-                </h3>
-                <div className="space-y-4">
-                  {formData.imageClubsUrl && (
-                    <div className="relative overflow-hidden rounded-xl border-2 border-slate-200">
-                      <img
-                        src={formData.imageClubsUrl}
-                        alt={formData.name}
-                        className="h-64 w-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
-                  <div className="rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-6">
-                    <div className="flex flex-col items-center gap-4 md:flex-row">
-                      <div className="flex-1">
-                        <p className="mb-2 text-sm font-semibold text-slate-700">Upload ảnh mới</p>
-                        <p className="text-xs text-slate-500">Chấp nhận file ảnh (jpg, png, gif, ...), tối đa 5MB</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <label>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageFileChange}
-                            className="hidden"
-                            id="club-image-upload"
-                          />
-                          <label
-                            htmlFor="club-image-upload"
-                            className="cursor-pointer inline-flex items-center gap-2 rounded-xl border-2 border-blue-300 bg-blue-50 px-5 py-2.5 text-sm font-semibold text-blue-700 transition-all hover:bg-blue-100 hover:border-blue-400 active:scale-95"
-                          >
-                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            {selectedImageFile ? selectedImageFile.name : 'Chọn ảnh'}
-                          </label>
-                        </label>
-                        {selectedImageFile && (
-                          <button
-                            onClick={handleUploadImage}
-                            disabled={isUploadingImage}
-                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {isUploadingImage ? (
-                              <>
-                                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Đang upload...
-                              </>
-                            ) : (
-                              <>
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
-                                Upload
-                              </>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Settings Section */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-6 text-lg font-bold text-slate-900">
-                  Cài đặt & Thông tin liên hệ
-                </h3>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Phí thành viên</span>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-500">VNĐ</span>
-                      <input
-                        type="number"
-                        value={formData.membershipFee}
-                        onChange={(e) => handleInputChange('membershipFee', Number(e.target.value))}
-                        className="w-full rounded-xl border-2 border-slate-300 bg-white pl-16 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                        min="0"
-                        placeholder="0"
-                      />
-                    </div>
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Trạng thái</span>
-                    <div className="rounded-xl border-2 border-slate-200 bg-slate-50 px-4 py-3">
-                      {(() => {
-                        const statusLower = (formData.status || 'active').toLowerCase();
-                        const isActive = statusLower === 'active';
-                        return (
-                          <span className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold ${
-                            isActive 
-                              ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-200' 
-                              : 'bg-red-100 text-red-700 ring-2 ring-red-200'
-                          }`}>
-                            <span className={`h-2 w-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
-                            {getStatusLabel(formData.status)}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                  </label>
-                </div>
-
-                {/* Contact Information */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Địa điểm</span>
-                    <input
-                      type="text"
-                      value={formData.location || ''}
-                      onChange={(e) => handleInputChange('location', e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                      placeholder="Ví dụ: Phòng A101, Tòa nhà B"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Tần suất hoạt động</span>
-                    <input
-                      type="text"
-                      value={formData.activityFrequency || ''}
-                      onChange={(e) => handleInputChange('activityFrequency', e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                      placeholder="Ví dụ: Hàng tuần, 2 lần/tháng"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Email liên hệ</span>
-                    <input
-                      type="email"
-                      value={formData.contactEmail || ''}
-                      onChange={(e) => handleInputChange('contactEmail', e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                      placeholder="club@example.com"
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-2 block text-sm font-semibold text-slate-700">Số điện thoại liên hệ</span>
-                    <input
-                      type="tel"
-                      value={formData.contactPhone || ''}
-                      onChange={(e) => handleInputChange('contactPhone', e.target.value)}
-                      className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-100"
-                      placeholder="0123456789"
-                    />
-                  </label>
-                </div>
-              </div>
-
-              {/* Date Section */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-6 text-lg font-bold text-slate-900">
-                  Ngày thành lập
-                </h3>
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-slate-700">Ngày thành lập</span>
-                  <div className="relative mt-2">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-10">
-                      <svg
-                        className="w-5 h-5 text-slate-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                    <input
-                      type="text"
-                      value={editDateInputValue}
-                      onChange={(e) => {
-                        let inputValue = e.target.value;
-                        // Remove all non-digit characters except slash
-                        inputValue = inputValue.replace(/[^\d/]/g, '');
-                        
-                        // Count digits only (not slashes)
-                        const digits = inputValue.replace(/\//g, '');
-                        
-                        // Auto-format as user types: DD/MM/YYYY
-                        let formatted = inputValue;
-                        
-                        // Only auto-add slashes if user hasn't typed them
-                        if (!inputValue.includes('/')) {
-                          if (digits.length >= 3) {
-                            // Add first slash after day
-                            formatted = digits.slice(0, 2) + '/' + digits.slice(2);
-                          }
-                          if (digits.length >= 5) {
-                            // Add second slash after month
-                            formatted = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
-                          }
-                        } else {
-                          // User has typed slashes, just ensure correct positions
-                          const parts = inputValue.split('/');
-                          if (parts.length === 2 && parts[1].length >= 3) {
-                            formatted = parts[0] + '/' + parts[1].slice(0, 2) + '/' + parts[1].slice(2);
-                          }
-                        }
-                        
-                        // Limit to 10 characters (DD/MM/YYYY)
-                        formatted = formatted.slice(0, 10);
-                        
-                        setEditDateInputValue(formatted);
-                        
-                        // Try to parse and update ISO date if valid
-                        const isoDate = parseDDMMYYYYToISO(formatted);
-                        
-                        if (isoDate) {
-                          const date = new Date(isoDate);
-                          const today = new Date();
-                          today.setHours(23, 59, 59, 999);
-                          
-                          if (date <= today) {
-                            handleInputChange('establishedDate', isoDate);
-                          }
-                        }
-                      }}
-                      onBlur={() => {
-                        // Validate on blur
-                        const isoDate = parseDDMMYYYYToISO(editDateInputValue);
-                        if (!isoDate && editDateInputValue.trim() !== '') {
-                          // Invalid date - reset to current value
-                          if (formData.establishedDate) {
-                            setEditDateInputValue(formatDateToDDMMYYYY(formData.establishedDate));
-                          }
-                        } else if (isoDate) {
-                          const date = new Date(isoDate);
-                          const today = new Date();
-                          today.setHours(23, 59, 59, 999);
-                          if (date > today) {
-                            // Future date - set to today
-                            const todayFormatted = formatDateToDDMMYYYY(today.toISOString());
-                            setEditDateInputValue(todayFormatted);
-                            handleInputChange('establishedDate', today.toISOString());
-                          }
-                        }
-                      }}
-                      placeholder="DD/MM/YYYY"
-                      maxLength={10}
-                      className="w-full rounded-xl border border-slate-300 bg-white pl-12 pr-12 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
-                    />
-                    {/* Hidden date picker */}
-                    <input
-                      ref={editDatePickerRef}
-                      type="date"
-                      value={
-                        formData.establishedDate
-                          ? new Date(formData.establishedDate).toISOString().split('T')[0]
-                          : ''
-                      }
-                      className="absolute opacity-0 pointer-events-none w-0 h-0"
-                      max={(() => {
-                        const today = new Date();
-                        const year = today.getFullYear();
-                        const month = String(today.getMonth() + 1).padStart(2, '0');
-                        const day = String(today.getDate()).padStart(2, '0');
-                        return `${year}-${month}-${day}`;
-                      })()}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          // e.target.value is in YYYY-MM-DD format
-                          const [year, month, day] = e.target.value.split('-').map(Number);
-                          const date = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
-                          const formatted = formatDateToDDMMYYYY(date.toISOString());
-                          setEditDateInputValue(formatted);
-                          handleInputChange('establishedDate', date.toISOString());
-                        }
-                      }}
-                    />
-                    {/* Calendar icon on the right - clickable */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        editDatePickerRef.current?.showPicker?.();
-                        // Fallback for browsers that don't support showPicker
-                        if (!editDatePickerRef.current?.showPicker) {
-                          editDatePickerRef.current?.click();
-                        }
-                      }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors cursor-pointer z-10"
-                      aria-label="Chọn ngày từ lịch"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </button>
-                  </div>
-                </label>
-              </div>
-            </section>
-
-            {/* Action bar */}
-            <section className="sticky bottom-0 rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
-              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="flex items-center gap-2 text-xs text-slate-500">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Vui lòng kiểm tra kỹ thông tin trước khi lưu</span>
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={handleCancelEdit}
-                    className="flex items-center gap-2 rounded-xl border-2 border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50 active:scale-95"
-                    disabled={isLoading}
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    Hủy
-                  </button>
-                  <button
-                    onClick={handleUpdateClub}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-blue-700 hover:shadow-lg active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-                  >
-                    {isLoading ? (
-                      <>
-                        <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Đang lưu...
-                      </>
-                    ) : (
-                      <>
-                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        Lưu thay đổi
-                      </>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </section>
-          </>
-        )}
-      </div>
-    </LeaderLayout>
-  );
-}
+      </>
+    );
+  }
 
 export default ClubLeaderInfoPage;

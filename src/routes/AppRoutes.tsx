@@ -9,6 +9,7 @@ const RoleSelectionPage = lazy(() => import('../pages/RoleSelectionPage'));
 const ClubLeaderActivitiesPage = lazy(() => import('../pages/ClubLeader/ClubLeaderActivitiesPage'));
 const ClubLeaderDashboardPage = lazy(() => import('../pages/ClubLeader/ClubLeaderDashboardPage'));
 const ClubLeaderInfoPage = lazy(() => import('../pages/ClubLeader/ClubLeaderInfoPage'));
+const ClubLeaderDetailPage = lazy(() => import('../pages/ClubLeader/ClubLeaderDetailPage'));
 const ClubLeaderMembersPage = lazy(() => import('../pages/ClubLeader/ClubLeaderMembersPage'));
 const ClubLeaderRequestsPage = lazy(() => import('../pages/ClubLeader/ClubLeaderRequestsPage'));
 const ClubLeaderReportsPage = lazy(() => import('../pages/ClubLeader/ClubLeaderReportsPage'));
@@ -133,6 +134,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="clubleader">
               <ClubLeaderInfoPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/club-info/:clubId" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderDetailPage />
             </ProtectedRoute>
           } 
         />

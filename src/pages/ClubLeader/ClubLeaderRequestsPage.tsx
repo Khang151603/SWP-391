@@ -567,7 +567,7 @@ function ClubLeaderRequestsPage() {
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
                   <p className="text-xs font-medium uppercase tracking-wider text-slate-500 mb-1">Kỹ năng</p>
-                  <p className="text-sm text-slate-900">{(viewingStudent as any).skill || viewingStudent.skills || 'Chưa cập nhật'}</p>
+                  <p className="text-sm text-slate-900">{viewingStudent.skills || 'Chưa cập nhật'}</p>
                 </div>
               </div>
 
