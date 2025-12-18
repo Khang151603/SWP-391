@@ -55,6 +55,15 @@ function StudentExplorePage() {
   const [attemptedClubName, setAttemptedClubName] = useState("");
   const [viewDetailsClub, setViewDetailsClub] = useState<DisplayClub | null>(null);
   const [loadingDetails, setLoadingDetails] = useState(false);
+  const [membershipRequests, setMembershipRequests] = useState<Array<{
+    id: number;
+    clubName: string;
+    status: string;
+    paymentId: number | null;
+    amount: number | null;
+  }>>([]);
+  const [showPendingPaymentAlert, setShowPendingPaymentAlert] = useState(false);
+  const [pendingPaymentClubName, setPendingPaymentClubName] = useState("");
 
   // Debug: Log when component renders
   console.log("StudentExplorePage render - showMemberAlert:", showMemberAlert);
@@ -88,6 +97,25 @@ function StudentExplorePage() {
       }
     };
     fetchMyClubs();
+  }, []);
+
+  // Fetch membership requests to check pending payments
+  useEffect(() => {
+    const fetchMembershipRequests = async () => {
+      try {
+        const requests = await membershipService.getStudentRequests();
+        setMembershipRequests(requests.map(req => ({
+          id: req.id,
+          clubName: req.clubName,
+          status: req.status,
+          paymentId: req.paymentId,
+          amount: req.amount,
+        })));
+      } catch (error) {
+        console.error("Failed to fetch membership requests:", error);
+      }
+    };
+    fetchMembershipRequests();
   }, []);
 
   // Fetch account info for form pre-fill (only fullName, email, phone)
@@ -178,6 +206,52 @@ function StudentExplorePage() {
     );
   });
 
+  // Helper function to normalize status (same logic as StudentMembershipRequestsPage)
+  const getNormalizedStatus = (request: {
+    status: string;
+    paymentId: number | null;
+  }): string => {
+    const status = request.status.toLowerCase();
+    
+    // Nếu status = "pending" nhưng có paymentId → đã approve, đang chờ thanh toán
+    if (status === 'pending' && request.paymentId !== null && request.paymentId !== undefined) {
+      return 'approved_pending_payment';
+    }
+    
+    // Nếu status = "paid" → đã thanh toán
+    if (status === 'paid') {
+      return 'paid';
+    }
+    
+    // Nếu status = "reject" hoặc "rejected" → đã từ chối
+    if (status === 'reject' || status === 'rejected') {
+      return 'rejected';
+    }
+    
+    // Nếu status = "awaiting payment" → chờ thanh toán
+    if (status === 'awaiting payment') {
+      return 'approved_pending_payment';
+    }
+    
+    // Các trạng thái khác giữ nguyên
+    return request.status;
+  };
+
+  // Helper function to check if request has pending payment
+  const hasPendingPayment = (request: {
+    status: string;
+    paymentId: number | null;
+    amount: number | null;
+  }): boolean => {
+    const normalizedStatus = getNormalizedStatus(request).toLowerCase();
+    // Chỉ chặn khi đã approve và đang chờ thanh toán (có phí)
+    return (
+      normalizedStatus === 'approved_pending_payment' &&
+      request.amount !== null &&
+      request.amount > 0
+    );
+  };
+
   const handleRegister = (club: DisplayClub) => {
     // Check if club is locked
     const statusLower = club.status?.toLowerCase() || '';
@@ -202,6 +276,17 @@ function StudentExplorePage() {
     if (myClubIds.includes(clubId)) {
       setAttemptedClubName(club.name);
       setShowMemberAlert(true);
+      return;
+    }
+
+    // Check if there's a pending payment request for this club
+    const pendingRequest = membershipRequests.find(
+      req => req.clubName === club.name && hasPendingPayment(req)
+    );
+
+    if (pendingRequest) {
+      setPendingPaymentClubName(club.name);
+      setShowPendingPaymentAlert(true);
       return;
     }
 
@@ -1307,6 +1392,67 @@ function StudentExplorePage() {
                     className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
                   >
                     Xem CLB của tôi
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      )}
+
+      {/* Pending Payment Alert Dialog */}
+      {showPendingPaymentAlert && (
+        <Dialog
+          open={showPendingPaymentAlert}
+          onOpenChange={(open) => !open && setShowPendingPaymentAlert(false)}
+        >
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowPendingPaymentAlert(false)}
+            />
+            <div className="relative z-10 w-full max-w-md">
+              <div className="rounded-2xl border border-orange-300 bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+                    <svg
+                      className="h-6 w-6 text-orange-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Chưa thanh toán
+                  </h3>
+                </div>
+                <p className="mb-6 text-slate-600">
+                  Bạn đã có yêu cầu tham gia{" "}
+                  <span className="font-semibold text-blue-700">
+                    {pendingPaymentClubName}
+                  </span>{" "}
+                  nhưng chưa thanh toán. Vui lòng thanh toán yêu cầu hiện tại trước khi gửi yêu cầu mới.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPendingPaymentAlert(false)}
+                    className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Đóng
+                  </button>
+                  <a
+                    href="/student/membership-requests"
+                    className="flex-1 rounded-xl bg-orange-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-orange-700"
+                  >
+                    Đi đến thanh toán
                   </a>
                 </div>
               </div>
