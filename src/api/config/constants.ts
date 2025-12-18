@@ -1,10 +1,10 @@
 // API Base URL
 // Chỉ sử dụng giá trị từ biến môi trường VITE_API_BASE_URL
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
-
-// External Payment (PayOS) API Base URL
-// Chỉ sử dụng giá trị từ biến môi trường VITE_PAYOS_API_BASE_URL
-export const PAYOS_API_BASE_URL = import.meta.env.VITE_PAYOS_API_BASE_URL as string;
+const envApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+if (!envApiBaseUrl) {
+  throw new Error('VITE_API_BASE_URL environment variable is not set');
+}
+export const API_BASE_URL = envApiBaseUrl as string;
 
 // Auth Endpoints
 export const AUTH_ENDPOINTS = {

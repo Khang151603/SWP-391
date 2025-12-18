@@ -1,5 +1,5 @@
 import { httpClient } from '../config/client';
-import { PAYOS_API_BASE_URL, PAYMENT_ENDPOINTS } from '../config/constants';
+import { API_BASE_URL, PAYMENT_ENDPOINTS } from '../config/constants';
 import type {
   PayOSCreatePaymentRequest,
     PayOSPaymentResponse,
@@ -20,7 +20,7 @@ export const paymentService = {
     data: PayOSCreatePaymentRequest
   ): Promise<PayOSPaymentResponse> {
     // PayOS API requires payment ID in URL path
-    const response = await fetch(`${PAYOS_API_BASE_URL}/api/PayOS/create/${paymentId}`, {
+    const response = await fetch(`${API_BASE_URL}/api/PayOS/create/${paymentId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
