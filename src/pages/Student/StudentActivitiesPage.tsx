@@ -431,71 +431,11 @@ function StudentActivitiesPage() {
       
       // Giữ lại registrationSuccess trong UI; toast sẽ tự đóng
     } catch (err: unknown) {
-      // Xử lý lỗi từ API
+      // Xử lý lỗi từ API - thông báo sẽ tự động được chuyển đổi sang tiếng Việt trong showErrorToast
       const errorMessage = (err instanceof Error ? err.message : String(err)) || '';
-      const errorLower = errorMessage.toLowerCase();
-      const errorStatus = (err as { status?: number })?.status;
-      
-      // Kiểm tra nếu lỗi là do đã đăng ký rồi
-      if (errorLower.includes('đã đăng ký') || 
-          errorLower.includes('already registered') ||
-          errorLower.includes('already exists')) {
-        const message = 'Bạn đã đăng ký rồi';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorLower.includes('chưa phải thành viên') ||
-                 errorLower.includes('chưa là member') ||
-                 errorLower.includes('vui lòng gửi yêu cầu tham gia')) {
-        setRegistrationError(errorMessage); // Hiển thị message chi tiết từ backend
-        showErrorToast(errorMessage || 'Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
-      } else if (errorLower.includes('đã được đóng') ||
-                 errorLower.includes('đã đóng')) {
-        const message = 'Đăng ký cho hoạt động này đã được đóng.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorLower.includes('chưa mở đăng ký') ||
-                 errorLower.includes('not yet open')) {
-        const message = 'Hoạt động này chưa mở đăng ký.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorLower.includes('đã hoàn thành') ||
-                 errorLower.includes('completed')) {
-        const message = 'Hoạt động này đã hoàn thành.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorLower.includes('đang diễn ra') ||
-                 errorLower.includes('ongoing')) {
-        const message = 'Hoạt động này đang diễn ra, không thể đăng ký thêm.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorLower.includes('đã bị hủy') ||
-                 errorLower.includes('cancelled')) {
-        const message = 'Hoạt động này đã bị hủy.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorLower.includes('không tồn tại') ||
-                 errorLower.includes('not found')) {
-        const message = 'Hoạt động không tồn tại.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorStatus === 401 || errorLower.includes('unauthorized')) {
-        const message = 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorStatus === 403 || errorLower.includes('forbidden')) {
-        const message = 'Bạn không có quyền thực hiện thao tác này.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else if (errorStatus === 0 || errorLower.includes('network') || errorLower.includes('fetch')) {
-        const message = 'Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng và thử lại.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      } else {
-        // Hiển thị message từ backend nếu có, nếu không thì dùng message mặc định
-        const message = errorMessage || 'Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.';
-        setRegistrationError(message);
-        showErrorToast(message);
-      }
+      const message = errorMessage || 'Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.';
+      setRegistrationError(message);
+      showErrorToast(message);
       
       setRegistrationSuccess(null);
     }
