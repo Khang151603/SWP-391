@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import AuthLayout from '../components/layout/AuthLayout';
 import { authService } from '../api';
 import { useAppContext } from '../context/AppContext';
+import { showErrorToast, showSuccessToast } from '../utils/toast';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -12,8 +13,6 @@ function LoginPage() {
     username: '',
     password: ''
   });
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -21,7 +20,7 @@ function LoginPage() {
   useEffect(() => {
     const state = location.state as { message?: string; username?: string } | null;
     if (state?.message) {
-      setSuccessMessage(state.message);
+      showSuccessToast(state.message);
       // Pre-fill username nếu có
       if (state.username) {
         setFormData(prev => ({ ...prev, username: state.username || '' }));
@@ -40,7 +39,6 @@ function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -82,12 +80,12 @@ function LoginPage() {
       if (err instanceof Error) {
         // Map thông báo mặc định từ BE sang tiếng Việt
         if (err.message === 'Invalid username or password.') {
-          setError('Tên đăng nhập hoặc mật khẩu không đúng.');
+          showErrorToast('Tên đăng nhập hoặc mật khẩu không đúng.');
         } else {
-          setError(err.message);
+          showErrorToast(err.message);
         }
       } else {
-        setError('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+        showErrorToast('Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
       }
     } finally {
       setLoading(false);
@@ -97,18 +95,6 @@ function LoginPage() {
   return (
     <AuthLayout title="Đăng nhập">
       <form className="space-y-5" onSubmit={handleSubmit}>
-        {successMessage && (
-          <div className="rounded-2xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
-            {successMessage}
-          </div>
-        )}
-        
-        {error && (
-          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-        
         <div>
           <label htmlFor="username" className="block text-sm font-medium text-slate-700">Tên đăng nhập</label>
           <input

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
 import { reportService } from '../../api/services/report.service';
-import type { ActivityReport, ClubReport } from '../../api/types/report.types';
+import type { ClubReport } from '../../api/types/report.types';
 
 type ViewMode = 'summary' | 'activities';
 type TimeFilter = 'all' | '30d' | '90d' | '365d';
@@ -72,10 +72,8 @@ function ClubLeaderReportsPage() {
     );
   }, [reports]);
 
-  const filterActivitiesByTimeAndStatus = (
-    activities: ActivityReport[]
-  ): ActivityReport[] => {
-    if (!activities.length) return [];
+  const filteredActivities = useMemo(() => {
+    if (!selectedReport || !selectedReport.activities.length) return [];
 
     const now = new Date();
     let minDate: Date | null = null;
@@ -91,7 +89,7 @@ function ClubLeaderReportsPage() {
       minDate.setDate(now.getDate() - 365);
     }
 
-    return activities.filter(a => {
+    return selectedReport.activities.filter(a => {
       // Time filter
       if (minDate && a.startTime) {
         const start = new Date(a.startTime);
@@ -115,11 +113,6 @@ function ClubLeaderReportsPage() {
       }
       return true;
     });
-  };
-
-  const filteredActivities = useMemo(() => {
-    if (!selectedReport) return [];
-    return filterActivitiesByTimeAndStatus(selectedReport.activities);
   }, [selectedReport, timeFilter, activityStatusFilter]);
 
   const activitySummaryForSelectedClub = useMemo(() => {

@@ -38,7 +38,7 @@ function RoleSelectionPage() {
         }
         
         setIsLoading(false);
-      } catch (error) {
+      } catch {
         setIsLoading(false);
         // Redirect về login nếu có lỗi
         navigate('/login', { replace: true });

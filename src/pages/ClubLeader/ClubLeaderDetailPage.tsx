@@ -7,6 +7,7 @@ import type {
   UpdateLeaderClubRequest,
   LeaderClubListItem,
 } from '../../api/types/club.types';
+import { showErrorToast, showSuccessToast } from '../../utils/toast';
 
 type ClubProfile = {
   id: string;
@@ -151,7 +152,9 @@ function ClubLeaderDetailPage() {
         
         setFormData(clubProfile);
       } catch {
-        setError('Không thể tải thông tin CLB. Vui lòng thử lại sau.');
+        const message = 'Không thể tải thông tin CLB. Vui lòng thử lại sau.';
+        setError(message);
+        showErrorToast(message);
       } finally {
         setIsLoading(false);
       }
@@ -230,7 +233,9 @@ function ClubLeaderDetailPage() {
   const handleUpdateClub = async () => {
     if (!formData) return;
     if (!formData.name || !formData.description) {
-      setError('Tên và mô tả CLB là bắt buộc');
+      const message = 'Tên và mô tả CLB là bắt buộc';
+      setError(message);
+      showErrorToast(message);
       return;
     }
 
@@ -278,11 +283,13 @@ function ClubLeaderDetailPage() {
       setIsEditMode(false);
       
       setSuccessMessage('Cập nhật thông tin CLB thành công!');
-      setTimeout(() => setSuccessMessage(null), 3000);
+      showSuccessToast('Cập nhật thông tin CLB thành công!');
     } catch (err) {
       console.error('=== UPDATE FAILED ===');
       console.error('Error details:', err);
-      setError('Không thể cập nhật thông tin CLB. Vui lòng thử lại sau.');
+      const message = 'Không thể cập nhật thông tin CLB. Vui lòng thử lại sau.';
+      setError(message);
+      showErrorToast(message);
     } finally {
       setIsLoading(false);
     }
@@ -303,7 +310,9 @@ function ClubLeaderDetailPage() {
       setSelectedImageFile(null);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể upload ảnh');
+      const message = err instanceof Error ? err.message : 'Không thể upload ảnh';
+      setError(message);
+      showErrorToast(message);
     } finally {
       setIsUploadingImage(false);
     }
@@ -313,11 +322,15 @@ function ClubLeaderDetailPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (!file.type.startsWith('image/')) {
-        setError('Vui lòng chọn file ảnh (jpg, png, gif, ...)');
+        const message = 'Vui lòng chọn file ảnh (jpg, png, gif, ...)';
+        setError(message);
+        showErrorToast(message);
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
-        setError('Kích thước ảnh không được vượt quá 5MB');
+        const message = 'Kích thước ảnh không được vượt quá 5MB';
+        setError(message);
+        showErrorToast(message);
         return;
       }
       setSelectedImageFile(file);

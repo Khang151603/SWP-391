@@ -5,14 +5,13 @@ import { authService } from '../../api';
 import { useAppContext } from '../../context/AppContext';
 import { httpClient } from '../../api/config/client';
 import { USER_ENDPOINTS } from '../../api/config/constants';
+import { showErrorToast, showSuccessToast } from '../../utils/toast';
 
 function StudentProfilePage() {
   const { user, updateUser } = useAppContext();
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,27 +46,25 @@ function StudentProfilePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-    setSuccessMessage(null);
     
     // Validation
     if (!formData.fullName.trim()) {
-      setError('Họ và tên không được để trống');
+      showErrorToast('Họ và tên không được để trống');
       return;
     }
 
     if (!formData.email.trim()) {
-      setError('Email không được để trống');
+      showErrorToast('Email không được để trống');
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError('Email không đúng định dạng');
+      showErrorToast('Email không đúng định dạng');
       return;
     }
 
     if (formData.phone && !/^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/.test(formData.phone)) {
-      setError('Số điện thoại không hợp lệ');
+      showErrorToast('Số điện thoại không hợp lệ');
       return;
     }
 
@@ -99,13 +96,10 @@ function StudentProfilePage() {
         setAvatarPreview(null); // Clear preview since we're using the saved URL now
       }
 
-      setSuccessMessage('Cập nhật thông tin thành công!');
+      showSuccessToast('Cập nhật thông tin thành công!');
       setIsEditing(false);
-
-      // Clear success message sau 3s
-      setTimeout(() => setSuccessMessage(null), 3000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể cập nhật thông tin. Vui lòng thử lại.');
+      showErrorToast(err instanceof Error ? err.message : 'Không thể cập nhật thông tin. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -122,7 +116,6 @@ function StudentProfilePage() {
     }
     setAvatarPreview(null);
     setIsEditing(false);
-    setError(null);
   };
 
   const handleAvatarClick = () => {
@@ -137,13 +130,13 @@ function StudentProfilePage() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Vui lòng chọn file ảnh');
+      showErrorToast('Vui lòng chọn file ảnh');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError('Kích thước ảnh không được vượt quá 5MB');
+      showErrorToast('Kích thước ảnh không được vượt quá 5MB');
       return;
     }
 
@@ -156,7 +149,6 @@ function StudentProfilePage() {
 
     // Upload immediately
     setIsUploadingAvatar(true);
-    setError(null);
 
     try {
       const formData = new FormData();
@@ -173,12 +165,9 @@ function StudentProfilePage() {
       );
 
       setAvatarUrl(response.avatarUrl);
-      setSuccessMessage('Upload ảnh đại diện thành công!');
-      
-      // Auto clear success message
-      setTimeout(() => setSuccessMessage(null), 3000);
+      showSuccessToast('Upload ảnh đại diện thành công!');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể upload ảnh. Vui lòng thử lại.');
+      showErrorToast(err instanceof Error ? err.message : 'Không thể upload ảnh. Vui lòng thử lại.');
       setAvatarPreview(null);
     } finally {
       setIsUploadingAvatar(false);
@@ -200,19 +189,6 @@ function StudentProfilePage() {
             </Button>
           )}
         </div>
-
-        {/* Messages */}
-        {error && (
-          <div className="mb-6 rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="mb-6 rounded-xl border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
-            {successMessage}
-          </div>
-        )}
 
         {/* Profile Card */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

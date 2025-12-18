@@ -3,13 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { clubService } from '../api/services/club.service';
 import { useAppContext } from '../context/AppContext';
 import type { ClubListItem } from '../api/types/club.types';
+import { showErrorToast } from '../utils/toast';
 
 function HomePage() {
   const navigate = useNavigate();
   const { isAuthenticated, logout, selectedRole } = useAppContext();
   const [clubs, setClubs] = useState<ClubListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -17,11 +17,10 @@ function HomePage() {
     const fetchClubs = async () => {
       try {
         setLoading(true);
-        setError(null);
         const data = await clubService.getAllClubs();
         setClubs(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Không thể tải danh sách câu lạc bộ');
+        showErrorToast(err instanceof Error ? err.message : 'Không thể tải danh sách câu lạc bộ');
         console.error('Error fetching clubs:', err);
       } finally {
         setLoading(false);
@@ -281,13 +280,7 @@ function HomePage() {
             </div>
           )}
           
-          {error && (
-            <div className="text-center py-12">
-              <p className="text-red-600">{error}</p>
-            </div>
-          )}
-
-          {!loading && !error && (
+          {!loading && (
             <>
               {clubs.length === 0 ? (
                 <div className="text-center py-12">

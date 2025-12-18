@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/layout/AuthLayout';
 import { authService } from '../api';
+import { showErrorToast, showSuccessToast } from '../utils/toast';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -12,7 +13,6 @@ function RegisterPage() {
     phone: '',
     password: ''
   });
-  const [error, setError] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +75,6 @@ function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setValidationErrors({});
     
     if (!validateForm()) {
@@ -97,8 +96,9 @@ function RegisterPage() {
           username: formData.username 
         } 
       });
+      showSuccessToast('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Đăng ký thất bại. Vui lòng thử lại.');
+      showErrorToast(err instanceof Error ? err.message : 'Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -107,12 +107,6 @@ function RegisterPage() {
   return (
     <AuthLayout title="Tạo tài khoản">
       <form className="space-y-5" onSubmit={handleSubmit}>
-        {error && (
-          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-
         {/* Username */}
         <div>
           <label htmlFor="username" className="block text-sm font-medium text-slate-700">

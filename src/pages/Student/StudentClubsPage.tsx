@@ -5,6 +5,7 @@ import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
 import type { StudentMyClub } from '../../api/types/membership.types';
 import type { ClubListItem } from '../../api/types/club.types';
+import { showErrorToast } from '../../utils/toast';
 import {
   Dialog,
   DialogContent,
@@ -50,7 +51,7 @@ function StudentClubsPage() {
               // Ensure memberCount is preserved from clubDetails if available
               memberCount: clubDetails.memberCount ?? item.club.memberCount,
             };
-          } catch (err) {
+          } catch {
             // Return item without details if fetch fails (e.g., student doesn't have leader permission)
             // The memberCount from item.club.memberCount should still be available if API returns it
             return item;
@@ -60,7 +61,9 @@ function StudentClubsPage() {
       
       setClubs(clubsWithDetails);
     } catch {
-      setError('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
+      const message = 'Không thể tải danh sách CLB. Vui lòng thử lại sau.';
+      setError(message);
+      showErrorToast(message);
     } finally {
       setLoading(false);
     }

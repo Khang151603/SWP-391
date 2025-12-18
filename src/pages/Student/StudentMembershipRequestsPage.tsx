@@ -3,6 +3,7 @@ import StudentLayout from '../../components/layout/StudentLayout';
 import { membershipService } from '../../api/services/membership.service';
 import { paymentService } from '../../api/services/payment.service';
 import type { StudentMembershipRequestResponse } from '../../api/types/membership.types';
+import { showErrorToast } from '../../utils/toast';
 
 function StudentMembershipRequestsPage() {
   const [membershipRequests, setMembershipRequests] = useState<StudentMembershipRequestResponse[]>([]);
@@ -20,7 +21,9 @@ function StudentMembershipRequestsPage() {
         const requests = await membershipService.getStudentRequests();
         setMembershipRequests(requests);
       } catch{
-        setError('Không thể tải danh sách yêu cầu. Vui lòng thử lại sau.');
+        const message = 'Không thể tải danh sách yêu cầu. Vui lòng thử lại sau.';
+        setError(message);
+        showErrorToast(message);
       } finally {
         setLoading(false);
       }
@@ -152,7 +155,9 @@ function StudentMembershipRequestsPage() {
       }
     } catch (err) {
       console.error('Error creating payment:', err);
-      setPaymentError('Không thể tạo link thanh toán. Vui lòng thử lại sau.');
+      const message = 'Không thể tạo link thanh toán. Vui lòng thử lại sau.';
+      setPaymentError(message);
+      showErrorToast(message);
       setProcessingPayment(null);
     }
   };

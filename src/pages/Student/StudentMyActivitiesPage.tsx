@@ -3,6 +3,7 @@ import StudentLayout from '../../components/layout/StudentLayout';
 import { activityService } from '../../api/services/activity.service';
 import { clubService } from '../../api/services/club.service';
 import type { StudentActivity } from '../../api/types/activity.types';
+import { showErrorToast } from '../../utils/toast';
 
 interface MyActivity extends StudentActivity {
   clubName?: string;
@@ -88,7 +89,9 @@ function StudentMyActivitiesPage() {
         
         setActivities(activitiesWithDetails);
       } catch {
-        setError('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
+        const message = 'Không thể tải danh sách hoạt động. Vui lòng thử lại sau.';
+        setError(message);
+        showErrorToast(message);
       } finally {
         setLoading(false);
       }

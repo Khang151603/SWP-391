@@ -4,6 +4,7 @@ import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
 import type { LeaderPendingMembershipRequest } from '../../api/types/membership.types';
 import type { LeaderClubListItem } from '../../api/types/club.types';
+import { showErrorToast, showSuccessToast } from '../../utils/toast';
 
 type RequestActionType = 'approve' | 'reject' | null;
 
@@ -36,7 +37,9 @@ function ClubLeaderRequestsPage() {
       const data = await clubService.getMyLeaderClubs();
       setClubs(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách CLB');
+      const message = err instanceof Error ? err.message : 'Không thể tải danh sách CLB';
+      setError(message);
+      showErrorToast(message);
     }
   };
 
@@ -47,7 +50,9 @@ function ClubLeaderRequestsPage() {
       const allData = await membershipService.getLeaderAllRequests();
       setAllRequests(allData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải danh sách đơn đăng ký. Vui lòng thử lại sau.');
+      const message = err instanceof Error ? err.message : 'Không thể tải danh sách đơn đăng ký. Vui lòng thử lại sau.';
+      setError(message);
+      showErrorToast(message);
     } finally {
       setIsLoading(false);
     }
@@ -167,9 +172,12 @@ function ClubLeaderRequestsPage() {
       await fetchRequests();
       
       handleCloseRequestModal();
+      showSuccessToast(requestActionType === 'approve' ? 'Đã duyệt đơn đăng ký thành công.' : 'Đã từ chối đơn đăng ký.');
     } catch (err) {
       const fallbackMsg = `Không thể ${requestActionType === 'approve' ? 'duyệt' : 'từ chối'} đơn đăng ký. Vui lòng thử lại sau.`;
-      setError(err instanceof Error ? err.message : fallbackMsg);
+      const message = err instanceof Error ? err.message : fallbackMsg;
+      setError(message);
+      showErrorToast(message);
     } finally {
       setIsProcessingRequest(false);
     }

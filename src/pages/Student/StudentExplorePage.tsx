@@ -5,6 +5,7 @@ import { Dialog } from "../../components/ui/Dialog";
 import { clubService } from "../../api/services/club.service";
 import { membershipService } from "../../api/services/membership.service";
 import type { ClubListItem } from "../../api/types/club.types";
+import { showErrorToast, showSuccessToast } from "../../utils/toast";
 
 // Extended club type for UI display
 interface DisplayClub {
@@ -142,7 +143,9 @@ function StudentExplorePage() {
 
         setClubs(mappedClubs);
       } catch {
-        setError("Không thể tải danh sách CLB. Vui lòng thử lại sau.");
+        const message = "Không thể tải danh sách CLB. Vui lòng thử lại sau.";
+        setError(message);
+        showErrorToast(message);
       } finally {
         setLoading(false);
       }
@@ -219,7 +222,9 @@ function StudentExplorePage() {
 
   const confirmRegistration = async () => {
     if (!isFormValid() || !selectedClub) {
-      setRegistrationError("Vui lòng điền đầy đủ thông tin bắt buộc");
+      const message = "Vui lòng điền đầy đủ thông tin bắt buộc";
+      setRegistrationError(message);
+      showErrorToast(message);
       return;
     }
 
@@ -238,16 +243,18 @@ function StudentExplorePage() {
       });
 
       setRegistrationSuccess(true);
+      showSuccessToast("Gửi yêu cầu tham gia CLB thành công!");
 
-      // Reset after 3 seconds
-      setTimeout(() => {
-        setSelectedClub(null);
-        setRegistrationSuccess(false);
-      }, 3000);
-    } catch {
-      setRegistrationError(
-        "Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau."
-      );
+      // Đóng dialog, giữ trạng thái success cho UI
+      setSelectedClub(null);
+    } catch (err) {
+      const fallback = "Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại sau.";
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : fallback;
+      setRegistrationError(message);
+      showErrorToast(message);
     } finally {
       setIsRegistering(false);
     }
