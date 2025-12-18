@@ -10,8 +10,8 @@ function StudentActivitiesPage() {
   const [activities, setActivities] = useState<StudentActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [registrationError, setRegistrationError] = useState<string | null>(null);
-  const [registrationSuccess, setRegistrationSuccess] = useState<string | null>(null);
+  const [, setRegistrationError] = useState<string | null>(null);
+  const [, setRegistrationSuccess] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedActivity, setSelectedActivity] = useState<StudentActivity | null>(null);
@@ -321,13 +321,11 @@ function StudentActivitiesPage() {
     
     try {
       setRegistrationError(null);
-      setRegistrationSuccess(null);
       
       await activityService.registerStudent(activityId);
       
       // Hiển thị message thành công
       const successMessage = 'Đăng ký tham gia thành công';
-      setRegistrationSuccess(successMessage);
       showSuccessToast(successMessage);
       
       // Refresh activities to update registration status using the same strategy as initial fetch
@@ -436,25 +434,12 @@ function StudentActivitiesPage() {
       const message = errorMessage || 'Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.';
       setRegistrationError(message);
       showErrorToast(message);
-      
-      setRegistrationSuccess(null);
     }
   };
 
   return (
     <StudentLayout title="Hoạt động" subtitle="Khám phá và đăng ký tham gia các hoạt động">
       <div className="space-y-8">
-        {registrationSuccess && (
-          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-            {registrationSuccess}
-          </div>
-        )}
-        {registrationError && (
-          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {registrationError}
-          </div>
-        )}
-        
         {/* Search & Filter */}
         <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
           <div className="relative flex-1 max-w-md">
