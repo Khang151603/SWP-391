@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/layout/AuthLayout';
 import { authService } from '../api';
-import { showErrorToast, showSuccessToast } from '../utils/toast';
+import { showErrorToast } from '../utils/toast';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -96,7 +96,6 @@ function RegisterPage() {
           username: formData.username 
         } 
       });
-      showSuccessToast('Đăng ký thành công! Vui lòng đăng nhập để tiếp tục.');
     } catch (err) {
       showErrorToast(err instanceof Error ? err.message : 'Đăng ký thất bại. Vui lòng thử lại.');
     } finally {
