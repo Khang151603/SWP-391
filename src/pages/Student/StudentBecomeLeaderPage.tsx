@@ -414,7 +414,7 @@ function StudentBecomeLeaderPage() {
                   const status = request.status?.toLowerCase() || 'pending';
                   const config = statusConfig[status] || statusConfig.pending;
                   const date = new Date(request.requestDate);
-                  const formattedDate = `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`;
+                  const formattedDate = `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
                   
                   return (
                     <div
@@ -479,7 +479,7 @@ function StudentBecomeLeaderPage() {
                     <Icons.Clock />
                     Ngày gửi: {(() => {
                       const date = new Date(selectedRequest.requestDate);
-                      return `${String(date.getUTCDate()).padStart(2, '0')}/${String(date.getUTCMonth() + 1).padStart(2, '0')}/${date.getUTCFullYear()}`;
+                      return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
                     })()}
                   </span>
                   <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${

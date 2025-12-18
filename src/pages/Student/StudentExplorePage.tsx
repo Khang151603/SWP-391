@@ -248,7 +248,7 @@ function StudentExplorePage() {
     setRegistrationError(null);
     try {
       // Call API to create membership request
-      // Format datetime in local timezone (Vietnam: UTC+7)
+      // Format datetime in local timezone with offset (e.g., +07:00 for Vietnam)
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -257,7 +257,14 @@ function StudentExplorePage() {
       const minutes = String(now.getMinutes()).padStart(2, '0');
       const seconds = String(now.getSeconds()).padStart(2, '0');
       const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-      const requestDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`;
+      
+      // Add timezone offset
+      const timezoneOffset = -now.getTimezoneOffset(); // in minutes
+      const offsetHours = String(Math.floor(Math.abs(timezoneOffset) / 60)).padStart(2, '0');
+      const offsetMinutes = String(Math.abs(timezoneOffset) % 60).padStart(2, '0');
+      const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+      
+      const requestDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${offsetSign}${offsetHours}:${offsetMinutes}`;
       
       await membershipService.createStudentRequest({
         clubId: parseInt(selectedClub.id),
