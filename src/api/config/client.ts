@@ -85,10 +85,18 @@ class HttpClient {
         else if ('title' in data && data.title) {
           errorMessage = String(data.title);
         }
+        // Check for 'errors' property (validation errors)
+        else if ('errors' in data && data.errors) {
+          const errors = data.errors as Record<string, string[]>;
+          const firstError = Object.values(errors)[0]?.[0];
+          if (firstError) {
+            errorMessage = firstError;
+          }
+        }
       }
-      // If data is a string, use it as error message
+      // If data is a string, use it as error message (ASP.NET Core BadRequest often returns string)
       else if (typeof data === 'string' && data.trim()) {
-        errorMessage = data;
+        errorMessage = data.trim();
       }
 
       throw new ApiError(
