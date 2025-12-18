@@ -4,6 +4,7 @@ import { activityService } from '../../api/services/activity.service';
 import type { Activity, CreateActivityRequest, UpdateActivityRequest, ActivityParticipant } from '../../api/types/activity.types';
 import { clubService } from '../../api/services/club.service';
 import type { LeaderClubListItem } from '../../api/types/club.types';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
 function ClubLeaderActivitiesPage() {
   const [clubs, setClubs] = useState<LeaderClubListItem[]>([]);
@@ -27,7 +28,6 @@ function ClubLeaderActivitiesPage() {
   });
   const [editForm, setEditForm] = useState<UpdateActivityRequest>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -129,7 +129,7 @@ function ClubLeaderActivitiesPage() {
       const data = await activityService.getByClub(clubId);
       setActivities(data);
     } catch {
-      setMessage({ type: 'error', text: 'Không thể tải danh sách hoạt động. Vui lòng thử lại sau.' });
+      showErrorToast('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
     } finally {
       setActivitiesLoading(false);
     }
@@ -147,7 +147,7 @@ function ClubLeaderActivitiesPage() {
           loadActivities(data[0].id);
         }
       } catch {
-        setMessage({ type: 'error', text: 'Không thể tải danh sách CLB. Vui lòng thử lại sau.' });
+        showErrorToast('Không thể tải danh sách CLB. Vui lòng thử lại sau.');
       } finally {
         setClubsLoading(false);
       }
@@ -171,12 +171,12 @@ function ClubLeaderActivitiesPage() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setMessage({ type: 'error', text: 'Vui lòng chọn file ảnh' });
+        showErrorToast('Vui lòng chọn file ảnh');
         return;
       }
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setMessage({ type: 'error', text: 'Kích thước ảnh không được vượt quá 5MB' });
+        showErrorToast('Kích thước ảnh không được vượt quá 5MB');
         return;
       }
       setSelectedImage(file);
@@ -202,12 +202,12 @@ function ClubLeaderActivitiesPage() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        setMessage({ type: 'error', text: 'Vui lòng chọn file ảnh' });
+        showErrorToast('Vui lòng chọn file ảnh');
         return;
       }
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        setMessage({ type: 'error', text: 'Kích thước ảnh không được vượt quá 5MB' });
+        showErrorToast('Kích thước ảnh không được vượt quá 5MB');
         return;
       }
       setSelectedEditImage(file);
@@ -244,7 +244,6 @@ function ClubLeaderActivitiesPage() {
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    setMessage(null);
   };
 
   const getDatePart = (value: string) => {
@@ -271,13 +270,12 @@ function ClubLeaderActivitiesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage(null);
     if (!form.clubId || !form.title || !form.description || !form.startTime || !form.endTime || !form.location) {
-      setMessage({ type: 'error', text: 'Vui lòng điền đầy đủ thông tin bắt buộc' });
+      showErrorToast('Vui lòng điền đầy đủ thông tin bắt buộc');
       return;
     }
     if (form.startTime && form.endTime && new Date(form.endTime) < new Date(form.startTime)) {
-      setMessage({ type: 'error', text: 'Thời gian kết thúc phải sau thời gian bắt đầu' });
+      showErrorToast('Thời gian kết thúc phải sau thời gian bắt đầu');
       return;
     }
     setIsLoading(true);
@@ -288,13 +286,13 @@ function ClubLeaderActivitiesPage() {
       if (selectedImage && newActivity.id) {
         try {
           await activityService.uploadImage(newActivity.id, selectedImage);
-          setMessage({ type: 'success', text: 'Tạo hoạt động và tải ảnh lên thành công' });
+          showSuccessToast('Tạo hoạt động và tải ảnh lên thành công');
         } catch (error) {
           console.error('Failed to upload image:', error);
-          setMessage({ type: 'error', text: 'Tạo hoạt động thành công nhưng không thể tải ảnh lên' });
+          showErrorToast('Tạo hoạt động thành công nhưng không thể tải ảnh lên');
         }
       } else {
-        setMessage({ type: 'success', text: 'Tạo hoạt động thành công' });
+        showSuccessToast('Tạo hoạt động thành công');
       }
       
       // Reload activities to show new activity with image
@@ -316,7 +314,7 @@ function ClubLeaderActivitiesPage() {
       setShowCreateModal(false);
     } catch (error) {
       console.error('Failed to create activity:', error);
-      setMessage({ type: 'error', text: 'Không thể tạo hoạt động mới. Vui lòng thử lại sau.' });
+      showErrorToast('Không thể tạo hoạt động mới. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
@@ -348,7 +346,6 @@ function ClubLeaderActivitiesPage() {
     if (!selectedActivity) return;
     
     setIsLoading(true);
-    setMessage(null);
     try {
       await activityService.update(selectedActivity.id, editForm);
       
@@ -356,13 +353,13 @@ function ClubLeaderActivitiesPage() {
       if (selectedEditImage) {
         try {
           await activityService.uploadImage(selectedActivity.id, selectedEditImage);
-          setMessage({ type: 'success', text: 'Cập nhật hoạt động và ảnh thành công' });
+          showSuccessToast('Cập nhật hoạt động và ảnh thành công');
         } catch (error) {
           console.error('Failed to upload image:', error);
-          setMessage({ type: 'error', text: 'Cập nhật hoạt động thành công nhưng không thể tải ảnh lên' });
+          showErrorToast('Cập nhật hoạt động thành công nhưng không thể tải ảnh lên');
         }
       } else {
-        setMessage({ type: 'success', text: 'Cập nhật hoạt động thành công' });
+        showSuccessToast('Cập nhật hoạt động thành công');
       }
       
       await loadActivities(form.clubId);
@@ -371,7 +368,7 @@ function ClubLeaderActivitiesPage() {
       setSelectedEditImage(null);
       setEditImagePreview(null);
     } catch {
-      setMessage({ type: 'error', text: 'Không thể cập nhật hoạt động. Vui lòng thử lại sau.' });
+      showErrorToast('Không thể cập nhật hoạt động. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
@@ -379,13 +376,12 @@ function ClubLeaderActivitiesPage() {
 
   const handleOpenRegistration = async (activity: Activity) => {
     setIsLoading(true);
-    setMessage(null);
     try {
       await activityService.openRegistration(activity.id);
-      setMessage({ type: 'success', text: 'Đã mở đăng ký' });
+      showSuccessToast('Đã mở đăng ký');
       await loadActivities(form.clubId);
     } catch {
-      setMessage({ type: 'error', text: 'Không thể mở đăng ký hoạt động. Vui lòng thử lại sau.' });
+      showErrorToast('Không thể mở đăng ký hoạt động. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
@@ -393,7 +389,6 @@ function ClubLeaderActivitiesPage() {
 
   const handleStartActivity = async (activity: Activity) => {
     setIsLoading(true);
-    setMessage(null);
     try {
       // Update with full activity info, only changing status
       await activityService.update(activity.id, {
@@ -405,10 +400,10 @@ function ClubLeaderActivitiesPage() {
         location: activity.location,
         status: 'Ongoing',
       });
-      setMessage({ type: 'success', text: 'Đã bắt đầu hoạt động' });
+      showSuccessToast('Đã bắt đầu hoạt động');
       await loadActivities(form.clubId);
     } catch {
-      setMessage({ type: 'error', text: 'Không thể bắt đầu hoạt động. Vui lòng thử lại sau.' });
+      showErrorToast('Không thể bắt đầu hoạt động. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
@@ -416,7 +411,6 @@ function ClubLeaderActivitiesPage() {
 
   const handleStopActivity = async (activity: Activity) => {
     setIsLoading(true);
-    setMessage(null);
     try {
       // Update with full activity info, only changing status
       await activityService.update(activity.id, {
@@ -428,10 +422,10 @@ function ClubLeaderActivitiesPage() {
         location: activity.location,
         status: 'Completed',
       });
-      setMessage({ type: 'success', text: 'Đã dừng hoạt động' });
+      showSuccessToast('Đã dừng hoạt động');
       await loadActivities(form.clubId);
     } catch {
-      setMessage({ type: 'error', text: 'Không thể dừng hoạt động. Vui lòng thử lại sau.' });
+      showErrorToast('Không thể dừng hoạt động. Vui lòng thử lại sau.');
     } finally {
       setIsLoading(false);
     }
@@ -445,7 +439,7 @@ function ClubLeaderActivitiesPage() {
       const data = await activityService.getParticipants(activity.id);
       setParticipants(data);
     } catch {
-      setMessage({ type: 'error', text: 'Không thể tải danh sách người tham gia. Vui lòng thử lại sau.' });
+      showErrorToast('Không thể tải danh sách người tham gia. Vui lòng thử lại sau.');
     } finally {
       setParticipantsLoading(false);
     }
@@ -510,17 +504,6 @@ function ClubLeaderActivitiesPage() {
             )}
           </div>
 
-          {message && (
-            <div
-              className={`rounded-2xl px-4 py-3 text-sm ${
-                message.type === 'success'
-                  ? 'border border-emerald-200 bg-emerald-50 text-emerald-800'
-                  : 'border border-red-200 bg-red-50 text-red-800'
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           {activitiesLoading ? (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -975,7 +958,6 @@ function ClubLeaderActivitiesPage() {
                     setSelectedActivity(null);
                     setSelectedEditImage(null);
                     setEditImagePreview(null);
-                    setMessage(null);
                   }}
                   className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
                 >

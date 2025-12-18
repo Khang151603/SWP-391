@@ -7,7 +7,7 @@ import type {
   CreateLeaderClubRequest,
   LeaderClubListItem,
 } from '../../api/types/club.types';
-import { showErrorToast } from '../../utils/toast';
+import { showErrorToast, showSuccessToast } from '../../utils/toast';
 
 type ClubProfile = {
   id: string;
@@ -189,6 +189,7 @@ function ClubLeaderInfoPage() {
 
       setClubs((prev) => [...prev, clubProfile]);
       setShowCreateForm(false);
+      showSuccessToast('Tạo CLB mới thành công!');
       // Navigate to detail page
       navigate(`/leader/club-info/${clubProfile.id}`);
       

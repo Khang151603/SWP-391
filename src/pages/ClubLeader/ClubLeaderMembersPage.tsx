@@ -4,6 +4,7 @@ import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
 import type { ClubMemberDto } from '../../api/types/membership.types';
 import type { LeaderClubListItem } from '../../api/types/club.types';
+import { showErrorToast, showSuccessToast } from '../../utils/toast';
 
 type ActionType = 'lock' | 'unlock' | 'delete' | null;
 
@@ -170,6 +171,14 @@ function ClubLeaderMembersPage() {
       // Refresh members list
       await fetchMembers(selectedClubId);
       
+      const actionNames: Record<Exclude<ActionType, null>, string> = {
+        lock: 'khóa',
+        unlock: 'mở khóa',
+        delete: 'xóa',
+      };
+      const actionName = actionType ? actionNames[actionType] : 'thực hiện hành động';
+      showSuccessToast(`Đã ${actionName} thành viên thành công.`);
+      
       handleCloseModal();
     } catch {
       const actionNames: Record<Exclude<ActionType, null>, string> = {
@@ -178,7 +187,9 @@ function ClubLeaderMembersPage() {
         delete: 'xóa',
       };
       const actionName = actionType ? actionNames[actionType] : 'thực hiện hành động';
-      setError(`Không thể ${actionName} thành viên. Vui lòng thử lại sau.`);
+      const errorMessage = `Không thể ${actionName} thành viên. Vui lòng thử lại sau.`;
+      setError(errorMessage);
+      showErrorToast(errorMessage);
     } finally {
       setIsProcessing(false);
     }

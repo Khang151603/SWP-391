@@ -6,6 +6,7 @@ import { clubService } from '../../api/services/club.service';
 import { handleApiError, ApiError } from '../../api/utils/errorHandler';
 import { useAppContext } from '../../context/AppContext';
 import type { LeaderRequest } from '../../api/types/club.types';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
 // Form field configuration - theo API backend mới
 const formFields = [
@@ -117,12 +118,12 @@ const FormField = ({ id, label, required, placeholder, value, onChange, disabled
         required={required}
         disabled={disabled}
         rows={5}
-        maxLength={500}
+        maxLength={150}
         placeholder={placeholder}
         className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 resize-none disabled:opacity-50 disabled:cursor-not-allowed transition"
       />
       <div className="absolute bottom-2 right-3 text-xs text-slate-500">
-        {value.length}/500
+        {value.length}/150
       </div>
     </div>
   </div>
@@ -170,6 +171,26 @@ function StudentBecomeLeaderPage() {
       return;
     }
 
+    // Validation
+    const fields = [
+      { key: 'motivation', label: 'Động lực muốn trở thành Club Leader' },
+      { key: 'experience', label: 'Kinh nghiệm lãnh đạo / hoạt động ngoại khóa' },
+      { key: 'vision', label: 'Tầm nhìn cho câu lạc bộ' },
+      { key: 'commitment', label: 'Cam kết đồng hành' },
+    ];
+
+    for (const field of fields) {
+      const value = formData[field.key as keyof typeof formData];
+      if (!value.trim()) {
+        showErrorToast(`${field.label} không được bỏ trống.`);
+        return;
+      }
+      if (value.length > 150) {
+        showErrorToast(`${field.label} không được quá 150 ký tự.`);
+        return;
+      }
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -183,6 +204,7 @@ function StudentBecomeLeaderPage() {
 
       setIsSubmitting(false);
       setSubmitSuccess(true);
+      showSuccessToast('Gửi yêu cầu trở thành Club Leader thành công!');
       setTimeout(() => {
         setSubmitSuccess(false);
         setFormData({

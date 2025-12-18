@@ -6,6 +6,7 @@ import { clubService } from '../../api/services/club.service';
 import { membershipService } from '../../api/services/membership.service';
 import type { ClubListItem } from '../../api/types/club.types';
 import { handleApiError } from '../../api/utils/errorHandler';
+import { showSuccessToast } from '../../utils/toast';
 
 function StudentExploreDetailPage() {
   const { clubId } = useParams();
@@ -73,6 +74,7 @@ function StudentExploreDetailPage() {
       await clubService.joinRequest(club.id, 'Yêu cầu tham gia câu lạc bộ');
       setIsRegistering(false);
       setSelectedClub(null);
+      showSuccessToast('Gửi yêu cầu tham gia CLB thành công!');
       navigate('/student/explore');
     } catch (err) {
       console.error('Failed to register:', err);

@@ -55,6 +55,8 @@ function LoginPage() {
         selectedRole: response.roles.length === 1 ? response.roles[0] : undefined,
       });
       
+      showSuccessToast('Đăng nhập thành công!');
+      
       // Nếu có nhiều role, chuyển đến trang chọn role
       if (response.roles.length > 1) {
         navigate('/select-role');
