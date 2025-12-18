@@ -11,6 +11,7 @@ const ClubLeaderDashboardPage = lazy(() => import('../pages/ClubLeader/ClubLeade
 const ClubLeaderInfoPage = lazy(() => import('../pages/ClubLeader/ClubLeaderInfoPage'));
 const ClubLeaderMembersPage = lazy(() => import('../pages/ClubLeader/ClubLeaderMembersPage'));
 const ClubLeaderRequestsPage = lazy(() => import('../pages/ClubLeader/ClubLeaderRequestsPage'));
+const ClubLeaderReportsPage = lazy(() => import('../pages/ClubLeader/ClubLeaderReportsPage'));
 const StudentActivitiesPage = lazy(() => import('../pages/Student/StudentActivitiesPage'));
 const StudentMyActivitiesPage = lazy(() => import('../pages/Student/StudentMyActivitiesPage'));
 const StudentClubsPage = lazy(() => import('../pages/Student/StudentClubsPage'));
@@ -156,6 +157,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="clubleader">
               <ClubLeaderActivitiesPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/leader/reports" 
+          element={
+            <ProtectedRoute requiredRole="clubleader">
+              <ClubLeaderReportsPage />
             </ProtectedRoute>
           } 
         />

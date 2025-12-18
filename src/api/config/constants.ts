@@ -86,4 +86,10 @@ export const MEMBERSHIP_ENDPOINTS = {
   LEADER_DELETE_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}`,
 } as const;
 
+// Report Endpoints
+export const REPORT_ENDPOINTS = {
+  CLUB_REPORT: (clubId: number | string) => `/api/reports/clubs/${clubId}`,
+  MY_CLUBS_REPORT: '/api/reports/my-clubs',
+} as const;
+
 

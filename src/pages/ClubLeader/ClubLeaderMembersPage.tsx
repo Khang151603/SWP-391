@@ -26,6 +26,7 @@ function ClubLeaderMembersPage() {
   const [actionType, setActionType] = useState<ActionType>(null);
   const [note, setNote] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [viewingMember, setViewingMember] = useState<ClubMemberDto | null>(null);
 
   // Fetch clubs
   const fetchClubs = useCallback(async () => {
@@ -362,6 +363,32 @@ function ClubLeaderMembersPage() {
                         </td>
                         <td className="w-1/4 px-4 py-4">
                           <div className="flex flex-wrap justify-end gap-2">
+                            <button
+                              onClick={() => setViewingMember(member)}
+                              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+                              title="Xem chi tiết"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                              </svg>
+                              Xem
+                            </button>
                             {locked ? (
                               <button
                                 onClick={() => handleOpenMemberModal(member, 'unlock')}
@@ -388,6 +415,121 @@ function ClubLeaderMembersPage() {
           )}
         </section>
       </div>
+
+      {/* View Member Details Modal */}
+      {viewingMember && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setViewingMember(null)}
+          />
+          <div className="relative z-10 w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="mb-6 flex items-start justify-between">
+              <div>
+                <h3 className="text-2xl font-bold text-slate-900">Chi tiết thành viên</h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  Thông tin đầy đủ về thành viên trong CLB
+                </p>
+              </div>
+              <button
+                onClick={() => setViewingMember(null)}
+                className="rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                title="Đóng"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {/* Member Info Section */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Thông tin cá nhân
+                </h4>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Họ và tên</label>
+                    <p className="mt-1 text-sm font-semibold text-slate-900">
+                      {viewingMember.member.fullName || `Account #${viewingMember.member.accountId}`}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Account ID</label>
+                    <p className="mt-1 text-sm text-slate-700">{viewingMember.member.accountId}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Email</label>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {viewingMember.member.email || '--'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Số điện thoại</label>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {viewingMember.member.phone || '--'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Membership Info Section */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Thông tin thành viên
+                </h4>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Membership ID</label>
+                    <p className="mt-1 text-sm text-slate-700">{viewingMember.membershipId}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Club ID</label>
+                    <p className="mt-1 text-sm text-slate-700">{viewingMember.clubId}</p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Ngày gia nhập</label>
+                    <p className="mt-1 text-sm text-slate-700">
+                      {formatDate(viewingMember.joinDate)}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-slate-500">Trạng thái</label>
+                    <div className="mt-1">
+                      <span
+                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusLabelClass(viewingMember.member.status)}`}
+                      >
+                        {statusLabelText(viewingMember.member.status)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setViewingMember(null)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Đóng
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lock/Unlock/Delete Modal */}
       {selectedMember && actionType && (

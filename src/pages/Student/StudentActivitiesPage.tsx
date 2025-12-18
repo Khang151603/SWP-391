@@ -9,6 +9,7 @@ function StudentActivitiesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [registrationError, setRegistrationError] = useState<string | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('Tất cả');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -18,37 +19,120 @@ function StudentActivitiesPage() {
         setLoading(true);
         setError(null);
         
-        // Get clubs that student is member of
-        const myClubs = await membershipService.getStudentMyClubs();
+        // Strategy: Fetch from multiple sources to ensure we get all activities
+        // 1. Get activities from view-all endpoint (student view)
+        // 2. Get activities from each club using student endpoint
+        // 3. Also try to get activities using leader endpoint (GET_BY_CLUB) as fallback
+        // 4. Merge and deduplicate by activity ID
         
-        // Get activities from all clubs student is member of (no status filter)
-        const allActivitiesPromises = myClubs.map(async (clubMembership) => {
+        const [viewAllActivities, myClubs] = await Promise.all([
+          activityService.getStudentViewAll().catch(() => []),
+          membershipService.getStudentMyClubs().catch(() => []),
+        ]);
+        
+        // Fetch activities from each club using student endpoint
+        const clubActivitiesPromises = myClubs.map(async (clubMembership) => {
           try {
-            const clubActivities = await activityService.getByClub(clubMembership.club.id);
-            // Add club name to each activity
+            const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
+            // Add club name to each activity if not present
             return clubActivities.map((activity: any) => ({
               ...activity,
-              clubName: clubMembership.club.name,
+              clubName: activity.clubName || clubMembership.club.name,
             }));
           } catch (err) {
-            console.error(`Failed to fetch activities for club ${clubMembership.club.id}:`, err);
             return [];
           }
         });
         
-        const activitiesArrays = await Promise.all(allActivitiesPromises);
-        const allActivities = activitiesArrays.flat();
+        // Also try to fetch using leader endpoint (GET_BY_CLUB) as additional source
+        // This might return more activities if student endpoints are filtered
+        const leaderActivitiesPromises = myClubs.map(async (clubMembership) => {
+          try {
+            const leaderActivities = await activityService.getByClub(clubMembership.club.id);
+            // Add club name and convert to StudentActivity format
+            return leaderActivities.map((activity: any) => ({
+              ...activity,
+              clubName: activity.clubName || clubMembership.club.name,
+              // Ensure isRegistered is set (might not be in leader endpoint)
+              isRegistered: activity.isRegistered || false,
+            }));
+          } catch (err) {
+            // This is expected to fail for students, so we silently catch
+            return [];
+          }
+        });
         
-        // Sort by start time (newest first)
+        const [clubActivitiesArrays, leaderActivitiesArrays] = await Promise.all([
+          Promise.all(clubActivitiesPromises),
+          Promise.all(leaderActivitiesPromises),
+        ]);
+        
+        const clubActivities = clubActivitiesArrays.flat();
+        const leaderActivities = leaderActivitiesArrays.flat();
+        
+        // Merge all sources and deduplicate by activity ID
+        // Use a more robust approach: collect all activities first, then deduplicate
+        const allActivitiesList: StudentActivity[] = [];
+        
+        // Helper function to safely add activity
+        const addActivitySafely = (activity: any) => {
+          if (activity && activity.id && activity.startTime) {
+            allActivitiesList.push(activity);
+          }
+        };
+        
+        // Add all activities from view-all endpoint
+        viewAllActivities.forEach(addActivitySafely);
+        
+        // Add all activities from club-by-club student endpoint fetch
+        clubActivities.forEach(addActivitySafely);
+        
+        // Add all activities from leader endpoint (if accessible)
+        leaderActivities.forEach(addActivitySafely);
+        
+        // Deduplicate by activity ID, keeping the most complete version
+        const activitiesMap = new Map<number, StudentActivity>();
+        allActivitiesList.forEach((activity) => {
+          const existing = activitiesMap.get(activity.id);
+          if (existing) {
+            // Merge: prefer the one with more complete data
+            // Priority: isRegistered > clubName > other fields
+            activitiesMap.set(activity.id, {
+              ...existing,
+              ...activity,
+              // Preserve isRegistered status (important for UI)
+              isRegistered: activity.isRegistered !== undefined ? activity.isRegistered : existing.isRegistered,
+              // Prefer non-empty clubName
+              clubName: activity.clubName || existing.clubName,
+              // Preserve other important fields
+              registeredCount: activity.registeredCount !== undefined ? activity.registeredCount : existing.registeredCount,
+              maxParticipants: activity.maxParticipants !== undefined ? activity.maxParticipants : existing.maxParticipants,
+            });
+          } else {
+            activitiesMap.set(activity.id, activity);
+          }
+        });
+        
+        // Convert map to array - this ensures we have all unique activities
+        const allActivities = Array.from(activitiesMap.values());
+        
+        // Sort by start time (newest first) with error handling
         allActivities.sort((a, b) => {
-          const dateA = new Date(a.startTime).getTime();
-          const dateB = new Date(b.startTime).getTime();
-          return dateB - dateA;
+          try {
+            const dateA = new Date(a.startTime).getTime();
+            const dateB = new Date(b.startTime).getTime();
+            // Handle invalid dates
+            if (isNaN(dateA) && isNaN(dateB)) return 0;
+            if (isNaN(dateA)) return 1; // Invalid dates go to end
+            if (isNaN(dateB)) return -1;
+            return dateB - dateA; // Newest first
+          } catch {
+            return 0; // Keep order if comparison fails
+          }
         });
         
         setActivities(allActivities);
       } catch (err) {
-        console.error('Error fetching activities:', err);
         setError('Không thể tải danh sách hoạt động. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);
@@ -100,6 +184,16 @@ function StudentActivitiesPage() {
         textColor: 'text-amber-700',
         borderColor: 'border-amber-200',
         dotColor: 'bg-amber-500',
+      };
+    }
+    // Đóng đăng ký (Active_Closed, Closed, ...)
+    if (statusLower.includes('active_closed') || statusLower.includes('closed')) {
+      return {
+        label: 'Đã đóng đăng ký',
+        bgColor: 'bg-slate-100',
+        textColor: 'text-slate-700',
+        borderColor: 'border-slate-300',
+        dotColor: 'bg-slate-500',
       };
     }
     if (statusLower.includes('active') || statusLower.includes('opened')) {
@@ -164,57 +258,160 @@ function StudentActivitiesPage() {
 
   const canRegister = (activity: StudentActivity) => {
     const statusLower = activity.status.toLowerCase();
-    // Only allow registration for Active or Open activities (not Not_yet_open)
+    // Chỉ cho đăng ký khi đang mở (Active / opened), không phải Not_yet_open, không bị đóng / đang diễn ra / đã kết thúc
     const isOpenForRegistration = statusLower.includes('active') || statusLower.includes('open');
     const isNotYetOpen = statusLower.includes('not_yet_open') || statusLower.includes('notyetopen');
-    
+    const isClosed = statusLower.includes('active_closed') || statusLower.includes('closed');
+    const isOngoing = statusLower.includes('ongoing');
+    const isCompleted = statusLower.includes('completed') || statusLower.includes('cancel');
+
     return (
       isOpenForRegistration &&
       !isNotYetOpen &&
+      !isClosed &&
+      !isOngoing &&
+      !isCompleted &&
       !activity.isRegistered &&
       (!activity.maxParticipants || !activity.registeredCount || activity.registeredCount < activity.maxParticipants)
     );
   };
 
   const handleJoinActivity = async (activityId: number) => {
+    // Tìm activity trong danh sách hiện tại
+    const activity = activities.find(a => a.id === activityId);
+    
+    // Kiểm tra nếu đã đăng ký rồi
+    if (activity?.isRegistered) {
+      setRegistrationError('Bạn đã đăng ký rồi');
+      setRegistrationSuccess(null);
+      return;
+    }
+    
     try {
+      setRegistrationError(null);
+      setRegistrationSuccess(null);
+      
       await activityService.registerStudent(activityId);
       
-      // Refresh activities to update registration status
-      const myClubs = await membershipService.getStudentMyClubs();
+      // Hiển thị message thành công
+      setRegistrationSuccess('Đăng ký tham gia thành công');
       
-      const allActivitiesPromises = myClubs.map(async (clubMembership) => {
+      // Refresh activities to update registration status using the same strategy as initial fetch
+      const [viewAllActivities, myClubs] = await Promise.all([
+        activityService.getStudentViewAll().catch(() => []),
+        membershipService.getStudentMyClubs().catch(() => []),
+      ]);
+      
+      const clubActivitiesPromises = myClubs.map(async (clubMembership) => {
         try {
-          const clubActivities = await activityService.getByClub(clubMembership.club.id);
+          const clubActivities = await activityService.getStudentViewByClub(clubMembership.club.id);
           return clubActivities.map((activity: any) => ({
             ...activity,
-            clubName: clubMembership.club.name,
+            clubName: activity.clubName || clubMembership.club.name,
           }));
         } catch (err) {
-          console.error(`Failed to fetch activities for club ${clubMembership.club.id}:`, err);
           return [];
         }
       });
       
-      const activitiesArrays = await Promise.all(allActivitiesPromises);
-      const allActivities = activitiesArrays.flat();
+      const leaderActivitiesPromises = myClubs.map(async (clubMembership) => {
+        try {
+          const leaderActivities = await activityService.getByClub(clubMembership.club.id);
+          return leaderActivities.map((activity: any) => ({
+            ...activity,
+            clubName: activity.clubName || clubMembership.club.name,
+            isRegistered: activity.isRegistered || false,
+          }));
+        } catch (err) {
+          return [];
+        }
+      });
       
+      const [clubActivitiesArrays, leaderActivitiesArrays] = await Promise.all([
+        Promise.all(clubActivitiesPromises),
+        Promise.all(leaderActivitiesPromises),
+      ]);
+      
+      const clubActivities = clubActivitiesArrays.flat();
+      const leaderActivities = leaderActivitiesArrays.flat();
+      
+      // Merge all sources with same robust logic as initial fetch
+      const allActivitiesList: StudentActivity[] = [];
+      
+      // Helper function to safely add activity
+      const addActivitySafely = (activity: any) => {
+        if (activity && activity.id && activity.startTime) {
+          allActivitiesList.push(activity);
+        }
+      };
+      
+      viewAllActivities.forEach(addActivitySafely);
+      clubActivities.forEach(addActivitySafely);
+      leaderActivities.forEach(addActivitySafely);
+      
+      // Deduplicate with same merge logic
+      const activitiesMap = new Map<number, StudentActivity>();
+      allActivitiesList.forEach((activity) => {
+        const existing = activitiesMap.get(activity.id);
+        if (existing) {
+          activitiesMap.set(activity.id, {
+            ...existing,
+            ...activity,
+            isRegistered: activity.isRegistered !== undefined ? activity.isRegistered : existing.isRegistered,
+            clubName: activity.clubName || existing.clubName,
+            registeredCount: activity.registeredCount !== undefined ? activity.registeredCount : existing.registeredCount,
+            maxParticipants: activity.maxParticipants !== undefined ? activity.maxParticipants : existing.maxParticipants,
+          });
+        } else {
+          activitiesMap.set(activity.id, activity);
+        }
+      });
+      
+      const allActivities = Array.from(activitiesMap.values());
+      // Sort with error handling
       allActivities.sort((a, b) => {
-        const dateA = new Date(a.startTime).getTime();
-        const dateB = new Date(b.startTime).getTime();
-        return dateB - dateA;
+        try {
+          const dateA = new Date(a.startTime).getTime();
+          const dateB = new Date(b.startTime).getTime();
+          if (isNaN(dateA) && isNaN(dateB)) return 0;
+          if (isNaN(dateA)) return 1;
+          if (isNaN(dateB)) return -1;
+          return dateB - dateA;
+        } catch {
+          return 0;
+        }
       });
       
       setActivities(allActivities);
-      setRegistrationError(null);
-    } catch (err) {
-      setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
+      
+      // Tự động ẩn message thành công sau 3 giây
+      setTimeout(() => {
+        setRegistrationSuccess(null);
+      }, 3000);
+    } catch (err: any) {
+      // Xử lý lỗi từ API
+      const errorMessage = err?.message || err?.toString() || '';
+      
+      // Kiểm tra nếu lỗi là do đã đăng ký rồi
+      if (errorMessage.toLowerCase().includes('đã đăng ký') || 
+          errorMessage.toLowerCase().includes('already registered') ||
+          errorMessage.toLowerCase().includes('already exists')) {
+        setRegistrationError('Bạn đã đăng ký rồi');
+      } else {
+        setRegistrationError('Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.');
+      }
+      setRegistrationSuccess(null);
     }
   };
 
   return (
     <StudentLayout title="Hoạt động" subtitle="Khám phá và đăng ký tham gia các hoạt động">
       <div className="space-y-8">
+        {registrationSuccess && (
+          <div className="rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+            {registrationSuccess}
+          </div>
+        )}
         {registrationError && (
           <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
             {registrationError}
@@ -315,10 +512,11 @@ function StudentActivitiesPage() {
               const startDateTime = formatDateTime(activity.startTime);
               const endDateTime = formatDateTime(activity.endTime);
               const canJoin = canRegister(activity);
-              const isFull =
+              const isFull = !!(
                 activity.maxParticipants &&
                 activity.registeredCount &&
-                activity.registeredCount >= activity.maxParticipants;
+                activity.registeredCount >= activity.maxParticipants
+              );
 
               return (
                 <div
@@ -476,12 +674,12 @@ function StudentActivitiesPage() {
                     {/* Action Button */}
                     <button
                       onClick={() => handleJoinActivity(activity.id)}
-                      disabled={!canJoin}
-                      className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all ${
-                        canJoin
-                          ? 'bg-blue-600 shadow-md hover:bg-blue-700 active:scale-95'
-                          : activity.isRegistered
-                            ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                      disabled={!canJoin && !activity.isRegistered && isFull}
+                      className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                        activity.isRegistered
+                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer'
+                          : canJoin
+                            ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700 active:scale-95'
                             : isFull
                               ? 'bg-amber-100 text-amber-700 cursor-not-allowed'
                               : 'bg-slate-200 text-slate-500 cursor-not-allowed'
