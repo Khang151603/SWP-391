@@ -426,14 +426,16 @@ function StudentActivitiesPage() {
       setTimeout(() => {
         setRegistrationSuccess(null);
       }, 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Xử lý lỗi từ API
-      const errorMessage = err?.message || err?.toString() || '';
+      const errorMessage = (err instanceof Error ? err.message : String(err)) || '';
+      const errorLower = errorMessage.toLowerCase();
+      const errorStatus = (err as { status?: number })?.status;
       
       // Kiểm tra nếu lỗi là do đã đăng ký rồi
-      if (errorMessage.toLowerCase().includes('đã đăng ký') || 
-          errorMessage.toLowerCase().includes('already registered') ||
-          errorMessage.toLowerCase().includes('already exists')) {
+      if (errorLower.includes('đã đăng ký') || 
+          errorLower.includes('already registered') ||
+          errorLower.includes('already exists')) {
         setRegistrationError('Bạn đã đăng ký rồi');
       } else if (errorLower.includes('chưa phải thành viên') ||
                  errorLower.includes('chưa là member') ||
@@ -457,11 +459,11 @@ function StudentActivitiesPage() {
       } else if (errorLower.includes('không tồn tại') ||
                  errorLower.includes('not found')) {
         setRegistrationError('Hoạt động không tồn tại.');
-      } else if (err?.status === 401 || errorLower.includes('unauthorized')) {
+      } else if (errorStatus === 401 || errorLower.includes('unauthorized')) {
         setRegistrationError('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-      } else if (err?.status === 403 || errorLower.includes('forbidden')) {
+      } else if (errorStatus === 403 || errorLower.includes('forbidden')) {
         setRegistrationError('Bạn không có quyền thực hiện thao tác này.');
-      } else if (err?.status === 0 || errorLower.includes('network') || errorLower.includes('fetch')) {
+      } else if (errorStatus === 0 || errorLower.includes('network') || errorLower.includes('fetch')) {
         setRegistrationError('Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng và thử lại.');
       } else {
         // Hiển thị message từ backend nếu có, nếu không thì dùng message mặc định
