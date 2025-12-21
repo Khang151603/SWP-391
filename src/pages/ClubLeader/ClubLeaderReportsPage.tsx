@@ -153,6 +153,13 @@ function ClubLeaderReportsPage() {
   const handleExportCsv = () => {
     if (!reports.length) return;
 
+    const escapeCsvValue = (value: any): string => {
+      if (value === null || value === undefined) return '""';
+      const str = String(value);
+      // Escape quotes and wrap in quotes
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
     const header = [
       'ClubId',
       'Tên CLB',
@@ -163,16 +170,18 @@ function ClubLeaderReportsPage() {
     ];
 
     const rows = reports.map(r => [
-      r.club.clubId,
-      `"${r.club.clubName.replace(/"/g, '""')}"`,
-      r.statistics.totalMembers,
-      r.statistics.activeMembers,
-      r.statistics.totalActivities,
-      r.statistics.totalIncome,
+      escapeCsvValue(r.club.clubId),
+      escapeCsvValue(r.club.clubName),
+      escapeCsvValue(r.statistics.totalMembers),
+      escapeCsvValue(r.statistics.activeMembers),
+      escapeCsvValue(r.statistics.totalActivities),
+      escapeCsvValue(r.statistics.totalIncome),
     ]);
 
+    // Add BOM for UTF-8 encoding (Excel compatibility)
     const csvContent =
-      [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+      '\uFEFF' +
+      [header.map(escapeCsvValue).join(','), ...rows.map(r => r.join(','))].join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -191,6 +200,35 @@ function ClubLeaderReportsPage() {
   const handleExportClubActivitiesCsv = () => {
     if (!selectedReport) return;
 
+    const escapeCsvValue = (value: any): string => {
+      if (value === null || value === undefined) return '""';
+      const str = String(value);
+      // Escape quotes and wrap in quotes
+      return `"${str.replace(/"/g, '""')}"`;
+    };
+
+    const getStatusLabel = (status: string): string => {
+      const statusLower = status.toLowerCase();
+      const statusMap: Record<string, string> = {
+        active: 'Đang hoạt động',
+        inactive: 'Không hoạt động',
+        unactive: 'Không hoạt động',
+        pending: 'Chờ duyệt',
+        cancelled: 'Đã hủy',
+        completed: 'Đã hoàn thành',
+        finished: 'Đã kết thúc',
+        ongoing: 'Đang diễn ra',
+        closed: 'Đã đóng',
+        opened: 'Đã mở',
+        not_yet_open: 'Chưa mở',
+        notyetopen: 'Chưa mở',
+        locked: 'Đã khóa',
+        approved: 'Đã duyệt',
+        failed: 'Thất bại',
+      };
+      return statusMap[statusLower] || status;
+    };
+
     const header = [
       'ActivityId',
       'Tiêu đề',
@@ -201,16 +239,28 @@ function ClubLeaderReportsPage() {
     ];
 
     const rows = filteredActivities.map(a => [
-      a.activityId,
-      `"${a.title.replace(/"/g, '""')}"`,
-      a.startTime ? new Date(a.startTime).toLocaleString('vi-VN') : '',
-      `"${a.location.replace(/"/g, '""')}"`,
-      a.participants,
-      a.status,
+      escapeCsvValue(a.activityId),
+      escapeCsvValue(a.title),
+      escapeCsvValue(
+        a.startTime
+          ? new Date(a.startTime).toLocaleString('vi-VN', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          : ''
+      ),
+      escapeCsvValue(a.location || ''),
+      escapeCsvValue(a.participants || 0),
+      escapeCsvValue(getStatusLabel(a.status || '')),
     ]);
 
+    // Add BOM for UTF-8 encoding (Excel compatibility)
     const csvContent =
-      [header.join(','), ...rows.map(r => r.join(','))].join('\n');
+      '\uFEFF' +
+      [header.map(escapeCsvValue).join(','), ...rows.map(r => r.join(','))].join('\r\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
