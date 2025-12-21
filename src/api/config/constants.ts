@@ -66,13 +66,6 @@ export const PAYMENT_ENDPOINTS = {
   LEADER_CLUB_HISTORY: (clubId: number | string) => `/api/ClubLeaderPayment/clubs/${clubId}/history`, // Pages: ClubLeaderPaymentHistoryPage.tsx
 } as const;
 
-// Notification Endpoints
-// Used by: notification.service.ts
-export const NOTIFICATION_ENDPOINTS = {
-  UNREAD: '/notification', // Components: NotificationBell.tsx
-  MARK_AS_READ: (notificationId: string) => `/notification/read/${notificationId}`, // Components: NotificationBell.tsx
-} as const;
-
 // Membership Endpoints
 // Used by: membership.service.ts
 export const MEMBERSHIP_ENDPOINTS = {

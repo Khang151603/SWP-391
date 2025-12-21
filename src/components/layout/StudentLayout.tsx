@@ -4,7 +4,6 @@ import { useAppContext } from '../../context/AppContext';
 import { membershipService } from '../../api/services/membership.service';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
 import RoleSwitcher from '../RoleSwitcher';
-import { NotificationBell } from '../NotificationBell';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -202,9 +201,6 @@ function StudentLayout({
 
             {/* Right Side */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              {/* Notification Bell */}
-              <NotificationBell />
-              
               {/* User Menu */}
               {user && (
                 <DropdownMenu>

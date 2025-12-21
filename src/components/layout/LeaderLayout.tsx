@@ -1,7 +1,6 @@
 import { type ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ProfileDropdown from '../ProfileDropdown';
-import { NotificationBell } from '../NotificationBell';
 import { cn } from '../utils/cn';
 
 type LeaderLayoutProps = {
@@ -140,7 +139,6 @@ function LeaderLayout({
                 <p className="text-sm text-slate-600">{subtitle}</p>
               </div>
             </div>
-            <NotificationBell />
           </header>
 
           <main className="px-4 py-6 md:px-6 lg:py-8">

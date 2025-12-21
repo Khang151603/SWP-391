@@ -96,14 +96,33 @@ function StudentActivitiesPage() {
           }
         };
         
-        // Add all activities from view-all endpoint
-        viewAllActivities.forEach(addActivitySafely);
-        
-        // Add all activities from club-by-club student endpoint fetch
-        clubActivities.forEach(addActivitySafely);
-        
-        // Add all activities from leader endpoint (if accessible)
-        leaderActivities.forEach(addActivitySafely);
+        // Only add activities if student has joined at least one club
+        // This ensures students who haven't joined any club won't see activities
+        if (myClubs.length > 0) {
+          // Get list of club IDs that student has joined
+          const joinedClubIds = new Set(myClubs.map(club => club.club.id));
+          
+          // Filter viewAllActivities to only include activities from joined clubs
+          // This prevents showing activities from clubs student hasn't joined
+          const filteredViewAllActivities = viewAllActivities.filter((activity) => {
+            // If activity has clubId, check if it's in joined clubs
+            if (activity.clubId) {
+              return joinedClubIds.has(activity.clubId);
+            }
+            // If no clubId, include it (might be from view-all endpoint that already filtered)
+            return true;
+          });
+          
+          // Add filtered activities from view-all endpoint
+          filteredViewAllActivities.forEach(addActivitySafely);
+          
+          // Add all activities from club-by-club student endpoint fetch
+          clubActivities.forEach(addActivitySafely);
+          
+          // Add all activities from leader endpoint (if accessible)
+          leaderActivities.forEach(addActivitySafely);
+        }
+        // If student hasn't joined any club, allActivitiesList will remain empty
         
         // Deduplicate by activity ID, keeping the most complete version
         const activitiesMap = new Map<number, StudentActivity>();
@@ -387,9 +406,33 @@ function StudentActivitiesPage() {
         }
       };
       
-      viewAllActivities.forEach(addActivitySafely);
-      clubActivities.forEach(addActivitySafely);
-      leaderActivities.forEach(addActivitySafely);
+      // Only add activities if student has joined at least one club
+      // This ensures students who haven't joined any club won't see activities
+      if (myClubs.length > 0) {
+        // Get list of club IDs that student has joined
+        const joinedClubIds = new Set(myClubs.map(club => club.club.id));
+        
+        // Filter viewAllActivities to only include activities from joined clubs
+        // This prevents showing activities from clubs student hasn't joined
+        const filteredViewAllActivities = viewAllActivities.filter((activity) => {
+          // If activity has clubId, check if it's in joined clubs
+          if (activity.clubId) {
+            return joinedClubIds.has(activity.clubId);
+          }
+          // If no clubId, include it (might be from view-all endpoint that already filtered)
+          return true;
+        });
+        
+        // Add filtered activities from view-all endpoint
+        filteredViewAllActivities.forEach(addActivitySafely);
+        
+        // Add all activities from club-by-club student endpoint fetch
+        clubActivities.forEach(addActivitySafely);
+        
+        // Add all activities from leader endpoint (if accessible)
+        leaderActivities.forEach(addActivitySafely);
+      }
+      // If student hasn't joined any club, allActivitiesList will remain empty
       
       // Deduplicate with same merge logic
       const activitiesMap = new Map<number, StudentActivity>();
