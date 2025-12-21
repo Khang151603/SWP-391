@@ -8,6 +8,8 @@ import {
   DropdownMenuContent,
   DropdownMenuSeparator,
 } from './ui/DropdownMenu';
+import { getRoleDisplay, getRolePath } from './utils/roleUtils';
+import { cn } from './utils/cn';
 
 function ProfileDropdown() {
   const { user, logout } = useAppContext();
@@ -22,30 +24,9 @@ function ProfileDropdown() {
     navigate('/');
   };
 
-  const getRoleDisplay = (role: string): { title: string; icon: string } => {
-    const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
-    
-    if (normalizedRole === 'student') {
-      return { title: 'Sinh viên', icon: '🎓' };
-    } else if (normalizedRole === 'clubleader') {
-      return { title: 'Trưởng CLB', icon: '👑' };
-    } else {
-      return { title: role, icon: '👤' };
-    }
-  };
-
   const handleRoleSwitch = (role: string) => {
     authService.setSelectedRole(role);
-
-    // Chuyển hướng dựa trên role
-    const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
-    if (normalizedRole === 'student') {
-      navigate('/student');
-    } else if (normalizedRole === 'clubleader') {
-      navigate('/leader');
-    } else {
-      navigate('/');
-    }
+    navigate(getRolePath(role));
     setIsOpen(false);
   };
 
@@ -100,11 +81,12 @@ function ProfileDropdown() {
                     <button
                       key={role}
                       onClick={() => handleRoleSwitch(role)}
-                      className={`w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition ${
+                      className={cn(
+                        'w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition',
                         isSelected
                           ? 'bg-slate-900 text-white shadow-sm'
                           : 'bg-white text-slate-700 hover:bg-slate-100'
-                      }`}
+                      )}
                     >
                       <span className="text-lg">{roleInfo.icon}</span>
                       <div className="flex-1 min-w-0">

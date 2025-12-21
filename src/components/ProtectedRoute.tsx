@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { authService } from '../api';
+import { normalizeRole } from './utils/roleUtils';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -37,13 +38,12 @@ function ProtectedRoute({
 
   // Nếu route yêu cầu role cụ thể
   if (requiredRole) {
-    const normalizedRequiredRole = requiredRole.toLowerCase().replace(/\s+/g, '');
+    const normalizedRequiredRole = normalizeRole(requiredRole);
     
     // Kiểm tra xem user có role được yêu cầu không
-    const hasRequiredRole = roles.some(role => {
-      const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
-      return normalizedRole === normalizedRequiredRole;
-    });
+    const hasRequiredRole = roles.some(role => 
+      normalizeRole(role) === normalizedRequiredRole
+    );
     
     if (!hasRequiredRole) {
       // User không có role này, redirect về trang phù hợp
@@ -58,8 +58,7 @@ function ProtectedRoute({
       }
       // Nếu chỉ có 1 role, tự động chọn role đó
       const singleRole = roles[0];
-      const normalizedSingleRole = singleRole.toLowerCase().replace(/\s+/g, '');
-      if (normalizedSingleRole === normalizedRequiredRole) {
+      if (normalizeRole(singleRole) === normalizedRequiredRole) {
         // Tự động set role và tiếp tục
         authService.setSelectedRole(singleRole);
       } else {
@@ -67,8 +66,7 @@ function ProtectedRoute({
       }
     } else {
       // Kiểm tra xem selected role có khớp với required role không
-      const normalizedSelectedRole = selectedRole.toLowerCase().replace(/\s+/g, '');
-      if (normalizedSelectedRole !== normalizedRequiredRole) {
+      if (normalizeRole(selectedRole) !== normalizedRequiredRole) {
         // Selected role không khớp, redirect về trang role selection để chọn lại
         return <Navigate to="/select-role" replace />;
       }

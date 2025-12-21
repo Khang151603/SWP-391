@@ -1,7 +1,10 @@
 import { useState, useCallback, memo } from 'react';
 import { useNotifications } from '../hooks/useNotifications';
 
-const formatTime = (dateString: string) => {
+/**
+ * Format time difference to Vietnamese relative time string
+ */
+function formatTime(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffInMs = now.getTime() - date.getTime();
@@ -17,7 +20,7 @@ const formatTime = (dateString: string) => {
   if (diffInDays < 7) return `${diffInDays} ngày trước`;
   
   return date.toLocaleDateString('vi-VN');
-};
+}
 
 export const NotificationBell = memo(function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);

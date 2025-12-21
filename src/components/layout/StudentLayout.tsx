@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/DropdownMenu';
+import { cn } from '../utils/cn';
 
 type StudentLayoutProps = {
   title?: string;
@@ -110,8 +111,12 @@ function StudentLayout({
     const fetchPendingCount = async () => {
       try {
         const requests = await membershipService.getStudentRequests();
+        const statusLower = (status: string) => status.toLowerCase();
         const pending = requests.filter(
-          (req) => req.status.toLowerCase() === 'pending' || req.status.toLowerCase() === 'approved_pending_payment'
+          (req) => {
+            const status = statusLower(req.status);
+            return status === 'pending' || status === 'approved_pending_payment';
+          }
         ).length;
         setPendingRequestsCount(pending);
       } catch {
@@ -171,13 +176,17 @@ function StudentLayout({
                   <Link
                     key={item.path}
                     to={item.path}
-                    className={`group relative flex items-center gap-2 rounded-lg px-3 xl:px-4 py-2 text-sm font-medium transition-all flex-shrink-0 ${
+                    className={cn(
+                      'group relative flex items-center gap-2 rounded-lg px-3 xl:px-4 py-2 text-sm font-medium transition-all flex-shrink-0',
                       isActive
                         ? 'bg-slate-100 text-slate-900'
                         : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`}
+                    )}
                   >
-                    <span className={`flex-shrink-0 flex items-center justify-center ${isActive ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'}`}>
+                    <span className={cn(
+                      'flex-shrink-0 flex items-center justify-center',
+                      isActive ? 'text-slate-900' : 'text-slate-500 group-hover:text-slate-700'
+                    )}>
                       {item.icon}
                     </span>
                     <span className="whitespace-nowrap">{item.label}</span>
@@ -270,13 +279,17 @@ function StudentLayout({
                     key={item.path}
                     to={item.path}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors',
                       isActive
                         ? 'bg-slate-100 text-slate-900'
                         : 'text-slate-600 hover:bg-slate-50'
-                    }`}
+                    )}
                   >
-                    <span className={`flex-shrink-0 flex items-center justify-center ${isActive ? 'text-slate-900' : 'text-slate-500'}`}>
+                    <span className={cn(
+                      'flex-shrink-0 flex items-center justify-center',
+                      isActive ? 'text-slate-900' : 'text-slate-500'
+                    )}>
                       {item.icon}
                     </span>
                     <span className="flex-1">{item.label}</span>

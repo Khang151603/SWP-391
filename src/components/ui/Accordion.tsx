@@ -1,28 +1,31 @@
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { forwardRef } from 'react';
+import { cn } from '../utils/cn';
 
 export const Accordion = AccordionPrimitive.Root;
 
 export const AccordionItem = forwardRef<
   HTMLDivElement,
   AccordionPrimitive.AccordionItemProps
->(({ className = '', ...props }, ref) => (
+>(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={`border-b border-gray-200 ${className}`}
+    className={cn('border-b border-gray-200', className)}
     {...props}
   />
 ));
 AccordionItem.displayName = 'AccordionItem';
 
+const accordionTriggerStyles = 'flex flex-1 items-center justify-between py-5 font-semibold text-lg text-gray-900 transition-all hover:text-purple-600 data-[state=open]:text-purple-600';
+
 export const AccordionTrigger = forwardRef<
   HTMLButtonElement,
   AccordionPrimitive.AccordionTriggerProps
->(({ className = '', children, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Header className="flex">
     <AccordionPrimitive.Trigger
       ref={ref}
-      className={`flex flex-1 items-center justify-between py-5 font-semibold text-lg text-gray-900 transition-all hover:text-purple-600 data-[state=open]:text-purple-600 ${className}`}
+      className={cn(accordionTriggerStyles, className)}
       {...props}
     >
       {children}
@@ -39,16 +42,18 @@ export const AccordionTrigger = forwardRef<
 ));
 AccordionTrigger.displayName = 'AccordionTrigger';
 
+const accordionContentStyles = 'overflow-hidden text-gray-600 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down';
+
 export const AccordionContent = forwardRef<
   HTMLDivElement,
   AccordionPrimitive.AccordionContentProps
->(({ className = '', children, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <AccordionPrimitive.Content
     ref={ref}
-    className="overflow-hidden text-gray-600 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
+    className={accordionContentStyles}
     {...props}
   >
-    <div className={`pb-5 pt-0 ${className}`}>{children}</div>
+    <div className={cn('pb-5 pt-0', className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 AccordionContent.displayName = 'AccordionContent';

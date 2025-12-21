@@ -2,6 +2,7 @@ import { type ReactNode, useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ProfileDropdown from '../ProfileDropdown';
 import { NotificationBell } from '../NotificationBell';
+import { cn } from '../utils/cn';
 
 type LeaderLayoutProps = {
   title?: string;
@@ -36,11 +37,7 @@ function LeaderLayout({
   // Đóng sidebar khi chuyển sang mobile
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        setIsSidebarOpen(false);
-      } else {
-        setIsSidebarOpen(true);
-      }
+      setIsSidebarOpen(window.innerWidth >= 1024);
     };
 
     window.addEventListener('resize', handleResize);
@@ -59,9 +56,10 @@ function LeaderLayout({
 
       {/* Fixed Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-40 h-screen w-[280px] flex flex-col border-r border-slate-200 bg-white px-6 py-8 overflow-y-auto transition-transform duration-300 ease-in-out ${
+        className={cn(
+          'fixed left-0 top-0 z-40 h-screen w-[280px] flex flex-col border-r border-slate-200 bg-white px-6 py-8 overflow-y-auto transition-transform duration-300 ease-in-out',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        )}
       >
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
@@ -94,11 +92,12 @@ function LeaderLayout({
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center justify-between rounded-xl px-4 py-3 transition ${
+                className={cn(
+                  'flex items-center justify-between rounded-xl px-4 py-3 transition',
                   isActive
                     ? 'bg-blue-50 text-blue-700 border border-blue-100'
                     : 'text-slate-700 hover:bg-slate-100'
-                }`}
+                )}
               >
                 <span>{item.label}</span>
               </Link>
@@ -113,7 +112,10 @@ function LeaderLayout({
       </aside>
 
       {/* Main Content Area */}
-      <div className={`min-h-screen transition-all duration-300 ${isSidebarOpen ? 'lg:ml-[280px]' : 'ml-0'}`}>
+      <div className={cn(
+        'min-h-screen transition-all duration-300',
+        isSidebarOpen ? 'lg:ml-[280px]' : 'ml-0'
+      )}>
         <div className="relative h-full w-full">
           {/* Sticky Header */}
           <header className="sticky top-0 z-10 flex items-center justify-between gap-4 border-b border-slate-200 px-6 py-6 bg-white">
