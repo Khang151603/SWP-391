@@ -429,15 +429,6 @@ function StudentExplorePage() {
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <div className="flex items-center gap-2 text-xs text-slate-400">
-                  <span>Sắp xếp:</span>
-                  <select className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 focus:border-blue-500 focus:outline-none">
-                    <option>Phổ biến nhất</option>
-                    <option>Đánh giá cao</option>
-                    <option>Mới nhất</option>
-                    <option>Thành viên nhiều nhất</option>
-                  </select>
-                </div>
                 <div className="inline-flex rounded-full border border-slate-300 bg-white p-1 text-xs text-slate-700">
                   <button
                     onClick={() => setViewMode("grid")}
