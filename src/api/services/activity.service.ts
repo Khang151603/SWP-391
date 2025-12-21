@@ -10,6 +10,10 @@ import type {
 
 /**
  * Activity Service
+ * 
+ * Used by:
+ * - Pages: ClubLeaderActivitiesPage.tsx, ClubLeaderDashboardPage.tsx,
+ *          StudentActivitiesPage.tsx, StudentMyActivitiesPage.tsx
  */
 export const activityService = {
   /**
@@ -49,6 +53,7 @@ export const activityService = {
 
   /**
    * Student: Get activities for registration (activities student has registered)
+   * Note: Currently not used in any page/component
    */
   async getStudentForRegistration(): Promise<StudentActivity[]> {
     return httpClient.get<StudentActivity[]>(ACTIVITY_ENDPOINTS.STUDENT_FOR_REGISTRATION);
@@ -70,6 +75,7 @@ export const activityService = {
 
   /**
    * Leader: Delete activity
+   * Note: Currently not used in any page/component
    */
   async delete(id: number | string): Promise<void> {
     return httpClient.delete<void>(ACTIVITY_ENDPOINTS.DELETE(id));
@@ -84,6 +90,7 @@ export const activityService = {
 
   /**
    * Leader: Close registration for activity
+   * Note: Currently not used in any page/component
    */
   async closeRegistration(id: number | string): Promise<void> {
     return httpClient.put<void>(ACTIVITY_ENDPOINTS.CLOSE_REGISTRATION(id));
@@ -91,6 +98,7 @@ export const activityService = {
 
   /**
    * Leader: Start activity
+   * Note: Currently not used directly - ClubLeaderActivitiesPage uses update() with status 'Ongoing' instead
    */
   async startActivity(id: number | string): Promise<void> {
     return httpClient.put<void>(ACTIVITY_ENDPOINTS.START_ACTIVITY(id));
@@ -98,6 +106,7 @@ export const activityService = {
 
   /**
    * Leader: Stop activity
+   * Note: Currently not used directly - ClubLeaderActivitiesPage uses update() with status 'Completed' instead
    */
   async stopActivity(id: number | string): Promise<void> {
     return httpClient.put<void>(ACTIVITY_ENDPOINTS.STOP_ACTIVITY(id));

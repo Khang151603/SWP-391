@@ -2,6 +2,13 @@ import { httpClient } from '../config/client';
 import { NOTIFICATION_ENDPOINTS } from '../config/constants';
 import type { Notification } from '../types/notification.types';
 
+/**
+ * Notification Service
+ * 
+ * Used by:
+ * - Hooks: useNotifications.ts
+ * - Components: NotificationBell.tsx (via useNotifications hook)
+ */
 class NotificationService {
   /**
    * Get unread notifications for current user

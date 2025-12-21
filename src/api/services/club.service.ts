@@ -11,6 +11,13 @@ import type {
 
 /**
  * Club Service
+ * 
+ * Used by:
+ * - Pages: StudentExplorePage.tsx, HomePage.tsx, StudentExploreDetailPage.tsx, 
+ *          StudentBecomeLeaderPage.tsx, StudentMyActivitiesPage.tsx, StudentClubsPage.tsx,
+ *          ClubLeaderMembersPage.tsx, ClubLeaderRequestsPage.tsx, ClubLeaderDetailPage.tsx,
+ *          ClubLeaderPaymentHistoryPage.tsx, ClubLeaderInfoPage.tsx, ClubLeaderDashboardPage.tsx,
+ *          ClubLeaderActivitiesPage.tsx
  */
 export const clubService = {
   /**
@@ -73,6 +80,7 @@ export const clubService = {
 
   /**
    * Delete a leader club
+   * Note: Currently not used in any page/component
    */
   async deleteLeaderClub(id: number | string): Promise<void> {
     return httpClient.delete<void>(CLUB_ENDPOINTS.LEADER_CLUB_BY_ID(id));

@@ -13,6 +13,13 @@ import type { AccountInfo } from '../types/auth.types';
 
 /**
  * Membership Service
+ * 
+ * Used by:
+ * - Pages: StudentExplorePage.tsx, StudentMembershipRequestsPage.tsx, StudentClubsPage.tsx,
+ *          StudentActivitiesPage.tsx, StudentExploreDetailPage.tsx,
+ *          ClubLeaderRequestsPage.tsx, ClubLeaderDashboardPage.tsx, ClubLeaderMembersPage.tsx,
+ *          ClubLeaderDetailPage.tsx, ClubLeaderInfoPage.tsx
+ * - Components: StudentLayout.tsx
  */
 export const membershipService = {
 
@@ -46,6 +53,7 @@ export const membershipService = {
 
   /**
    * Leader: Get pending membership requests
+   * Note: Currently not used in any page/component (getLeaderAllRequests is used instead)
    */
   async getLeaderPendingRequests(): Promise<LeaderPendingMembershipRequest[]> {
     return httpClient.get<LeaderPendingMembershipRequest[]>(MEMBERSHIP_ENDPOINTS.LEADER_PENDING);

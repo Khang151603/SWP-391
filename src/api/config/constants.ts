@@ -7,90 +7,96 @@ if (!envApiBaseUrl) {
 export const API_BASE_URL: string = envApiBaseUrl;
 
 // Auth Endpoints
+// Used by: auth.service.ts
 export const AUTH_ENDPOINTS = {
-  REGISTER: '/api/Auth/register',
-  LOGIN: '/api/Auth/login',
-  REFRESH_TOKEN: '/api/Auth/refresh-token',
-  CHANGE_PASSWORD: '/api/Auth/change-password',
-  UPDATE_PROFILE: '/api/Account/profile',
+  REGISTER: '/api/Auth/register', // Pages: RegisterPage.tsx
+  LOGIN: '/api/Auth/login', // Pages: LoginPage.tsx
+  REFRESH_TOKEN: '/api/Auth/refresh-token', // Used internally by auth.service.ts
+  CHANGE_PASSWORD: '/api/Auth/change-password', // Used by auth.service.ts
+  UPDATE_PROFILE: '/api/Account/profile', // Pages: StudentProfilePage.tsx
 } as const;
 
 // Club Endpoints
+// Used by: club.service.ts
 export const CLUB_ENDPOINTS = {
-  GET_ALL_CLUBS: '/api/clubs', // Endpoint for student explore page
-  JOIN_REQUEST: (id: number | string) => `/api/Club/${id}/join`,
-  LEADER_REQUEST: '/api/club-leader-requests',
-  MY_LEADER_REQUEST: '/api/club-leader-requests/my-request',
-  LEADER_CREATE: '/api/clubs',
-  LEADER_MY_CLUBS: '/api/clubs/my',
-  LEADER_CLUB_BY_ID: (id: number | string) => `/api/clubs/${id}`,
-  UPLOAD_CLUB_IMAGE: (id: number | string) => `/api/clubs/${id}/upload-image`,
+  GET_ALL_CLUBS: '/api/clubs', // Pages: StudentExplorePage.tsx, HomePage.tsx
+  JOIN_REQUEST: (id: number | string) => `/api/Club/${id}/join`, // Pages: StudentExploreDetailPage.tsx
+  LEADER_REQUEST: '/api/club-leader-requests', // Pages: StudentBecomeLeaderPage.tsx
+  MY_LEADER_REQUEST: '/api/club-leader-requests/my-request', // Pages: StudentBecomeLeaderPage.tsx
+  LEADER_CREATE: '/api/clubs', // Pages: ClubLeaderInfoPage.tsx
+  LEADER_MY_CLUBS: '/api/clubs/my', // Pages: ClubLeaderMembersPage.tsx, ClubLeaderRequestsPage.tsx, ClubLeaderDetailPage.tsx, ClubLeaderPaymentHistoryPage.tsx, ClubLeaderInfoPage.tsx, ClubLeaderDashboardPage.tsx
+  LEADER_CLUB_BY_ID: (id: number | string) => `/api/clubs/${id}`, // Pages: StudentMyActivitiesPage.tsx, StudentClubsPage.tsx, StudentExploreDetailPage.tsx, StudentExplorePage.tsx, ClubLeaderDetailPage.tsx
+  UPLOAD_CLUB_IMAGE: (id: number | string) => `/api/clubs/${id}/upload-image`, // Pages: ClubLeaderDetailPage.tsx
 } as const;
 
 // Activities Endpoints
+// Used by: activity.service.ts
 export const ACTIVITY_ENDPOINTS = {
-  GET_BY_CLUB: (clubId: number | string) => `/api/Activities/club/${clubId}`,
-  CREATE: '/api/Activities',
-  UPDATE: (id: number | string) => `/api/Activities/${id}`,
-  DELETE: (id: number | string) => `/api/Activities/${id}`,
-  UPLOAD_ACTIVITY_IMAGE: (id: number | string) => `/api/Activities/${id}/upload-image`,
-  OPEN_REGISTRATION: (id: number | string) => `/api/Activities/${id}/open-registration`,
-  CLOSE_REGISTRATION: (id: number | string) => `/api/Activities/${id}/close-registration`,
-  START_ACTIVITY: (id: number | string) => `/api/Activities/${id}/start`,
-  STOP_ACTIVITY: (id: number | string) => `/api/Activities/${id}/stop`,
-  GET_PARTICIPANTS: (id: number | string) => `/api/Activities/${id}/participants`,
+  // Leader activity endpoints
+  GET_BY_CLUB: (clubId: number | string) => `/api/Activities/club/${clubId}`, // Pages: ClubLeaderActivitiesPage.tsx, ClubLeaderDashboardPage.tsx, StudentActivitiesPage.tsx
+  CREATE: '/api/Activities', // Pages: ClubLeaderActivitiesPage.tsx
+  UPDATE: (id: number | string) => `/api/Activities/${id}`, // Pages: ClubLeaderActivitiesPage.tsx
+  DELETE: (id: number | string) => `/api/Activities/${id}`, // Used by activity.service.ts
+  UPLOAD_ACTIVITY_IMAGE: (id: number | string) => `/api/Activities/${id}/upload-image`, // Pages: ClubLeaderActivitiesPage.tsx
+  OPEN_REGISTRATION: (id: number | string) => `/api/Activities/${id}/open-registration`, // Pages: ClubLeaderActivitiesPage.tsx
+  CLOSE_REGISTRATION: (id: number | string) => `/api/Activities/${id}/close-registration`, // Pages: ClubLeaderActivitiesPage.tsx
+  START_ACTIVITY: (id: number | string) => `/api/Activities/${id}/start`, // Pages: ClubLeaderActivitiesPage.tsx
+  STOP_ACTIVITY: (id: number | string) => `/api/Activities/${id}/stop`, // Pages: ClubLeaderActivitiesPage.tsx
+  GET_PARTICIPANTS: (id: number | string) => `/api/Activities/${id}/participants`, // Pages: ClubLeaderActivitiesPage.tsx
   // Student activity endpoints
-  STUDENT_VIEW_ALL: '/api/student/activities/view-all',
-  STUDENT_VIEW_CLUB: (clubId: number | string) => `/api/student/activities/view-club/${clubId}`,
-  STUDENT_REGISTER: (id: number | string) => `/api/student/activities/${id}/register`,
-  STUDENT_FOR_REGISTRATION: '/api/student/activities/for-registration',
-  STUDENT_HISTORY: '/api/student/activities/history',
+  STUDENT_VIEW_ALL: '/api/student/activities/view-all', // Pages: StudentActivitiesPage.tsx
+  STUDENT_VIEW_CLUB: (clubId: number | string) => `/api/student/activities/view-club/${clubId}`, // Pages: StudentActivitiesPage.tsx
+  STUDENT_REGISTER: (id: number | string) => `/api/student/activities/${id}/register`, // Pages: StudentActivitiesPage.tsx
+  STUDENT_FOR_REGISTRATION: '/api/student/activities/for-registration', // Pages: StudentActivitiesPage.tsx
+  STUDENT_HISTORY: '/api/student/activities/history', // Pages: StudentMyActivitiesPage.tsx
 } as const;
+
 
 // User/Account Endpoints
 export const USER_ENDPOINTS = {
-  GET_PROFILE: '/api/User/profile',
-  UPDATE_PROFILE: '/api/User/profile',
-  UPLOAD_AVATAR: '/api/Account/upload-avatar',
+  UPLOAD_AVATAR: '/api/Account/upload-avatar', // Pages: StudentProfilePage.tsx
 } as const;
 
 // Payment Endpoints
+// Used by: payment.service.ts
 export const PAYMENT_ENDPOINTS = {
-  STUDENT_PAID: '/api/student/payment/paid',
-  STUDENT_DEBTS: '/api/student/payment/debts',
-  STUDENT_HISTORY: '/api/student/payment/history',
-  LEADER_CLUB_HISTORY: (clubId: number | string) => `/api/ClubLeaderPayment/clubs/${clubId}/history`,
+  STUDENT_PAID: '/api/student/payment/paid', // Used by payment.service.ts
+  STUDENT_DEBTS: '/api/student/payment/debts', // Used by payment.service.ts
+  STUDENT_HISTORY: '/api/student/payment/history', // Pages: StudentPaymentHistoryPage.tsx
+  LEADER_CLUB_HISTORY: (clubId: number | string) => `/api/ClubLeaderPayment/clubs/${clubId}/history`, // Pages: ClubLeaderPaymentHistoryPage.tsx
 } as const;
 
 // Notification Endpoints
+// Used by: notification.service.ts
 export const NOTIFICATION_ENDPOINTS = {
-  UNREAD: '/notification',
-  MARK_AS_READ: (notificationId: string) => `/notification/read/${notificationId}`,
+  UNREAD: '/notification', // Components: NotificationBell.tsx
+  MARK_AS_READ: (notificationId: string) => `/notification/read/${notificationId}`, // Components: NotificationBell.tsx
 } as const;
 
 // Membership Endpoints
+// Used by: membership.service.ts
 export const MEMBERSHIP_ENDPOINTS = {
   // Student membership request endpoints
-  STUDENT_REQUEST: '/api/student/membership/request',
-  STUDENT_REQUESTS: '/api/student/membership/requests',
-  STUDENT_MY_CLUBS: '/api/student/membership/my-clubs',
-  STUDENT_ACCOUNT_INFO: '/api/student/membership/account-info',
+  STUDENT_REQUEST: '/api/student/membership/request', // Pages: StudentExplorePage.tsx
+  STUDENT_REQUESTS: '/api/student/membership/requests', // Pages: StudentExplorePage.tsx, StudentMembershipRequestsPage.tsx
+  STUDENT_MY_CLUBS: '/api/student/membership/my-clubs', // Pages: StudentClubsPage.tsx, StudentActivitiesPage.tsx, StudentExplorePage.tsx, StudentExploreDetailPage.tsx
+  STUDENT_ACCOUNT_INFO: '/api/student/membership/account-info', // Pages: StudentExplorePage.tsx
   // Leader membership request endpoints
-  LEADER_PENDING: '/api/leader/membership/pending',
-  LEADER_ALL_REQUESTS: '/api/leader/membership/requests',
-  LEADER_MEMBERS: '/api/leader/membership/members',
-  LEADER_CLUB_MEMBERS: (clubId: number | string) => `/api/leader/membership/clubs/${clubId}/members`,
-  LEADER_APPROVE: (id: number | string) => `/api/leader/membership/${id}/approve`,
-  LEADER_REJECT: (id: number | string) => `/api/leader/membership/${id}/reject`,
-  LEADER_LOCK_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}/lock`,
-  LEADER_UNLOCK_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}/unlock`,
-  LEADER_DELETE_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}`,
+  LEADER_PENDING: '/api/leader/membership/pending', // Used by membership.service.ts
+  LEADER_ALL_REQUESTS: '/api/leader/membership/requests', // Pages: ClubLeaderRequestsPage.tsx, ClubLeaderDashboardPage.tsx
+  LEADER_MEMBERS: '/api/leader/membership/members', // Pages: ClubLeaderDashboardPage.tsx
+  LEADER_CLUB_MEMBERS: (clubId: number | string) => `/api/leader/membership/clubs/${clubId}/members`, // Pages: ClubLeaderMembersPage.tsx, ClubLeaderDetailPage.tsx, ClubLeaderInfoPage.tsx
+  LEADER_APPROVE: (id: number | string) => `/api/leader/membership/${id}/approve`, // Pages: ClubLeaderRequestsPage.tsx
+  LEADER_REJECT: (id: number | string) => `/api/leader/membership/${id}/reject`, // Pages: ClubLeaderRequestsPage.tsx
+  LEADER_LOCK_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}/lock`, // Pages: ClubLeaderMembersPage.tsx
+  LEADER_UNLOCK_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}/unlock`, // Pages: ClubLeaderMembersPage.tsx
+  LEADER_DELETE_MEMBER: (membershipId: number | string) => `/api/leader/membership/members/${membershipId}`, // Pages: ClubLeaderMembersPage.tsx
 } as const;
 
 // Report Endpoints
+// Used by: report.service.ts
 export const REPORT_ENDPOINTS = {
-  CLUB_REPORT: (clubId: number | string) => `/api/reports/clubs/${clubId}`,
-  MY_CLUBS_REPORT: '/api/reports/my-clubs',
+  MY_CLUBS_REPORT: '/api/reports/my-clubs', // Pages: ClubLeaderReportsPage.tsx
 } as const;
 
 

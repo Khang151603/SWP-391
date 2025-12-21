@@ -30,6 +30,12 @@ function saveAuthData(response: AuthResponse): void {
 
 /**
  * Authentication Service
+ * 
+ * Used by:
+ * - Pages: RegisterPage.tsx, LoginPage.tsx, StudentProfilePage.tsx
+ * - Components: ProtectedRoute.tsx, RoleSwitcher.tsx, ProfileDropdown.tsx
+ * - Context: AppContext.tsx
+ * - Internal: httpClient (refreshToken)
  */
 export const authService = {
   /**

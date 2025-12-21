@@ -12,12 +12,17 @@ import type {
 
 /**
  * Payment Service
+ * 
+ * Used by:
+ * - Pages: StudentMembershipRequestsPage.tsx, StudentPaymentHistoryPage.tsx,
+ *          ClubLeaderPaymentHistoryPage.tsx
  */
 export const paymentService = {
   /**
    * Create PayOS payment link
    * Note: PayOS API requires payment ID in URL path, so we use fetch directly
    * instead of httpClient to maintain the exact endpoint structure
+   * Used internally by: createMembershipPayment()
    */
   async createPayOSPayment(
     paymentId: number,
@@ -91,6 +96,7 @@ export const paymentService = {
 
   /**
    * Student: Get paid payments
+   * Note: Currently not used in any page/component (getStudentPaymentHistory is used instead)
    */
   async getStudentPaidPayments(): Promise<StudentPaidPayment[]> {
     return httpClient.get<StudentPaidPayment[]>(PAYMENT_ENDPOINTS.STUDENT_PAID);
@@ -98,6 +104,7 @@ export const paymentService = {
 
   /**
    * Student: Get debts
+   * Note: Currently not used in any page/component
    */
   async getStudentDebts(): Promise<StudentDebt[]> {
     return httpClient.get<StudentDebt[]>(PAYMENT_ENDPOINTS.STUDENT_DEBTS);

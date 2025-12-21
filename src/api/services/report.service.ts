@@ -4,15 +4,11 @@ import type { ClubReport } from '../types/report.types';
 
 /**
  * Report Service for Club Leader
+ * 
+ * Used by:
+ * - Pages: ClubLeaderReportsPage.tsx
  */
 export const reportService = {
-  /**
-   * Get report for a single club
-   */
-  async getClubReport(clubId: number | string): Promise<ClubReport> {
-    return httpClient.get<ClubReport>(REPORT_ENDPOINTS.CLUB_REPORT(clubId));
-  },
-
   /**
    * Get report for all clubs managed by current leader
    */

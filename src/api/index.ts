@@ -8,9 +8,9 @@ export * from './utils/tokenManager';
 export { authService } from './services/auth.service';
 export { clubService } from './services/club.service';
 export { activityService } from './services/activity.service';
-export { userService } from './services/user.service';
 export { membershipService } from './services/membership.service';
 export { paymentService } from './services/payment.service';
+export { reportService } from './services/report.service';
 
 // Types
 export * from './types/auth.types';
