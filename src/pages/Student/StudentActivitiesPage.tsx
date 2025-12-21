@@ -4,7 +4,7 @@ import { activityService } from '../../api/services/activity.service';
 import { membershipService } from '../../api/services/membership.service';
 import type { StudentActivity } from '../../api/types/activity.types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
-import { showErrorToast, showSuccessToast } from '../../utils/toast';
+import { showSuccessToast } from '../../utils/toast';
 
 function StudentActivitiesPage() {
   const [activities, setActivities] = useState<StudentActivity[]>([]);
@@ -314,7 +314,6 @@ function StudentActivitiesPage() {
       const message = 'Bạn đã đăng ký rồi';
       setRegistrationError(message);
       setRegistrationSuccess(null);
-      showErrorToast(message);
       return;
     }
     
@@ -428,11 +427,10 @@ function StudentActivitiesPage() {
       
       // Giữ lại registrationSuccess trong UI; toast sẽ tự đóng
     } catch (err: unknown) {
-      // Xử lý lỗi từ API - thông báo sẽ tự động được chuyển đổi sang tiếng Việt trong showErrorToast
+      // Xử lý lỗi từ API
       const errorMessage = (err instanceof Error ? err.message : String(err)) || '';
       const message = errorMessage || 'Không thể đăng ký tham gia hoạt động. Vui lòng thử lại sau.';
       setRegistrationError(message);
-      showErrorToast(message);
     }
   };
 

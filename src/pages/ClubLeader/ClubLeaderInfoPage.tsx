@@ -7,7 +7,7 @@ import type {
   CreateLeaderClubRequest,
   LeaderClubListItem,
 } from '../../api/types/club.types';
-import { showErrorToast, showSuccessToast } from '../../utils/toast';
+import { showSuccessToast } from '../../utils/toast';
 
 type ClubProfile = {
   id: string;
@@ -123,7 +123,6 @@ function ClubLeaderInfoPage() {
       } catch {
         const message = 'Không thể tải danh sách CLB. Vui lòng thử lại sau.';
         setError(message);
-        showErrorToast(message);
       } finally {
         setIsLoading(false);
       }
@@ -153,7 +152,6 @@ function ClubLeaderInfoPage() {
     if (!createFormData.name || !createFormData.description) {
       const message = 'Vui lòng điền đầy đủ tên và mô tả CLB';
       setError(message);
-      showErrorToast(message);
       return;
     }
 
@@ -211,7 +209,6 @@ function ClubLeaderInfoPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Có lỗi xảy ra khi tạo CLB';
       setError(message);
-      showErrorToast(message);
     } finally {
       setIsLoading(false);
     }

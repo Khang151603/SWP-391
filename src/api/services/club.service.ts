@@ -1,5 +1,5 @@
 import { httpClient } from '../config/client';
-import { API_BASE_URL, CLUB_ENDPOINTS } from '../config/constants';
+import { CLUB_ENDPOINTS } from '../config/constants';
 import type {
   ClubListItem,
   LeaderClubListItem,
@@ -84,26 +84,10 @@ export const clubService = {
   async uploadClubImage(id: number | string, file: File): Promise<{ message: string; imageUrl: string; publicId: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    
-    // Use httpClient's baseURL and auth headers but skip Content-Type for FormData
-    const token = localStorage.getItem('token');
-    const headers: HeadersInit = {};
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    const response = await fetch(`${API_BASE_URL}${CLUB_ENDPOINTS.UPLOAD_CLUB_IMAGE(id)}`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(error || 'Upload failed');
-    }
-
-    return response.json();
+    return httpClient.post<{ message: string; imageUrl: string; publicId: string }>(
+      CLUB_ENDPOINTS.UPLOAD_CLUB_IMAGE(id),
+      formData
+    );
   },
 };
 

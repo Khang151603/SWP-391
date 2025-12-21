@@ -3,7 +3,6 @@ import StudentLayout from '../../components/layout/StudentLayout';
 import { membershipService } from '../../api/services/membership.service';
 import { paymentService } from '../../api/services/payment.service';
 import type { StudentMembershipRequestResponse } from '../../api/types/membership.types';
-import { showErrorToast } from '../../utils/toast';
 
 function StudentMembershipRequestsPage() {
   const [membershipRequests, setMembershipRequests] = useState<StudentMembershipRequestResponse[]>([]);
@@ -156,7 +155,6 @@ function StudentMembershipRequestsPage() {
       console.error('Error creating payment:', err);
       const message = 'Không thể tạo link thanh toán. Vui lòng thử lại sau.';
       setPaymentError(message);
-      showErrorToast(message);
       setProcessingPayment(null);
     }
   };

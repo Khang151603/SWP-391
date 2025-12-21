@@ -159,15 +159,30 @@ class HttpClient {
   }
 
   /**
+   * Prepare request body for FormData or JSON
+   */
+  private prepareBody(body?: unknown): { body: BodyInit | undefined; skipContentType: boolean } {
+    if (!body) {
+      return { body: undefined, skipContentType: false };
+    }
+    
+    const isFormData = body instanceof FormData;
+    return {
+      body: isFormData ? body : JSON.stringify(body),
+      skipContentType: isFormData,
+    };
+  }
+
+  /**
    * POST request
    */
   async post<T>(path: string, body?: unknown, config?: RequestConfig): Promise<T> {
-    const isFormData = body instanceof FormData;
+    const { body: requestBody, skipContentType } = this.prepareBody(body);
     const response = await this.request<T>(path, {
       ...config,
       method: 'POST',
-      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
-      skipContentType: isFormData || config?.skipContentType,
+      body: requestBody,
+      skipContentType: skipContentType || config?.skipContentType,
     });
     return response.data;
   }
@@ -176,12 +191,12 @@ class HttpClient {
    * PUT request
    */
   async put<T>(path: string, body?: unknown, config?: RequestConfig): Promise<T> {
-    const isFormData = body instanceof FormData;
+    const { body: requestBody, skipContentType } = this.prepareBody(body);
     const response = await this.request<T>(path, {
       ...config,
       method: 'PUT',
-      body: isFormData ? body : (body ? JSON.stringify(body) : undefined),
-      skipContentType: isFormData || config?.skipContentType,
+      body: requestBody,
+      skipContentType: skipContentType || config?.skipContentType,
     });
     return response.data;
   }

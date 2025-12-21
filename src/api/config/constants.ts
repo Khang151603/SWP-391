@@ -4,7 +4,7 @@ const envApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 if (!envApiBaseUrl) {
   throw new Error('VITE_API_BASE_URL environment variable is not set');
 }
-export const API_BASE_URL = envApiBaseUrl as string;
+export const API_BASE_URL: string = envApiBaseUrl;
 
 // Auth Endpoints
 export const AUTH_ENDPOINTS = {

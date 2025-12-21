@@ -1,5 +1,6 @@
 import { httpClient } from '../config/client';
 import { API_BASE_URL, PAYMENT_ENDPOINTS } from '../config/constants';
+import { ApiError } from '../utils/errorHandler';
 import type {
   PayOSCreatePaymentRequest,
     PayOSPaymentResponse,
@@ -15,25 +16,33 @@ import type {
 export const paymentService = {
   /**
    * Create PayOS payment link
+   * Note: PayOS API requires payment ID in URL path, so we use fetch directly
+   * instead of httpClient to maintain the exact endpoint structure
    */
   async createPayOSPayment(
     paymentId: number,
     data: PayOSCreatePaymentRequest
   ): Promise<PayOSPaymentResponse> {
-    // PayOS API requires payment ID in URL path
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/api/PayOS/create/${paymentId}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `PayOS API error: ${response.status} ${response.statusText}`
-      );
+      const errorMessage = (errorData as { message?: string })?.message || 
+        `PayOS API error: ${response.status} ${response.statusText}`;
+      throw new ApiError(response.status, response.statusText, errorMessage, errorData);
     }
 
     // Check if response is a string URL or JSON object
@@ -41,11 +50,10 @@ export const paymentService = {
     
     // Try to parse as JSON first
     try {
-      const jsonData = JSON.parse(responseText);
-      return jsonData;
+      return JSON.parse(responseText) as PayOSPaymentResponse;
     } catch {
       // If not JSON, treat as plain text URL
-      return responseText.trim();
+      return responseText.trim() as PayOSPaymentResponse;
     }
   },
 

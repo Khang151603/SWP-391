@@ -10,6 +10,25 @@ import type {
 } from '../types/auth.types';
 
 /**
+ * Helper function to save authentication data to localStorage
+ */
+function saveAuthData(response: AuthResponse): void {
+  if (!response.token) return;
+
+  tokenManager.setToken(response.token);
+  if (response.roles) {
+    tokenManager.setRoles(response.roles);
+  }
+  tokenManager.setUserInfo({
+    accountId: response.accountId,
+    username: response.username,
+    email: response.email,
+    fullName: response.fullName,
+    imageAccountUrl: response.imageAccountUrl,
+  });
+}
+
+/**
  * Authentication Service
  */
 export const authService = {
@@ -25,21 +44,7 @@ export const authService = {
       }
     );
 
-    // Save token, roles, and user info
-    if (response.token) {
-      tokenManager.setToken(response.token);
-      if (response.roles) {
-        tokenManager.setRoles(response.roles);
-      }
-      tokenManager.setUserInfo({
-        accountId: response.accountId,
-        username: response.username,
-        email: response.email,
-        fullName: response.fullName,
-        imageAccountUrl: response.imageAccountUrl,
-      });
-    }
-
+    saveAuthData(response);
     return response;
   },
 
@@ -53,21 +58,7 @@ export const authService = {
       { skipAuth: true }
     );
 
-    // Save token, roles, and user info
-    if (response.token) {
-      tokenManager.setToken(response.token);
-      if (response.roles) {
-        tokenManager.setRoles(response.roles);
-      }
-      tokenManager.setUserInfo({
-        accountId: response.accountId,
-        username: response.username,
-        email: response.email,
-        fullName: response.fullName,
-        imageAccountUrl: response.imageAccountUrl,
-      });
-    }
-
+    saveAuthData(response);
     return response;
   },
 
@@ -79,20 +70,7 @@ export const authService = {
       AUTH_ENDPOINTS.REFRESH_TOKEN
     );
 
-    if (response.token) {
-      tokenManager.setToken(response.token);
-      if (response.roles) {
-        tokenManager.setRoles(response.roles);
-      }
-      tokenManager.setUserInfo({
-        accountId: response.accountId,
-        username: response.username,
-        email: response.email,
-        fullName: response.fullName,
-        imageAccountUrl: response.imageAccountUrl,
-      });
-    }
-
+    saveAuthData(response);
     return response;
   },
 
@@ -109,21 +87,7 @@ export const authService = {
   async updateProfile(data: UpdateProfileRequest): Promise<AuthResponse> {
     const response = await httpClient.put<AuthResponse>(AUTH_ENDPOINTS.UPDATE_PROFILE, data);
 
-    // Update token and user info if returned
-    if (response.token) {
-      tokenManager.setToken(response.token);
-      if (response.roles) {
-        tokenManager.setRoles(response.roles);
-      }
-      tokenManager.setUserInfo({
-        accountId: response.accountId,
-        username: response.username,
-        email: response.email,
-        fullName: response.fullName,
-        imageAccountUrl: response.imageAccountUrl,
-      });
-    }
-
+    saveAuthData(response);
     return response;
   },
 

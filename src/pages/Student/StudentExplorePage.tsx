@@ -324,7 +324,6 @@ function StudentExplorePage() {
     if (!isFormValid() || !selectedClub) {
       const message = "Vui lòng điền đầy đủ thông tin bắt buộc";
       setRegistrationError(message);
-      showErrorToast(message);
       return;
     }
 
@@ -373,7 +372,6 @@ function StudentExplorePage() {
           ? err.message
           : fallback;
       setRegistrationError(message);
-      showErrorToast(message);
     } finally {
       setIsRegistering(false);
     }

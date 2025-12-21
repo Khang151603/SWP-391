@@ -4,7 +4,7 @@ import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
 import type { LeaderPendingMembershipRequest } from '../../api/types/membership.types';
 import type { LeaderClubListItem } from '../../api/types/club.types';
-import { showErrorToast, showSuccessToast } from '../../utils/toast';
+import { showSuccessToast } from '../../utils/toast';
 
 type RequestActionType = 'approve' | 'reject' | null;
 
@@ -175,7 +175,6 @@ function ClubLeaderRequestsPage() {
       const fallbackMsg = `Không thể ${requestActionType === 'approve' ? 'duyệt' : 'từ chối'} đơn đăng ký. Vui lòng thử lại sau.`;
       const message = err instanceof Error ? err.message : fallbackMsg;
       setError(message);
-      showErrorToast(message);
     } finally {
       setIsProcessingRequest(false);
     }

@@ -98,13 +98,45 @@ function translateToVietnamese(message: string): string {
   return msg;
 }
 
+// Track recent toast messages to prevent duplicates
+const recentToasts = new Set<string>();
+const TOAST_DEDUP_INTERVAL = 2000; // 2 seconds
+
 export function showErrorToast(message: string, options?: ToastOptions) {
   const translatedMessage = translateToVietnamese(message);
-  toast.error(translatedMessage, { ...defaultErrorOptions, ...options });
+  
+  // Create a unique ID for this message
+  const toastId = `error-${translatedMessage}`;
+  
+  // Check if this message was shown recently
+  if (recentToasts.has(toastId)) {
+    return; // Skip duplicate toast
+  }
+  
+  // Add to recent toasts
+  recentToasts.add(toastId);
+  
+  // Remove from recent toasts after interval
+  setTimeout(() => {
+    recentToasts.delete(toastId);
+  }, TOAST_DEDUP_INTERVAL);
+  
+  toast.error(translatedMessage, { 
+    ...defaultErrorOptions, 
+    ...options,
+    toastId, // Use toastId to prevent duplicates
+  });
 }
 
 export function showSuccessToast(message: string, options?: ToastOptions) {
-  toast.success(message, { ...defaultSuccessOptions, ...options });
+  // Create a unique ID for this message
+  const toastId = `success-${message}`;
+  
+  toast.success(message, { 
+    ...defaultSuccessOptions, 
+    ...options,
+    toastId, // Use toastId to prevent duplicates
+  });
 }
 
 // Helper cho trường hợp có error object từ API

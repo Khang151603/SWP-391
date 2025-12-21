@@ -4,36 +4,65 @@ const ROLES_KEY = 'roles';
 const USER_INFO_KEY = 'userInfo';
 const SELECTED_ROLE_KEY = 'selectedRole';
 
+/**
+ * Helper function to safely access localStorage
+ */
+function safeLocalStorage(): Storage | null {
+  return typeof window !== 'undefined' ? window.localStorage : null;
+}
+
+/**
+ * Helper function to get item from localStorage
+ */
+function getItem(key: string): string | null {
+  const storage = safeLocalStorage();
+  return storage ? storage.getItem(key) : null;
+}
+
+/**
+ * Helper function to set item in localStorage
+ */
+function setItem(key: string, value: string): void {
+  const storage = safeLocalStorage();
+  if (storage) {
+    storage.setItem(key, value);
+  }
+}
+
+/**
+ * Helper function to remove item from localStorage
+ */
+function removeItem(key: string): void {
+  const storage = safeLocalStorage();
+  if (storage) {
+    storage.removeItem(key);
+  }
+}
+
 export const tokenManager = {
   getToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem(TOKEN_KEY);
+    return getItem(TOKEN_KEY);
   },
 
   setToken(token: string): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(TOKEN_KEY, token);
+    setItem(TOKEN_KEY, token);
   },
 
   removeToken(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(TOKEN_KEY);
+    removeItem(TOKEN_KEY);
   },
 
   getRoles(): string[] {
-    if (typeof window === 'undefined') return [];
-    const roles = localStorage.getItem(ROLES_KEY);
+    const roles = getItem(ROLES_KEY);
     return roles ? JSON.parse(roles) : [];
   },
 
   setRoles(roles: string[]): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
+    setItem(ROLES_KEY, JSON.stringify(roles));
   },
 
   removeRoles(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(ROLES_KEY);
+    removeItem(ROLES_KEY);
   },
 
   getUserInfo(): {
@@ -43,8 +72,7 @@ export const tokenManager = {
     fullName: string;
     imageAccountUrl?: string;
   } | null {
-    if (typeof window === 'undefined') return null;
-    const userInfo = localStorage.getItem(USER_INFO_KEY);
+    const userInfo = getItem(USER_INFO_KEY);
     return userInfo ? JSON.parse(userInfo) : null;
   },
 
@@ -55,28 +83,23 @@ export const tokenManager = {
     fullName: string;
     imageAccountUrl?: string;
   }): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
+    setItem(USER_INFO_KEY, JSON.stringify(userInfo));
   },
 
   removeUserInfo(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(USER_INFO_KEY);
+    removeItem(USER_INFO_KEY);
   },
 
   getSelectedRole(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem(SELECTED_ROLE_KEY);
+    return getItem(SELECTED_ROLE_KEY);
   },
 
   setSelectedRole(role: string): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(SELECTED_ROLE_KEY, role);
+    setItem(SELECTED_ROLE_KEY, role);
   },
 
   removeSelectedRole(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(SELECTED_ROLE_KEY);
+    removeItem(SELECTED_ROLE_KEY);
   },
 
   clear(): void {

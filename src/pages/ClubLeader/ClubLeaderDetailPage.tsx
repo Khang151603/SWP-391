@@ -7,7 +7,7 @@ import type {
   UpdateLeaderClubRequest,
   LeaderClubListItem,
 } from '../../api/types/club.types';
-import { showErrorToast, showSuccessToast } from '../../utils/toast';
+import { showSuccessToast } from '../../utils/toast';
 
 type ClubProfile = {
   id: string;
@@ -153,7 +153,6 @@ function ClubLeaderDetailPage() {
       } catch {
         const message = 'Không thể tải thông tin CLB. Vui lòng thử lại sau.';
         setError(message);
-        showErrorToast(message);
       } finally {
         setIsLoading(false);
       }
@@ -234,7 +233,6 @@ function ClubLeaderDetailPage() {
     if (!formData.name || !formData.description) {
       const message = 'Tên và mô tả CLB là bắt buộc';
       setError(message);
-      showErrorToast(message);
       return;
     }
 
@@ -287,7 +285,6 @@ function ClubLeaderDetailPage() {
       console.error('Error details:', err);
       const message = 'Không thể cập nhật thông tin CLB. Vui lòng thử lại sau.';
       setError(message);
-      showErrorToast(message);
     } finally {
       setIsLoading(false);
     }
@@ -310,7 +307,6 @@ function ClubLeaderDetailPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không thể upload ảnh';
       setError(message);
-      showErrorToast(message);
     } finally {
       setIsUploadingImage(false);
     }
@@ -322,13 +318,11 @@ function ClubLeaderDetailPage() {
       if (!file.type.startsWith('image/')) {
         const message = 'Vui lòng chọn file ảnh (jpg, png, gif, ...)';
         setError(message);
-        showErrorToast(message);
         return;
       }
       if (file.size > 5 * 1024 * 1024) {
         const message = 'Kích thước ảnh không được vượt quá 5MB';
         setError(message);
-        showErrorToast(message);
         return;
       }
       setSelectedImageFile(file);
