@@ -43,15 +43,17 @@ export interface MembershipPaymentRequest {
 // Student Payment Types
 export interface StudentPaidPayment {
   id: number;
-  membershipId: number;
-  clubId: number;
+  membershipId?: number;
+  clubId?: number;
   clubName: string;
   amount: number;
   paidDate: string | null;
   method: string | null;
   status: string;
-  orderCode: number | null;
+  orderCode?: number | null;
   description: string | null;
+  fullName?: string;
+  email?: string;
 }
 
 export interface StudentDebt {

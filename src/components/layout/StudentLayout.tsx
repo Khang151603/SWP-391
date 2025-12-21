@@ -229,6 +229,13 @@ function StudentLayout({
                       <Icons.User />
                       <span>Thông tin cá nhân</span>
                     </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => navigate('/student/payment-history')}
+                      className="cursor-pointer"
+                    >
+                      <Icons.Payment />
+                      <span>Lịch sử giao dịch</span>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem 
                       onClick={handleLogout} 

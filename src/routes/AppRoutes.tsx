@@ -21,6 +21,7 @@ const StudentExploreDetailPage = lazy(() => import('../pages/Student/StudentExpl
 const StudentBecomeLeaderPage = lazy(() => import('../pages/Student/StudentBecomeLeaderPage'));
 const StudentMembershipRequestsPage = lazy(() => import('../pages/Student/StudentMembershipRequestsPage'));
 const StudentProfilePage = lazy(() => import('../pages/Student/StudentProfilePage'));
+const StudentPaymentHistoryPage = lazy(() => import('../pages/Student/StudentPaymentHistoryPage'));
 
 function AppRoutes() {
   return (
@@ -116,6 +117,14 @@ function AppRoutes() {
           element={
             <ProtectedRoute requiredRole="student">
               <StudentProfilePage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/student/payment-history" 
+          element={
+            <ProtectedRoute requiredRole="student">
+              <StudentPaymentHistoryPage />
             </ProtectedRoute>
           } 
         />
