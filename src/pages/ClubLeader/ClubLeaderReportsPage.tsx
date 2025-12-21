@@ -153,43 +153,97 @@ function ClubLeaderReportsPage() {
   const handleExportCsv = () => {
     if (!reports.length) return;
 
-    const escapeCsvValue = (value: any): string => {
-      if (value === null || value === undefined) return '""';
+    const escapeHtml = (value: any): string => {
+      if (value === null || value === undefined) return '';
       const str = String(value);
-      // Escape quotes and wrap in quotes
-      return `"${str.replace(/"/g, '""')}"`;
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     };
 
-    const header = [
-      'ClubId',
-      'Tên CLB',
-      'Thành viên tổng',
-      'Thành viên active',
-      'Hoạt động tổng',
-      'Tổng thu (đ)',
-    ];
+    const formatCurrency = (value: number) =>
+      value.toLocaleString('vi-VN', {
+        style: 'currency',
+        currency: 'VND',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      });
 
-    const rows = reports.map(r => [
-      escapeCsvValue(r.club.clubId),
-      escapeCsvValue(r.club.clubName),
-      escapeCsvValue(r.statistics.totalMembers),
-      escapeCsvValue(r.statistics.activeMembers),
-      escapeCsvValue(r.statistics.totalActivities),
-      escapeCsvValue(r.statistics.totalIncome),
-    ]);
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+    th {
+      background-color: #4472C4;
+      color: white;
+      font-weight: bold;
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    tr:hover {
+      background-color: #e6f2ff;
+    }
+  </style>
+</head>
+<body>
+  <table>
+    <thead>
+      <tr>
+        <th>ClubId</th>
+        <th>Tên CLB</th>
+        <th>Thành viên tổng</th>
+        <th>Thành viên active</th>
+        <th>Hoạt động tổng</th>
+        <th>Tổng thu (đ)</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${reports
+        .map(
+          r => `
+      <tr>
+        <td>${escapeHtml(r.club.clubId)}</td>
+        <td>${escapeHtml(r.club.clubName)}</td>
+        <td>${escapeHtml(r.statistics.totalMembers)}</td>
+        <td>${escapeHtml(r.statistics.activeMembers)}</td>
+        <td>${escapeHtml(r.statistics.totalActivities)}</td>
+        <td>${escapeHtml(formatCurrency(Number(r.statistics.totalIncome || 0)))}</td>
+      </tr>
+      `
+        )
+        .join('')}
+    </tbody>
+  </table>
+</body>
+</html>`;
 
-    // Add BOM for UTF-8 encoding (Excel compatibility)
-    const csvContent =
-      '\uFEFF' +
-      [header.map(escapeCsvValue).join(','), ...rows.map(r => r.join(','))].join('\r\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute(
       'download',
-      `club_reports_${new Date().toISOString().slice(0, 10)}.csv`
+      `club_reports_${new Date().toISOString().slice(0, 10)}.xls`
     );
     document.body.appendChild(link);
     link.click();
@@ -200,11 +254,15 @@ function ClubLeaderReportsPage() {
   const handleExportClubActivitiesCsv = () => {
     if (!selectedReport) return;
 
-    const escapeCsvValue = (value: any): string => {
-      if (value === null || value === undefined) return '""';
+    const escapeHtml = (value: any): string => {
+      if (value === null || value === undefined) return '';
       const str = String(value);
-      // Escape quotes and wrap in quotes
-      return `"${str.replace(/"/g, '""')}"`;
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     };
 
     const getStatusLabel = (status: string): string => {
@@ -229,40 +287,85 @@ function ClubLeaderReportsPage() {
       return statusMap[statusLower] || status;
     };
 
-    const header = [
-      'ActivityId',
-      'Tiêu đề',
-      'Thời gian bắt đầu',
-      'Địa điểm',
-      'Số người tham gia',
-      'Trạng thái',
-    ];
+    const formatDateTime = (dateTime: string) => {
+      if (!dateTime) return '';
+      const date = new Date(dateTime);
+      return date.toLocaleString('vi-VN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    };
 
-    const rows = filteredActivities.map(a => [
-      escapeCsvValue(a.activityId),
-      escapeCsvValue(a.title),
-      escapeCsvValue(
-        a.startTime
-          ? new Date(a.startTime).toLocaleString('vi-VN', {
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit',
-              hour: '2-digit',
-              minute: '2-digit',
-            })
-          : ''
-      ),
-      escapeCsvValue(a.location || ''),
-      escapeCsvValue(a.participants || 0),
-      escapeCsvValue(getStatusLabel(a.status || '')),
-    ]);
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+    }
+    th {
+      background-color: #4472C4;
+      color: white;
+      font-weight: bold;
+      padding: 8px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    td {
+      padding: 8px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    tr:hover {
+      background-color: #e6f2ff;
+    }
+  </style>
+</head>
+<body>
+  <h2>Danh sách hoạt động - ${escapeHtml(selectedReport.club.clubName)}</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ActivityId</th>
+        <th>Tiêu đề</th>
+        <th>Thời gian bắt đầu</th>
+        <th>Địa điểm</th>
+        <th>Số người tham gia</th>
+        <th>Trạng thái</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${filteredActivities
+        .map(
+          a => `
+      <tr>
+        <td>${escapeHtml(a.activityId)}</td>
+        <td>${escapeHtml(a.title)}</td>
+        <td>${escapeHtml(formatDateTime(a.startTime || ''))}</td>
+        <td>${escapeHtml(a.location || '')}</td>
+        <td>${escapeHtml(a.participants || 0)}</td>
+        <td>${escapeHtml(getStatusLabel(a.status || ''))}</td>
+      </tr>
+      `
+        )
+        .join('')}
+    </tbody>
+  </table>
+</body>
+</html>`;
 
-    // Add BOM for UTF-8 encoding (Excel compatibility)
-    const csvContent =
-      '\uFEFF' +
-      [header.map(escapeCsvValue).join(','), ...rows.map(r => r.join(','))].join('\r\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -270,7 +373,7 @@ function ClubLeaderReportsPage() {
       'download',
       `club_${selectedReport.club.clubId}_activities_${new Date()
         .toISOString()
-        .slice(0, 10)}.csv`
+        .slice(0, 10)}.xls`
     );
     document.body.appendChild(link);
     link.click();
@@ -418,7 +521,7 @@ function ClubLeaderReportsPage() {
               disabled={!reports.length}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:border-blue-300 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <span>Xuất tổng quan (CSV)</span>
+              <span>Xuất tổng quan (Excel)</span>
             </button>
             <button
               type="button"
@@ -426,7 +529,7 @@ function ClubLeaderReportsPage() {
               disabled={!selectedReport || !selectedReport.activities.length}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:border-emerald-300 hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <span>Xuất hoạt động CLB (CSV)</span>
+              <span>Xuất hoạt động CLB (Excel)</span>
             </button>
           </div>
         </section>
