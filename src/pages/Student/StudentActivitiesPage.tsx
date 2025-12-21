@@ -149,7 +149,6 @@ function StudentActivitiesPage() {
       } catch {
         const message = 'Không thể tải danh sách hoạt động. Vui lòng thử lại sau.';
         setError(message);
-        showErrorToast(message);
       } finally {
         setLoading(false);
       }

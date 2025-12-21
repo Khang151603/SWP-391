@@ -39,7 +39,6 @@ function ClubLeaderRequestsPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không thể tải danh sách CLB';
       setError(message);
-      showErrorToast(message);
     }
   };
 
@@ -52,7 +51,6 @@ function ClubLeaderRequestsPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không thể tải danh sách đơn đăng ký. Vui lòng thử lại sau.';
       setError(message);
-      showErrorToast(message);
     } finally {
       setIsLoading(false);
     }

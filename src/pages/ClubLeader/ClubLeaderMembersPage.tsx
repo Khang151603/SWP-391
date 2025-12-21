@@ -4,7 +4,7 @@ import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
 import type { ClubMemberDto } from '../../api/types/membership.types';
 import type { LeaderClubListItem } from '../../api/types/club.types';
-import { showErrorToast, showSuccessToast } from '../../utils/toast';
+import { showSuccessToast } from '../../utils/toast';
 
 type ActionType = 'lock' | 'unlock' | 'delete' | null;
 
@@ -189,7 +189,6 @@ function ClubLeaderMembersPage() {
       const actionName = actionType ? actionNames[actionType] : 'thực hiện hành động';
       const errorMessage = `Không thể ${actionName} thành viên. Vui lòng thử lại sau.`;
       setError(errorMessage);
-      showErrorToast(errorMessage);
     } finally {
       setIsProcessing(false);
     }

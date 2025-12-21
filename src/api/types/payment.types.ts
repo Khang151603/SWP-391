@@ -70,3 +70,15 @@ export interface StudentDebt {
   createdDate: string | null;
 }
 
+// Club Leader Payment History Types
+export interface ClubLeaderPaymentHistory {
+  clubName: string;
+  amount: number;
+  paidDate: string;
+  method: string;
+  status: string;
+  description: string;
+  fullName: string;
+  email: string;
+}
+

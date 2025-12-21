@@ -23,7 +23,6 @@ function StudentMembershipRequestsPage() {
       } catch{
         const message = 'Không thể tải danh sách yêu cầu. Vui lòng thử lại sau.';
         setError(message);
-        showErrorToast(message);
       } finally {
         setLoading(false);
       }

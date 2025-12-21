@@ -180,7 +180,6 @@ function StudentExplorePage() {
       } catch {
         const message = "Không thể tải danh sách CLB. Vui lòng thử lại sau.";
         setError(message);
-        showErrorToast(message);
       } finally {
         setLoading(false);
       }

@@ -5,7 +5,6 @@ import { membershipService } from '../../api/services/membership.service';
 import { clubService } from '../../api/services/club.service';
 import type { StudentMyClub } from '../../api/types/membership.types';
 import type { ClubListItem } from '../../api/types/club.types';
-import { showErrorToast } from '../../utils/toast';
 import {
   Dialog,
   DialogContent,
@@ -63,7 +62,6 @@ function StudentClubsPage() {
     } catch {
       const message = 'Không thể tải danh sách CLB. Vui lòng thử lại sau.';
       setError(message);
-      showErrorToast(message);
     } finally {
       setLoading(false);
     }

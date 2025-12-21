@@ -16,6 +16,7 @@ const leaderMenu = [
   { label: 'Đơn', path: '/leader/requests' },
   { label: 'Hoạt động', path: '/leader/activities' },
   { label: 'Báo cáo', path: '/leader/reports' },
+  { label: 'Lịch sử thanh toán', path: '/leader/payment-history' },
 ];
 
 function LeaderLayout({

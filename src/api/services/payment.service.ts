@@ -6,6 +6,7 @@ import type {
     MembershipPaymentRequest,
   StudentPaidPayment,
   StudentDebt,
+  ClubLeaderPaymentHistory,
 } from '../types/payment.types';
 
 /**
@@ -99,6 +100,13 @@ export const paymentService = {
    */
   async getStudentPaymentHistory(): Promise<StudentPaidPayment[]> {
     return httpClient.get<StudentPaidPayment[]>(PAYMENT_ENDPOINTS.STUDENT_HISTORY);
+  },
+
+  /**
+   * Club Leader: Get payment history for a specific club
+   */
+  async getClubPaymentHistory(clubId: number | string): Promise<ClubLeaderPaymentHistory[]> {
+    return httpClient.get<ClubLeaderPaymentHistory[]>(PAYMENT_ENDPOINTS.LEADER_CLUB_HISTORY(clubId));
   },
 };
 

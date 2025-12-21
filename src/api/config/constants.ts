@@ -59,6 +59,7 @@ export const PAYMENT_ENDPOINTS = {
   STUDENT_PAID: '/api/student/payment/paid',
   STUDENT_DEBTS: '/api/student/payment/debts',
   STUDENT_HISTORY: '/api/student/payment/history',
+  LEADER_CLUB_HISTORY: (clubId: number | string) => `/api/ClubLeaderPayment/clubs/${clubId}/history`,
 } as const;
 
 // Notification Endpoints
