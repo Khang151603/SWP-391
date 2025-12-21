@@ -5,6 +5,7 @@ import { clubService } from '../../api/services/club.service';
 import type { LeaderPendingMembershipRequest } from '../../api/types/membership.types';
 import type { LeaderClubListItem } from '../../api/types/club.types';
 import { showSuccessToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 type RequestActionType = 'approve' | 'reject' | null;
 
@@ -417,7 +418,7 @@ function ClubLeaderRequestsPage() {
                             {formatDate(request.requestDate)}
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusPill(request.status)}`}>
+                            <span className={cn('inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium', statusPill(request.status))}>
                               <span className="h-2 w-2 rounded-full bg-current opacity-70" />
                               {formatStatus(request.status)}
                             </span>
@@ -466,11 +467,12 @@ function ClubLeaderRequestsPage() {
                   <span className="font-semibold">{selectedRequest.clubName}</span>.
                 </p>
               </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+              <span className={cn(
+                'rounded-full px-3 py-1 text-xs font-semibold',
                 requestActionType === 'approve'
                   ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                   : 'bg-red-50 text-red-700 border border-red-200'
-              }`}>
+              )}>
                 {requestActionType === 'approve' ? 'Duyệt' : 'Từ chối'}
               </span>
             </div>
@@ -514,11 +516,12 @@ function ClubLeaderRequestsPage() {
               <button
                 onClick={handleSubmitRequest}
                 disabled={isProcessingRequest}
-                className={`flex-1 rounded-lg px-4 py-2 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                className={cn(
+                  'flex-1 rounded-lg px-4 py-2 font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                   requestActionType === 'approve'
                     ? 'bg-emerald-600 hover:bg-emerald-700'
                     : 'bg-red-600 hover:bg-red-700'
-                }`}
+                )}
               >
                 {isProcessingRequest
                   ? 'Đang xử lý...'

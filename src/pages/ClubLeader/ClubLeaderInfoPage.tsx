@@ -8,6 +8,7 @@ import type {
   LeaderClubListItem,
 } from '../../api/types/club.types';
 import { showSuccessToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 type ClubProfile = {
   id: string;
@@ -97,7 +98,7 @@ function ClubLeaderInfoPage() {
               // Calculate total revenue (membershipFee * active members)
               totalRevenue = (club.membershipFee || 0) * memberCount;
             } catch (error) {
-              console.error(`Failed to fetch data for club ${club.id}:`, error);
+              // Failed to fetch data for club
             }
             
             return {
@@ -363,11 +364,12 @@ function ClubLeaderInfoPage() {
                           const statusLower = (club.status || 'active').toLowerCase();
                           const isActive = statusLower === 'active';
                           return (
-                            <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 flex-shrink-0 ${
+                            <span className={cn(
+                              'inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 flex-shrink-0',
                               isActive 
-                                ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
+                                ? 'bg-emerald-50 text-emerald-700 ring-emerald-200'
                                 : 'bg-red-50 text-red-700 ring-red-200'
-                            }`}>
+                            )}>
                               {getStatusLabel(club.status)}
                             </span>
                           );

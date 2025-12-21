@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import AuthLayout from '../components/layout/AuthLayout';
 import { authService } from '../api';
 import { showErrorToast } from '../utils/toast';
+import { cn } from '../components/utils/cn';
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -118,7 +119,10 @@ function RegisterPage() {
             placeholder="babt"
             value={formData.username}
             onChange={handleChange}
-            className={`mt-2 w-full rounded-xl border ${validationErrors.username ? 'border-red-500' : 'border-slate-300'} bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+            className={cn(
+              'mt-2 w-full rounded-xl border bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200',
+              validationErrors.username ? 'border-red-500' : 'border-slate-300'
+            )}
           />
           {validationErrors.username && (
             <p className="mt-1 text-sm text-red-600">{validationErrors.username}</p>
@@ -137,7 +141,10 @@ function RegisterPage() {
             placeholder="Nguyễn Minh Khang"
             value={formData.fullName}
             onChange={handleChange}
-            className={`mt-2 w-full rounded-xl border ${validationErrors.fullName ? 'border-red-500' : 'border-slate-300'} bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+            className={cn(
+              'mt-2 w-full rounded-xl border bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200',
+              validationErrors.fullName ? 'border-red-500' : 'border-slate-300'
+            )}
           />
           {validationErrors.fullName && (
             <p className="mt-1 text-sm text-red-600">{validationErrors.fullName}</p>
@@ -156,7 +163,10 @@ function RegisterPage() {
             placeholder="string@gmail.com"
             value={formData.email}
             onChange={handleChange}
-            className={`mt-2 w-full rounded-xl border ${validationErrors.email ? 'border-red-500' : 'border-slate-300'} bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+            className={cn(
+              'mt-2 w-full rounded-xl border bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200',
+              validationErrors.email ? 'border-red-500' : 'border-slate-300'
+            )}
           />
           {validationErrors.email && (
             <p className="mt-1 text-sm text-red-600">{validationErrors.email}</p>
@@ -175,7 +185,10 @@ function RegisterPage() {
             placeholder="0987654321"
             value={formData.phone}
             onChange={handleChange}
-            className={`mt-2 w-full rounded-xl border ${validationErrors.phone ? 'border-red-500' : 'border-slate-300'} bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+            className={cn(
+              'mt-2 w-full rounded-xl border bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200',
+              validationErrors.phone ? 'border-red-500' : 'border-slate-300'
+            )}
           />
           {validationErrors.phone && (
             <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
@@ -195,7 +208,10 @@ function RegisterPage() {
               placeholder="Ít nhất 8 ký tự và chữ hoa"
               value={formData.password}
               onChange={handleChange}
-              className={`mt-2 w-full rounded-xl border ${validationErrors.password ? 'border-red-500' : 'border-slate-300'} bg-white px-4 py-3 pr-12 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200`}
+              className={cn(
+                'mt-2 w-full rounded-xl border bg-white px-4 py-3 pr-12 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200',
+                validationErrors.password ? 'border-red-500' : 'border-slate-300'
+              )}
             />
             <button
               type="button"

@@ -2,6 +2,7 @@ import { useEffect, useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tokenManager } from '../api/utils/tokenManager';
 import { useAppContext } from '../context/AppContext';
+import { normalizeRole, getRoleDisplay, getRolePath } from '../components/utils/roleUtils';
 
 function RoleSelectionPage() {
   const navigate = useNavigate();
@@ -63,15 +64,8 @@ function RoleSelectionPage() {
       });
     }
 
-    // Chuyển hướng dựa trên role (chuẩn hóa để so sánh)
-    const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
-    if (normalizedRole === 'student') {
-      navigate('/student');
-    } else if (normalizedRole === 'clubleader') {
-      navigate('/leader');
-    } else {
-      navigate('/');
-    }
+    // Chuyển hướng dựa trên role
+    navigate(getRolePath(role));
   }, [navigate, setContextRole, user, setUser]);
 
   useEffect(() => {
@@ -107,28 +101,22 @@ function RoleSelectionPage() {
     );
   }
 
-  const getRoleDisplay = (role: string): { title: string; description: string; icon: string } => {
-    const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
+  const getRoleDisplayWithDescription = (role: string): { title: string; description: string; icon: string } => {
+    const roleInfo = getRoleDisplay(role);
+    const normalizedRole = normalizeRole(role);
     
+    let description = 'Chọn vai trò này để tiếp tục';
     if (normalizedRole === 'student') {
-      return {
-        title: 'Sinh viên',
-        description: 'Tham gia các câu lạc bộ, hoạt động và quản lý thông tin cá nhân',
-        icon: '🎓'
-      };
+      description = 'Tham gia các câu lạc bộ, hoạt động và quản lý thông tin cá nhân';
     } else if (normalizedRole === 'clubleader') {
-      return {
-        title: 'Trưởng CLB',
-        description: 'Quản lý câu lạc bộ, thành viên, hoạt động và tài chính',
-        icon: '👑'
-      };
-    } else {
-      return {
-        title: role,
-        description: 'Chọn vai trò này để tiếp tục',
-        icon: '👤'
-      };
+      description = 'Quản lý câu lạc bộ, thành viên, hoạt động và tài chính';
     }
+    
+    return {
+      title: roleInfo.title,
+      description,
+      icon: roleInfo.icon,
+    };
   };
 
   return (
@@ -149,7 +137,7 @@ function RoleSelectionPage() {
           {/* Role Cards */}
           <div className="grid gap-4 md:grid-cols-2">
             {roles.map((role) => {
-              const roleInfo = getRoleDisplay(role);
+              const roleInfo = getRoleDisplayWithDescription(role);
               return (
                 <button
                   key={role}

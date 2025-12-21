@@ -5,6 +5,7 @@ import { membershipService } from '../../api/services/membership.service';
 import type { StudentActivity } from '../../api/types/activity.types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/Dialog';
 import { showSuccessToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 function StudentActivitiesPage() {
   const [activities, setActivities] = useState<StudentActivity[]>([]);
@@ -469,11 +470,12 @@ function StudentActivitiesPage() {
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                  className={cn(
+                    'rounded-lg px-3 py-1.5 text-sm font-medium transition',
                     selectedCategory === category
                       ? 'bg-blue-600 text-white shadow-md hover:bg-blue-700'
                       : 'border border-slate-300 bg-white text-slate-700 hover:border-blue-300 hover:bg-blue-50'
-                  }`}
+                  )}
                 >
                   {category}
                 </button>
@@ -555,9 +557,14 @@ function StudentActivitiesPage() {
                       {/* Status badge on image */}
                       <div className="absolute right-3 top-3">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-lg backdrop-blur-sm ${statusConfig.bgColor} ${statusConfig.borderColor} ${statusConfig.textColor}`}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-lg backdrop-blur-sm',
+                            statusConfig.bgColor,
+                            statusConfig.borderColor,
+                            statusConfig.textColor
+                          )}
                         >
-                          <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor} ${canJoin ? 'animate-pulse' : ''}`}></div>
+                          <div className={cn('h-1.5 w-1.5 rounded-full', statusConfig.dotColor, canJoin && 'animate-pulse')}></div>
                           {statusConfig.label}
                         </span>
                       </div>
@@ -587,9 +594,14 @@ function StudentActivitiesPage() {
                       {/* Status badge */}
                       <div className="absolute right-3 top-3">
                         <span
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm ${statusConfig.bgColor} ${statusConfig.borderColor} ${statusConfig.textColor}`}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold shadow-sm',
+                            statusConfig.bgColor,
+                            statusConfig.borderColor,
+                            statusConfig.textColor
+                          )}
                         >
-                          <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor} ${canJoin ? 'animate-pulse' : ''}`}></div>
+                          <div className={cn('h-1.5 w-1.5 rounded-full', statusConfig.dotColor, canJoin && 'animate-pulse')}></div>
                           {statusConfig.label}
                         </span>
                       </div>
@@ -701,7 +713,8 @@ function StudentActivitiesPage() {
                       <button
                         onClick={() => handleJoinActivity(activity.id)}
                         disabled={!canJoin && !activity.isRegistered && isFull}
-                        className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                        className={cn(
+                          'w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all',
                           activity.isRegistered
                             ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer'
                             : canJoin
@@ -709,7 +722,7 @@ function StudentActivitiesPage() {
                               : isFull
                                 ? 'bg-amber-100 text-amber-700 cursor-not-allowed'
                                 : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                        }`}
+                        )}
                       >
                         {activity.isRegistered
                           ? 'Đã đăng ký'
@@ -756,9 +769,14 @@ function StudentActivitiesPage() {
                   const statusConfig = getStatusConfig(selectedActivity.status);
                   return (
                     <span
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${statusConfig.bgColor} ${statusConfig.borderColor} ${statusConfig.textColor}`}
+                      className={cn(
+                        'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold',
+                        statusConfig.bgColor,
+                        statusConfig.borderColor,
+                        statusConfig.textColor
+                      )}
                     >
-                      <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor}`}></div>
+                      <div className={cn('h-1.5 w-1.5 rounded-full', statusConfig.dotColor)}></div>
                       {statusConfig.label}
                     </span>
                   );
@@ -882,7 +900,8 @@ function StudentActivitiesPage() {
                         setSelectedActivity(null);
                       }}
                       disabled={!canJoin && !selectedActivity.isRegistered && isFull}
-                      className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all ${
+                      className={cn(
+                        'flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all',
                         selectedActivity.isRegistered
                           ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 cursor-pointer'
                           : canJoin
@@ -890,7 +909,7 @@ function StudentActivitiesPage() {
                             : isFull
                               ? 'bg-amber-100 text-amber-700 cursor-not-allowed'
                               : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-                      }`}
+                      )}
                     >
                       {selectedActivity.isRegistered
                         ? 'Đã đăng ký'

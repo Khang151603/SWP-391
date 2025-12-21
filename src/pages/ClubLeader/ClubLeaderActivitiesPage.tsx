@@ -5,6 +5,7 @@ import type { Activity, CreateActivityRequest, UpdateActivityRequest, ActivityPa
 import { clubService } from '../../api/services/club.service';
 import type { LeaderClubListItem } from '../../api/types/club.types';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 function ClubLeaderActivitiesPage() {
   const [clubs, setClubs] = useState<LeaderClubListItem[]>([]);
@@ -301,7 +302,6 @@ function ClubLeaderActivitiesPage() {
           await activityService.uploadImage(newActivity.id, selectedImage);
           showSuccessToast('Tạo hoạt động và tải ảnh lên thành công');
         } catch (error) {
-          console.error('Failed to upload image:', error);
           showErrorToast('Tạo hoạt động thành công nhưng không thể tải ảnh lên');
         }
       } else {
@@ -326,7 +326,6 @@ function ClubLeaderActivitiesPage() {
       }
       setShowCreateModal(false);
     } catch (error: any) {
-      console.error('Failed to create activity:', error);
       const errorMessage = error?.response?.data?.message || error?.message || 'Không thể tạo hoạt động mới. Vui lòng thử lại sau.';
       if (errorMessage.includes('locked') || errorMessage.includes('khóa')) {
         showErrorToast('CLB này đã bị khóa. Bạn không thể tạo hoạt động mới.');
@@ -569,7 +568,7 @@ function ClubLeaderActivitiesPage() {
                     key={act.id}
                     className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ring-transparent transition hover:-translate-y-0.5 hover:shadow-lg hover:ring-blue-100"
                   >
-                    <span className={`absolute left-4 top-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold ring-1 ${badgeStyle}`}>
+                    <span className={cn('absolute left-4 top-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold ring-1', badgeStyle)}>
                       {statusVietnamese}
                     </span>
 

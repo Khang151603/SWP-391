@@ -6,6 +6,7 @@ import { useAppContext } from '../../context/AppContext';
 import { httpClient } from '../../api/config/client';
 import { USER_ENDPOINTS } from '../../api/config/constants';
 import { showErrorToast, showSuccessToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 function StudentProfilePage() {
   const { user, updateUser } = useAppContext();
@@ -292,9 +293,10 @@ function StudentProfilePage() {
                 value={formData.fullName}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className={`mt-2 w-full rounded-xl border ${
+                className={cn(
+                  'mt-2 w-full rounded-xl border px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:text-slate-500',
                   isEditing ? 'border-slate-300 bg-white' : 'border-slate-200 bg-slate-50'
-                } px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:text-slate-500`}
+                )}
                 placeholder="Nguyễn Văn A"
               />
             </div>
@@ -311,9 +313,10 @@ function StudentProfilePage() {
                 value={formData.email}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className={`mt-2 w-full rounded-xl border ${
+                className={cn(
+                  'mt-2 w-full rounded-xl border px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:text-slate-500',
                   isEditing ? 'border-slate-300 bg-white' : 'border-slate-200 bg-slate-50'
-                } px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:text-slate-500`}
+                )}
                 placeholder="example@email.com"
               />
             </div>
@@ -330,9 +333,10 @@ function StudentProfilePage() {
                 value={formData.phone}
                 onChange={handleChange}
                 disabled={!isEditing}
-                className={`mt-2 w-full rounded-xl border ${
+                className={cn(
+                  'mt-2 w-full rounded-xl border px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:text-slate-500',
                   isEditing ? 'border-slate-300 bg-white' : 'border-slate-200 bg-slate-50'
-                } px-4 py-3 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:cursor-not-allowed disabled:text-slate-500`}
+                )}
                 placeholder="0987654321"
               />
             </div>

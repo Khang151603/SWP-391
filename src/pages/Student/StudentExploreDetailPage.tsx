@@ -7,6 +7,7 @@ import { membershipService } from '../../api/services/membership.service';
 import type { ClubListItem } from '../../api/types/club.types';
 import { handleApiError } from '../../api/utils/errorHandler';
 import { showSuccessToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 function StudentExploreDetailPage() {
   const { clubId } = useParams();
@@ -42,7 +43,7 @@ function StudentExploreDetailPage() {
           const isAlreadyMember = myClubs.some(item => item.club.id === parseInt(clubId));
           setIsMember(isAlreadyMember);
         } catch (err) {
-          console.error('Failed to check membership:', err);
+          // Failed to check membership
         }
       } catch (err) {
         setError('Không thể tải thông tin câu lạc bộ. Vui lòng thử lại sau.');
@@ -77,7 +78,6 @@ function StudentExploreDetailPage() {
       showSuccessToast('Gửi yêu cầu tham gia CLB thành công!');
       navigate('/student/explore');
     } catch (err) {
-      console.error('Failed to register:', err);
       setIsRegistering(false);
       handleApiError(err);
     }
@@ -135,11 +135,12 @@ function StudentExploreDetailPage() {
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div className="flex-1">
               <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className={`rounded-full border px-3 py-1 text-xs font-medium ${
+                <span className={cn(
+                  'rounded-full border px-3 py-1 text-xs font-medium',
                   club.status === 'Active' 
                     ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-200'
                     : 'border-slate-500/30 bg-slate-500/10 text-slate-200'
-                }`}>
+                )}>
                   {club.status === 'Active' ? 'Đang hoạt động' : 'Tạm dừng'}
                 </span>
               </div>

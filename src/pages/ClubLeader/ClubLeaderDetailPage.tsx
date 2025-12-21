@@ -8,6 +8,7 @@ import type {
   LeaderClubListItem,
 } from '../../api/types/club.types';
 import { showSuccessToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 type ClubProfile = {
   id: string;
@@ -129,7 +130,7 @@ function ClubLeaderDetailPage() {
           ).length;
           totalRevenue = (club.membershipFee || 0) * memberCount;
         } catch (error) {
-          console.error(`Failed to fetch data for club ${club.id}:`, error);
+          // Failed to fetch data for club
         }
         
         const clubProfile: ClubProfile = {
@@ -220,7 +221,7 @@ function ClubLeaderDetailPage() {
             setFormData(clubProfile);
           }
         } catch (error) {
-          console.error('Failed to reload club data:', error);
+          // Failed to reload club data
         }
       };
       loadClub();
@@ -281,8 +282,6 @@ function ClubLeaderDetailPage() {
       
       showSuccessToast('Cập nhật thông tin CLB thành công!');
     } catch (err) {
-      console.error('=== UPDATE FAILED ===');
-      console.error('Error details:', err);
       const message = 'Không thể cập nhật thông tin CLB. Vui lòng thử lại sau.';
       setError(message);
     } finally {
@@ -430,12 +429,13 @@ function ClubLeaderDetailPage() {
                         const statusLower = (formData.status || 'active').toLowerCase();
                         const isActive = statusLower === 'active';
                         return (
-                          <span className={`inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold shadow-xl backdrop-blur-md border-2 ${
+                          <span className={cn(
+                            'inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-xs font-bold shadow-xl backdrop-blur-md border-2',
                             isActive 
                               ? 'bg-emerald-500/95 text-white border-emerald-300/50' 
                               : 'bg-red-500/95 text-white border-red-300/50'
-                          }`}>
-                            <span className={`h-2.5 w-2.5 rounded-full animate-pulse ${isActive ? 'bg-emerald-200' : 'bg-red-200'}`}></span>
+                          )}>
+                            <span className={cn('h-2.5 w-2.5 rounded-full animate-pulse', isActive ? 'bg-emerald-200' : 'bg-red-200')}></span>
                             {getStatusLabel(formData.status)}
                           </span>
                         );
@@ -798,12 +798,13 @@ function ClubLeaderDetailPage() {
                         const statusLower = (formData.status || 'active').toLowerCase();
                         const isActive = statusLower === 'active';
                         return (
-                          <span className={`inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold ${
+                          <span className={cn(
+                            'inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-bold',
                             isActive 
                               ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-200' 
                               : 'bg-red-100 text-red-700 ring-2 ring-red-200'
-                          }`}>
-                            <span className={`h-2.5 w-2.5 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-red-500'}`}></span>
+                          )}>
+                            <span className={cn('h-2.5 w-2.5 rounded-full', isActive ? 'bg-emerald-500' : 'bg-red-500')}></span>
                             {getStatusLabel(formData.status)}
                           </span>
                         );

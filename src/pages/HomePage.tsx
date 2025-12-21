@@ -4,6 +4,7 @@ import { clubService } from '../api/services/club.service';
 import { useAppContext } from '../context/AppContext';
 import type { ClubListItem } from '../api/types/club.types';
 import { showErrorToast } from '../utils/toast';
+import { cn } from '../components/utils/cn';
 
 function HomePage() {
   const navigate = useNavigate();
@@ -21,7 +22,6 @@ function HomePage() {
         setClubs(data);
       } catch (err) {
         showErrorToast(err instanceof Error ? err.message : 'Không thể tải danh sách câu lạc bộ');
-        console.error('Error fetching clubs:', err);
       } finally {
         setLoading(false);
       }
@@ -50,11 +50,12 @@ function HomePage() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       {/* Modern Sticky Header */}
       <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={cn(
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
           isScrolled 
             ? 'bg-white/95 backdrop-blur-md shadow-lg border-b border-slate-200/50' 
             : 'bg-white/80 backdrop-blur-sm'
-        }`}
+        )}
       >
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between">

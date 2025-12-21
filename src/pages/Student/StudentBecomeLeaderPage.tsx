@@ -7,6 +7,7 @@ import { handleApiError, ApiError } from '../../api/utils/errorHandler';
 import { useAppContext } from '../../context/AppContext';
 import type { LeaderRequest } from '../../api/types/club.types';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 // Form field configuration - theo API backend mới
 const formFields = [
@@ -431,7 +432,7 @@ function StudentBecomeLeaderPage() {
                               <Icons.Clock />
                               <span className="font-medium">{formattedDate}</span>
                             </div>
-                            <span className={`inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold ${config.bgColor} ${config.textColor}`}>
+                            <span className={cn('inline-flex rounded-full border px-3 py-1.5 text-xs font-semibold', config.bgColor, config.textColor)}>
                               {config.label}
                             </span>
                           </div>
@@ -482,11 +483,12 @@ function StudentBecomeLeaderPage() {
                       return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
                     })()}
                   </span>
-                  <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${
+                  <span className={cn(
+                    'inline-flex rounded-full border px-3 py-1 text-xs font-medium',
                     selectedRequest.status === 'pending' ? 'bg-yellow-100 border-yellow-300 text-yellow-800' :
                     selectedRequest.status === 'approved' ? 'bg-emerald-100 border-emerald-300 text-emerald-800' :
                     'bg-red-100 border-red-300 text-red-800'
-                  }`}>
+                  )}>
                     {selectedRequest.status === 'pending' ? 'Đang chờ' :
                      selectedRequest.status === 'approved' ? 'Đã duyệt' : 'Đã từ chối'}
                   </span>

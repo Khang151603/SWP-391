@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import LeaderLayout from '../../components/layout/LeaderLayout';
 import { reportService } from '../../api/services/report.service';
 import type { ClubReport } from '../../api/types/report.types';
+import { cn } from '../../components/utils/cn';
 
 type ViewMode = 'summary' | 'activities';
 type TimeFilter = 'all' | '30d' | '90d' | '365d';
@@ -305,22 +306,24 @@ function ClubLeaderReportsPage() {
               <button
                 type="button"
                 onClick={() => setViewMode('summary')}
-                className={`rounded-full px-3 py-1.5 ${
+                className={cn(
+                  'rounded-full px-3 py-1.5',
                   viewMode === 'summary'
                     ? 'bg-blue-600 text-white'
                     : 'text-slate-700 hover:bg-slate-100'
-                }`}
+                )}
               >
                 Tổng quan
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('activities')}
-                className={`rounded-full px-3 py-1.5 ${
+                className={cn(
+                  'rounded-full px-3 py-1.5',
                   viewMode === 'activities'
                     ? 'bg-blue-600 text-white'
                     : 'text-slate-700 hover:bg-slate-100'
-                }`}
+                )}
               >
                 Hoạt động
               </button>

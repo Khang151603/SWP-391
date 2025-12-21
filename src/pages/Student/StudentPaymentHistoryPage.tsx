@@ -3,6 +3,7 @@ import StudentLayout from '../../components/layout/StudentLayout';
 import { paymentService } from '../../api/services/payment.service';
 import type { StudentPaidPayment } from '../../api/types/payment.types';
 import { showErrorToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 function StudentPaymentHistoryPage() {
   const [payments, setPayments] = useState<StudentPaidPayment[]>([]);
@@ -166,31 +167,34 @@ function StudentPaymentHistoryPage() {
         <div className="mb-6 flex gap-2 border-b border-slate-200">
           <button
             onClick={() => setFilterStatus('all')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className={cn(
+              'px-4 py-2 text-sm font-medium transition-colors',
               filterStatus === 'all'
                 ? 'border-b-2 border-blue-600 text-blue-600'
                 : 'text-slate-600 hover:text-slate-900'
-            }`}
+            )}
           >
             Tất cả ({payments.length})
           </button>
           <button
             onClick={() => setFilterStatus('paid')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className={cn(
+              'px-4 py-2 text-sm font-medium transition-colors',
               filterStatus === 'paid'
                 ? 'border-b-2 border-green-600 text-green-600'
                 : 'text-slate-600 hover:text-slate-900'
-            }`}
+            )}
           >
             Đã thanh toán ({stats.paid})
           </button>
           <button
             onClick={() => setFilterStatus('pending')}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
+            className={cn(
+              'px-4 py-2 text-sm font-medium transition-colors',
               filterStatus === 'pending'
                 ? 'border-b-2 border-yellow-600 text-yellow-600'
                 : 'text-slate-600 hover:text-slate-900'
-            }`}
+            )}
           >
             Đang chờ ({stats.pending})
           </button>

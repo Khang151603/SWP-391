@@ -6,6 +6,7 @@ import { clubService } from "../../api/services/club.service";
 import { membershipService } from "../../api/services/membership.service";
 import type { ClubListItem } from "../../api/types/club.types";
 import { showErrorToast, showSuccessToast } from "../../utils/toast";
+import { cn } from "../../components/utils/cn";
 
 // Extended club type for UI display
 interface DisplayClub {
@@ -65,8 +66,6 @@ function StudentExplorePage() {
   const [showPendingPaymentAlert, setShowPendingPaymentAlert] = useState(false);
   const [pendingPaymentClubName, setPendingPaymentClubName] = useState("");
 
-  // Debug: Log when component renders
-  console.log("StudentExplorePage render - showMemberAlert:", showMemberAlert);
 
   // Registration form data
   const [formData, setFormData] = useState({
@@ -93,7 +92,7 @@ function StudentExplorePage() {
         const clubIds = myClubs.map((item) => item.club.id);
         setMyClubIds(clubIds);
       } catch (error) {
-        console.error("Failed to fetch my clubs:", error);
+        // Failed to fetch my clubs
       }
     };
     fetchMyClubs();
@@ -112,7 +111,7 @@ function StudentExplorePage() {
           amount: req.amount,
         })));
       } catch (error) {
-        console.error("Failed to fetch membership requests:", error);
+        // Failed to fetch membership requests
       }
     };
     fetchMembershipRequests();
@@ -131,7 +130,7 @@ function StudentExplorePage() {
           phone: accountInfo.phone || "",
         }));
       } catch (error) {
-        console.error("Failed to fetch account info:", error);
+        // Failed to fetch account info
       }
     };
     fetchAccountInfo();
@@ -263,14 +262,6 @@ function StudentExplorePage() {
 
     // Check if already a member
     const clubId = parseInt(club.id);
-    console.log(
-      "handleRegister called for club:",
-      club.name,
-      "clubId:",
-      clubId
-    );
-    console.log("myClubIds:", myClubIds);
-    console.log("Is member?", myClubIds.includes(clubId));
 
     if (myClubIds.includes(clubId)) {
       setAttemptedClubName(club.name);
@@ -450,21 +441,23 @@ function StudentExplorePage() {
                 <div className="inline-flex rounded-full border border-slate-300 bg-white p-1 text-xs text-slate-700">
                   <button
                     onClick={() => setViewMode("grid")}
-                    className={`rounded-full px-3 py-1.5 transition ${
+                    className={cn(
+                      "rounded-full px-3 py-1.5 transition",
                       viewMode === "grid"
                         ? "bg-blue-600 text-white"
                         : "hover:bg-slate-100"
-                    }`}
+                    )}
                   >
                     Lưới
                   </button>
                   <button
                     onClick={() => setViewMode("list")}
-                    className={`rounded-full px-3 py-1.5 transition ${
+                    className={cn(
+                      "rounded-full px-3 py-1.5 transition",
                       viewMode === "list"
                         ? "bg-blue-600 text-white"
                         : "hover:bg-slate-100"
-                    }`}
+                    )}
                   >
                     Danh sách
                   </button>
@@ -630,8 +623,7 @@ function StudentExplorePage() {
                               totalRevenue: detailedClub.totalRevenue ?? club.totalRevenue,
                             });
                           } catch (error) {
-                            console.error("Failed to fetch club details:", error);
-                            // Keep the basic info if fetch fails
+                            // Failed to fetch club details, keep the basic info if fetch fails
                           } finally {
                             setLoadingDetails(false);
                           }

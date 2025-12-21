@@ -4,6 +4,7 @@ import AuthLayout from '../components/layout/AuthLayout';
 import { authService } from '../api';
 import { useAppContext } from '../context/AppContext';
 import { showErrorToast, showSuccessToast } from '../utils/toast';
+import { getRolePath } from '../components/utils/roleUtils';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -63,19 +64,12 @@ function LoginPage() {
       } else {
         // Nếu chỉ có 1 role, tự động chọn và chuyển hướng
         const role = response.roles[0];
-        const normalizedRole = role.toLowerCase().replace(/\s+/g, '');
         
         // Lưu role gốc từ API
         authService.setSelectedRole(role);
         
-        // Chuyển hướng dựa trên role đã chuẩn hóa
-        if (normalizedRole === 'student') {
-          navigate('/student');
-        } else if (normalizedRole === 'clubleader') {
-          navigate('/leader');
-        } else {
-          navigate('/');
-        }
+        // Chuyển hướng dựa trên role
+        navigate(getRolePath(role));
       }
     } catch (err: any) {
       // Hiển thị thông báo lỗi thân thiện cho người dùng

@@ -3,6 +3,7 @@ import StudentLayout from '../../components/layout/StudentLayout';
 import { activityService } from '../../api/services/activity.service';
 import { clubService } from '../../api/services/club.service';
 import type { StudentActivity } from '../../api/types/activity.types';
+import { cn } from '../../components/utils/cn';
 
 interface MyActivity extends StudentActivity {
   clubName?: string;
@@ -265,8 +266,8 @@ function StudentMyActivitiesPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex flex-1 flex-col gap-3">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusConfig.color}`}>
-                          <div className={`h-1.5 w-1.5 rounded-full ${statusConfig.dotColor}`}></div>
+                        <span className={cn('inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium', statusConfig.color)}>
+                          <div className={cn('h-1.5 w-1.5 rounded-full', statusConfig.dotColor)}></div>
                           {statusConfig.label}
                         </span>
                         {activity.attended && (

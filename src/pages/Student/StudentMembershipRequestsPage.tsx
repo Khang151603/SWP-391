@@ -3,6 +3,7 @@ import StudentLayout from '../../components/layout/StudentLayout';
 import { membershipService } from '../../api/services/membership.service';
 import { paymentService } from '../../api/services/payment.service';
 import type { StudentMembershipRequestResponse } from '../../api/types/membership.types';
+import { cn } from '../../components/utils/cn';
 
 function StudentMembershipRequestsPage() {
   const [membershipRequests, setMembershipRequests] = useState<StudentMembershipRequestResponse[]>([]);
@@ -152,7 +153,6 @@ function StudentMembershipRequestsPage() {
         );
       }
     } catch (err) {
-      console.error('Error creating payment:', err);
       const message = 'Không thể tạo link thanh toán. Vui lòng thử lại sau.';
       setPaymentError(message);
       setProcessingPayment(null);
@@ -269,7 +269,7 @@ function StudentMembershipRequestsPage() {
                           <div className="text-sm font-semibold text-slate-900">{request.clubName}</div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
-                          <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(request)}`}>
+                          <span className={cn('inline-flex rounded-full border px-3 py-1 text-xs font-medium', getStatusColor(request))}>
                             {getStatusLabel(request)}
                           </span>
                         </td>
@@ -404,7 +404,7 @@ function StudentMembershipRequestsPage() {
               <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Trạng thái</span>
-                  <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-medium ${getStatusColor(selectedRequest)}`}>
+                  <span className={cn('inline-flex rounded-full border px-3 py-1 text-xs font-medium', getStatusColor(selectedRequest))}>
                     {getStatusLabel(selectedRequest)}
                   </span>
                 </div>

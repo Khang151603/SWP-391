@@ -13,6 +13,7 @@ import {
   DialogDescription,
   DialogClose,
 } from '../../components/ui/Dialog';
+import { cn } from '../../components/utils/cn';
 
 interface ClubWithDetails extends StudentMyClub {
   clubDetails?: ClubListItem;
@@ -140,7 +141,7 @@ function StudentClubsPage() {
             title="Làm mới danh sách CLB"
           >
             <svg 
-              className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} 
+              className={cn('h-4 w-4', loading && 'animate-spin')} 
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
@@ -263,13 +264,14 @@ function StudentClubsPage() {
                     {/* Status Badge */}
                     {item.membership.status && (
                       <div className="absolute right-2 top-2 z-10">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1 ${
+                        <span className={cn(
+                          'inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1',
                           item.membership.status.toLowerCase() === 'active' 
                             ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
                             : item.membership.status.toLowerCase() === 'pending_payment'
                             ? 'bg-amber-50 text-amber-700 ring-amber-200'
                             : 'bg-slate-50 text-slate-700 ring-slate-200'
-                        }`}>
+                        )}>
                           {item.membership.status.toLowerCase() === 'active' 
                             ? 'Đang hoạt động' 
                             : item.membership.status.toLowerCase() === 'pending_payment'
@@ -392,13 +394,14 @@ function StudentClubsPage() {
                     {/* Status Badge */}
                     {selectedClub.membership.status && (
                       <div className="absolute right-3 top-3 z-10">
-                        <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1 ${
+                        <span className={cn(
+                          'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1',
                           selectedClub.membership.status.toLowerCase() === 'active' 
                             ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' 
                             : selectedClub.membership.status.toLowerCase() === 'pending_payment'
                             ? 'bg-amber-50 text-amber-700 ring-amber-200'
                             : 'bg-slate-50 text-slate-700 ring-slate-200'
-                        }`}>
+                        )}>
                           {selectedClub.membership.status.toLowerCase() === 'active' 
                             ? 'Đang hoạt động' 
                             : selectedClub.membership.status.toLowerCase() === 'pending_payment'

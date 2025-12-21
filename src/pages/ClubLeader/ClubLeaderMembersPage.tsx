@@ -5,6 +5,7 @@ import { clubService } from '../../api/services/club.service';
 import type { ClubMemberDto } from '../../api/types/membership.types';
 import type { LeaderClubListItem } from '../../api/types/club.types';
 import { showSuccessToast } from '../../utils/toast';
+import { cn } from '../../components/utils/cn';
 
 type ActionType = 'lock' | 'unlock' | 'delete' | null;
 
@@ -295,11 +296,12 @@ function ClubLeaderMembersPage() {
               <button
                 key={item.key}
                 onClick={() => setStatusFilter(item.key as typeof statusFilter)}
-                className={`rounded-full border px-4 py-2 text-sm font-medium transition ${
+                className={cn(
+                  'rounded-full border px-4 py-2 text-sm font-medium transition',
                   statusFilter === item.key
                     ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                     : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-200 hover:text-blue-700'
-                }`}
+                )}
               >
                 {item.label}
               </button>
@@ -366,7 +368,7 @@ function ClubLeaderMembersPage() {
                         </td>
                         <td className="w-1/6 px-4 py-4">
                           <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusLabelClass(member.member.status)}`}
+                            className={cn('inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold', statusLabelClass(member.member.status))}
                           >
                             {statusLabelText(member.member.status)}
                           </span>
@@ -519,7 +521,7 @@ function ClubLeaderMembersPage() {
                     <label className="text-xs font-medium text-slate-500">Trạng thái</label>
                     <div className="mt-1">
                       <span
-                        className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusLabelClass(viewingMember.member.status)}`}
+                        className={cn('inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold', statusLabelClass(viewingMember.member.status))}
                       >
                         {statusLabelText(viewingMember.member.status)}
                       </span>
@@ -595,13 +597,14 @@ function ClubLeaderMembersPage() {
               <button
                 onClick={handleSubmit}
                 disabled={isProcessing}
-                className={`flex-1 rounded-lg px-4 py-2 font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={cn(
+                  'flex-1 rounded-lg px-4 py-2 font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
                   actionType === 'unlock'
                     ? 'bg-emerald-600 hover:bg-emerald-700'
                     : actionType === 'delete'
                       ? 'bg-red-600 hover:bg-red-700'
                       : 'bg-orange-600 hover:bg-orange-700'
-                }`}
+                )}
               >
                 {isProcessing
                   ? 'Đang xử lý...'
