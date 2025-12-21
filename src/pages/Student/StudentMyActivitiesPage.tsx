@@ -50,6 +50,56 @@ function StudentMyActivitiesPage() {
         color: 'bg-red-50 text-red-700 border-red-200',
         dotColor: 'bg-red-600',
       },
+      completed: {
+        label: 'Đã hoàn thành',
+        color: 'bg-blue-50 text-blue-700 border-blue-200',
+        dotColor: 'bg-blue-600',
+      },
+      finished: {
+        label: 'Đã kết thúc',
+        color: 'bg-blue-50 text-blue-700 border-blue-200',
+        dotColor: 'bg-blue-600',
+      },
+      ongoing: {
+        label: 'Đang diễn ra',
+        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        dotColor: 'bg-emerald-600',
+      },
+      closed: {
+        label: 'Đã đóng',
+        color: 'bg-slate-100 text-slate-600 border-slate-300',
+        dotColor: 'bg-slate-500',
+      },
+      opened: {
+        label: 'Đã mở',
+        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        dotColor: 'bg-emerald-600',
+      },
+      'not_yet_open': {
+        label: 'Chưa mở',
+        color: 'bg-amber-50 text-amber-700 border-amber-200',
+        dotColor: 'bg-amber-600',
+      },
+      notyetopen: {
+        label: 'Chưa mở',
+        color: 'bg-amber-50 text-amber-700 border-amber-200',
+        dotColor: 'bg-amber-600',
+      },
+      locked: {
+        label: 'Đã khóa',
+        color: 'bg-slate-100 text-slate-600 border-slate-300',
+        dotColor: 'bg-slate-500',
+      },
+      approved: {
+        label: 'Đã duyệt',
+        color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        dotColor: 'bg-emerald-600',
+      },
+      failed: {
+        label: 'Thất bại',
+        color: 'bg-red-50 text-red-700 border-red-200',
+        dotColor: 'bg-red-600',
+      },
     };
     return configs[statusLower] || {
       label: status,
