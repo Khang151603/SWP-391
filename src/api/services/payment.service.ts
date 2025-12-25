@@ -2,9 +2,8 @@ import { httpClient } from '../config/client';
 import { API_BASE_URL, PAYMENT_ENDPOINTS } from '../config/constants';
 import { ApiError } from '../utils/errorHandler';
 import type {
-  PayOSCreatePaymentRequest,
-    PayOSPaymentResponse,
-    MembershipPaymentRequest,
+  PayOSPaymentResponse,
+  MembershipPaymentRequest,
   StudentPaidPayment,
   StudentDebt,
   ClubLeaderPaymentHistory,
@@ -27,8 +26,7 @@ export const paymentService = {
    * Note: The new API endpoint only requires paymentId in URL, no body needed
    */
   async createPayOSPayment(
-    paymentId: number,
-    data?: PayOSCreatePaymentRequest
+    paymentId: number
   ): Promise<PayOSPaymentResponse> {
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
