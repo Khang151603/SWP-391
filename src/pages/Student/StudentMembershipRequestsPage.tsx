@@ -33,8 +33,8 @@ function StudentMembershipRequestsPage() {
     // Check for payment status in URL params
     const urlParams = new URLSearchParams(window.location.search);
     const paymentStatus = urlParams.get('payment');
-    if (paymentStatus === 'success') {
-      // Refresh data after successful payment
+    if (paymentStatus === 'success' || paymentStatus === 'cancelled') {
+      // Refresh data after payment action
       setTimeout(() => {
         fetchMembershipRequests();
         // Remove query params from URL
@@ -43,78 +43,68 @@ function StudentMembershipRequestsPage() {
     }
   }, []);
 
-  const getStatusColor = (request: StudentMembershipRequestResponse) => {
-    const status = getNormalizedStatus(request);
-    const statusColors: Record<string, string> = {
-      pending: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      approved: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-      approved_pending_payment: 'bg-orange-100 text-orange-800 border-orange-300',
-      paid: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-      rejected: 'bg-red-100 text-red-800 border-red-300',
-      'awaiting payment': 'bg-orange-100 text-orange-800 border-orange-300',
-      reject: 'bg-red-100 text-red-800 border-red-300',
-    };
-    return statusColors[status.toLowerCase()] || 'bg-slate-100 text-slate-800 border-slate-300';
-  };
-
-  const getStatusLabel = (request: StudentMembershipRequestResponse) => {
-    const status = getNormalizedStatus(request);
-    const statusLabels: Record<string, string> = {
-      pending: 'Đang chờ',
-      approved: 'Đã chấp nhận',
-      rejected: 'Đã từ chối',
-      approved_pending_payment: 'Chờ thanh toán',
-      paid: 'Đã thanh toán',
-      'awaiting payment': 'Chờ thanh toán',
-      reject: 'Đã từ chối',
-    };
-    return statusLabels[status.toLowerCase()] || status;
-  };
-
-  // Normalize status based on backend logic
-  const getNormalizedStatus = (request: StudentMembershipRequestResponse): string => {
-    const status = request.status.toLowerCase();
+  // Lấy payment status từ request (created, pending, paid, cancelled)
+  const getPaymentStatus = (request: StudentMembershipRequestResponse): string => {
+    const status = request.status?.toLowerCase() || '';
     
-    // Nếu status = "pending" nhưng có paymentId → đã approve, đang chờ thanh toán
-    if (status === 'pending' && request.paymentId !== null && request.paymentId !== undefined) {
-      return 'approved_pending_payment';
+    // Nếu có paymentId → đã được leader duyệt, hiển thị payment status
+    if (request.paymentId !== null && request.paymentId !== undefined) {
+      if (status === 'created' || status === 'pending' || status === 'paid' || status === 'cancelled') {
+        return status;
+      }
+      // Nếu status là "awaiting payment" nhưng có paymentId → có thể là created
+      if (status === 'awaiting payment') {
+        return 'created';
+      }
     }
     
-    // Nếu status = "paid" → đã thanh toán
+    // Nếu chưa có paymentId → chưa được leader duyệt
+    if (status === 'pending' || status === 'pending_request') {
+      return 'pending_request'; // Đang chờ duyệt
+    }
+    
+    // Các trạng thái khác
     if (status === 'paid') {
       return 'paid';
     }
-    
-    // Nếu status = "reject" hoặc "rejected" → đã từ chối
     if (status === 'reject' || status === 'rejected') {
       return 'rejected';
     }
-    
-    // Nếu status = "awaiting payment" → chờ thanh toán
-    if (status === 'awaiting payment') {
-      return 'approved_pending_payment';
+    if (status === 'approved') {
+      return 'approved'; // Đã chấp nhận (không có phí)
     }
     
-    // Các trạng thái khác giữ nguyên
-    return request.status;
+    return status;
   };
 
-  // Xác định trạng thái thanh toán
-  const getPaymentStatus = (request: StudentMembershipRequestResponse): 'paid' | 'approve_pending_payment' | 'unpaid' => {
-    const status = request.status.toLowerCase();
-    
-    // paid: đã thanh toán - status là "paid" hoặc (status là "approved" và có paymentId)
-    if (status === 'paid' || (status === 'approved' && request.paymentId !== null && request.paymentId !== undefined)) {
-      return 'paid';
-    }
-    
-    // approve_pending_payment: đã duyệt, chờ thanh toán - status là approved_pending_payment
-    if (status === 'approved_pending_payment') {
-      return 'approve_pending_payment';
-    }
-    
-    // unpaid: chưa thanh toán - pending hoặc các trạng thái khác chưa có paymentId
-    return 'unpaid';
+  const getStatusColor = (request: StudentMembershipRequestResponse) => {
+    const paymentStatus = getPaymentStatus(request);
+    const statusColors: Record<string, string> = {
+      pending_request: 'bg-yellow-100 text-yellow-800 border-yellow-300', // Đang chờ duyệt
+      created: 'bg-blue-100 text-blue-800 border-blue-300', // Đã duyệt - Chờ thanh toán
+      pending: 'bg-orange-100 text-orange-800 border-orange-300', // Đang chờ thanh toán
+      paid: 'bg-emerald-100 text-emerald-800 border-emerald-300', // Đã thanh toán
+      cancelled: 'bg-gray-100 text-gray-800 border-gray-300', // Đã hủy thanh toán
+      rejected: 'bg-red-100 text-red-800 border-red-300', // Đã từ chối
+      approved: 'bg-emerald-100 text-emerald-800 border-emerald-300', // Đã chấp nhận (không có phí)
+      'awaiting payment': 'bg-orange-100 text-orange-800 border-orange-300',
+    };
+    return statusColors[paymentStatus] || 'bg-slate-100 text-slate-800 border-slate-300';
+  };
+
+  const getStatusLabel = (request: StudentMembershipRequestResponse) => {
+    const paymentStatus = getPaymentStatus(request);
+    const statusLabels: Record<string, string> = {
+      pending_request: 'Đang chờ duyệt', // Leader chưa duyệt
+      created: 'Đã duyệt - Chờ thanh toán', // Đã duyệt, chưa thanh toán
+      pending: 'Đang chờ thanh toán', // Đã tạo payment link, đang chờ thanh toán
+      paid: 'Đã thanh toán', // Đã thanh toán thành công
+      cancelled: 'Đã hủy thanh toán', // Đã hủy thanh toán
+      rejected: 'Đã từ chối', // Leader từ chối
+      approved: 'Đã chấp nhận', // Đã chấp nhận (không có phí)
+      'awaiting payment': 'Chờ thanh toán',
+    };
+    return statusLabels[paymentStatus] || paymentStatus;
   };
 
   const handlePayment = async (request: StudentMembershipRequestResponse) => {
@@ -122,14 +112,18 @@ function StudentMembershipRequestsPage() {
       return;
     }
 
+    if (!request.paymentId) {
+      setPaymentError('Không tìm thấy thông tin thanh toán. Vui lòng thử lại sau.');
+      return;
+    }
+
     try {
       setProcessingPayment(request.id);
-      const paymentResponse = await paymentService.createMembershipPayment({
-        membershipRequestId: request.id,
-        paymentId: request.paymentId,
-        amount: request.amount,
-        clubName: request.clubName,
-      });
+      setPaymentError(null);
+      
+      // Gọi API tạo payment link (chuyển từ created/cancelled sang pending)
+      // API chỉ cần paymentId, không cần body
+      const paymentResponse = await paymentService.createPayOSPayment(request.paymentId);
 
       // Handle both string URL and object response
       let checkoutUrl: string | null = null;
@@ -143,6 +137,11 @@ function StudentMembershipRequestsPage() {
       }
       
       if (checkoutUrl) {
+        // Refresh data trước khi redirect để cập nhật status
+        await membershipService.getStudentRequests().then(requests => {
+          setMembershipRequests(requests);
+        });
+        
         // Redirect to PayOS checkout page
         window.location.href = checkoutUrl;
       } else {
@@ -152,20 +151,56 @@ function StudentMembershipRequestsPage() {
             : 'Không thể tạo link thanh toán'
         );
       }
-    } catch (err) {
-      const message = 'Không thể tạo link thanh toán. Vui lòng thử lại sau.';
+    } catch (err: any) {
+      const message = err?.message || 'Không thể tạo link thanh toán. Vui lòng thử lại sau.';
+      setPaymentError(message);
+      setProcessingPayment(null);
+    }
+  };
+
+  const handleCancelPayment = async (request: StudentMembershipRequestResponse) => {
+    if (!request.paymentId) {
+      setPaymentError('Không tìm thấy thông tin thanh toán.');
+      return;
+    }
+
+    try {
+      setProcessingPayment(request.id);
+      setPaymentError(null);
+      
+      // Gọi API cancel payment (chuyển từ pending sang cancelled)
+      await paymentService.cancelPayment(request.paymentId);
+      
+      // Refresh data để cập nhật status
+      const requests = await membershipService.getStudentRequests();
+      setMembershipRequests(requests);
+      setProcessingPayment(null);
+    } catch (err: any) {
+      const message = err?.message || 'Không thể hủy thanh toán. Vui lòng thử lại sau.';
       setPaymentError(message);
       setProcessingPayment(null);
     }
   };
 
   const canMakePayment = (request: StudentMembershipRequestResponse): boolean => {
-    // Chỉ hiển thị nút thanh toán khi đã approve và đang chờ thanh toán
-    const normalizedStatus = getNormalizedStatus(request).toLowerCase();
+    // Hiển thị nút "Thanh toán" khi status là created hoặc cancelled
+    const paymentStatus = getPaymentStatus(request);
     return (
-      normalizedStatus === 'approved_pending_payment' &&
+      (paymentStatus === 'created' || paymentStatus === 'cancelled') &&
+      request.paymentId !== null &&
+      request.paymentId !== undefined &&
       request.amount !== null &&
       request.amount > 0
+    );
+  };
+
+  const canCancelPayment = (request: StudentMembershipRequestResponse): boolean => {
+    // Hiển thị nút "Huỷ thanh toán" khi status là pending
+    const paymentStatus = getPaymentStatus(request);
+    return (
+      paymentStatus === 'pending' &&
+      request.paymentId !== null &&
+      request.paymentId !== undefined
     );
   };
 
@@ -329,6 +364,36 @@ function StudentMembershipRequestsPage() {
                             </button>
                             {isPaymentCompleted(request) ? (
                               <span className="text-xs text-slate-400">—</span>
+                            ) : canCancelPayment(request) ? (
+                              <button
+                                onClick={() => handleCancelPayment(request)}
+                                disabled={processingPayment === request.id}
+                                className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {processingPayment === request.id ? (
+                                  <>
+                                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                    <span>Đang xử lý...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <svg
+                                      className="h-4 w-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                      />
+                                    </svg>
+                                    <span>Huỷ thanh toán</span>
+                                  </>
+                                )}
+                              </button>
                             ) : canMakePayment(request) ? (
                               <button
                                 onClick={() => handlePayment(request)}

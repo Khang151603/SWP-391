@@ -45,6 +45,13 @@ export const membershipService = {
   },
 
   /**
+   * Student: Leave a club
+   */
+  async leaveClub(clubId: number | string): Promise<string> {
+    return httpClient.post<string>(MEMBERSHIP_ENDPOINTS.STUDENT_LEAVE_CLUB(clubId));
+  },
+
+  /**
    * Student: Get account info for form pre-fill (includes major, skills)
    */
   async getAccountInfo(): Promise<AccountInfo> {

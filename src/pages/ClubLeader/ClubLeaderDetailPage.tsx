@@ -128,7 +128,8 @@ function ClubLeaderDetailPage() {
           memberCount = members.filter(m => 
             m.member.status?.toLowerCase() === 'active'
           ).length;
-          totalRevenue = (club.membershipFee || 0) * memberCount;
+          // Prefer totalRevenue từ API; fallback 0 nếu không có
+          totalRevenue = Number(club.totalRevenue ?? 0);
         } catch (error) {
           // Failed to fetch data for club
         }
@@ -196,7 +197,8 @@ function ClubLeaderDetailPage() {
               memberCount = members.filter(m => 
                 m.member.status?.toLowerCase() === 'active'
               ).length;
-              totalRevenue = (club.membershipFee || 0) * memberCount;
+              // Prefer totalRevenue từ API; fallback 0 nếu không có
+              totalRevenue = Number(club.totalRevenue ?? 0);
             } catch (error) {
               console.error(`Failed to fetch data for club ${club.id}:`, error);
             }

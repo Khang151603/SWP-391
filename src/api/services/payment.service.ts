@@ -23,10 +23,12 @@ export const paymentService = {
    * Note: PayOS API requires payment ID in URL path, so we use fetch directly
    * instead of httpClient to maintain the exact endpoint structure
    * Used internally by: createMembershipPayment()
+   * 
+   * Note: The new API endpoint only requires paymentId in URL, no body needed
    */
   async createPayOSPayment(
     paymentId: number,
-    data: PayOSCreatePaymentRequest
+    data?: PayOSCreatePaymentRequest
   ): Promise<PayOSPaymentResponse> {
     const token = localStorage.getItem('token');
     const headers: HeadersInit = {
@@ -37,10 +39,10 @@ export const paymentService = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    // New API endpoint doesn't require body, only paymentId in URL
     const response = await fetch(`${API_BASE_URL}/api/PayOS/create/${paymentId}`, {
       method: 'POST',
       headers,
-      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
@@ -64,6 +66,7 @@ export const paymentService = {
 
   /**
    * Create payment for membership request
+   * Note: Updated to use new API that only requires paymentId
    */
   async createMembershipPayment(
     data: MembershipPaymentRequest
@@ -71,27 +74,12 @@ export const paymentService = {
     // Use paymentId if available, otherwise use membershipRequestId as fallback
     const paymentId = data.paymentId || data.membershipRequestId;
     
-    // Generate order code (use timestamp + membership request ID)
-    const orderCode = parseInt(
-      `${Date.now()}${data.membershipRequestId}`.slice(-10)
-    );
+    if (!paymentId) {
+      throw new Error('Payment ID is required');
+    }
 
-    const paymentRequest: PayOSCreatePaymentRequest = {
-      orderCode,
-      amount: data.amount,
-      description: `Thanh toán phí tham gia CLB: ${data.clubName}`,
-      items: [
-        {
-          name: `Phí tham gia CLB ${data.clubName}`,
-          quantity: 1,
-          price: data.amount,
-        },
-      ],
-      returnUrl: `${window.location.origin}/student/membership-requests?payment=success`,
-      cancelUrl: `${window.location.origin}/student/membership-requests?payment=cancelled`,
-    };
-
-    return this.createPayOSPayment(paymentId, paymentRequest);
+    // New API only requires paymentId, no body needed
+    return this.createPayOSPayment(paymentId);
   },
 
   /**
@@ -122,6 +110,32 @@ export const paymentService = {
    */
   async getClubPaymentHistory(clubId: number | string): Promise<ClubLeaderPaymentHistory[]> {
     return httpClient.get<ClubLeaderPaymentHistory[]>(PAYMENT_ENDPOINTS.LEADER_CLUB_HISTORY(clubId));
+  },
+
+  /**
+   * Cancel payment (change status from pending to cancelled)
+   */
+  async cancelPayment(paymentId: number): Promise<void> {
+    const token = localStorage.getItem('token');
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}/api/PayOS/cancel/${paymentId}`, {
+      method: 'POST',
+      headers,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = (errorData as { message?: string })?.message || 
+        `Cancel payment error: ${response.status} ${response.statusText}`;
+      throw new ApiError(response.status, response.statusText, errorMessage, errorData);
+    }
   },
 };
 

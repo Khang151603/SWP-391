@@ -74,6 +74,7 @@ export const MEMBERSHIP_ENDPOINTS = {
   STUDENT_REQUESTS: '/api/student/membership/requests', // Pages: StudentExplorePage.tsx, StudentMembershipRequestsPage.tsx
   STUDENT_MY_CLUBS: '/api/student/membership/my-clubs', // Pages: StudentClubsPage.tsx, StudentActivitiesPage.tsx, StudentExplorePage.tsx, StudentExploreDetailPage.tsx
   STUDENT_ACCOUNT_INFO: '/api/student/membership/account-info', // Pages: StudentExplorePage.tsx
+  STUDENT_LEAVE_CLUB: (clubId: number | string) => `/api/student/membership/leave/${clubId}`, // Pages: StudentClubsPage.tsx
   // Leader membership request endpoints
   LEADER_PENDING: '/api/leader/membership/pending', // Used by membership.service.ts
   LEADER_ALL_REQUESTS: '/api/leader/membership/requests', // Pages: ClubLeaderRequestsPage.tsx, ClubLeaderDashboardPage.tsx

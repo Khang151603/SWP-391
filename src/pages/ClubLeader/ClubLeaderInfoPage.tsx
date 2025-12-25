@@ -95,8 +95,8 @@ function ClubLeaderInfoPage() {
                 m.member.status?.toLowerCase() === 'active'
               ).length;
               
-              // Calculate total revenue (membershipFee * active members)
-              totalRevenue = (club.membershipFee || 0) * memberCount;
+              // Prefer totalRevenue từ API; fallback 0 nếu không có
+              totalRevenue = Number(club.totalRevenue ?? 0);
             } catch (error) {
               // Failed to fetch data for club
             }
