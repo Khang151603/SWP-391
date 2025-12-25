@@ -19,6 +19,37 @@ function StudentExploreDetailPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [showMemberAlert, setShowMemberAlert] = useState(false);
+  const [showPendingPaymentAlert, setShowPendingPaymentAlert] = useState(false);
+  const [showPendingRequestAlert, setShowPendingRequestAlert] = useState(false);
+  const [membershipRequests, setMembershipRequests] = useState<Array<{
+    id: number;
+    clubId: number;
+    clubName: string;
+    status: string;
+    paymentId: number | null;
+  }>>([]);
+
+  // Fetch membership requests to check pending requests
+  useEffect(() => {
+    const fetchMembershipRequests = async () => {
+      try {
+        const requests = await membershipService.getStudentRequests();
+        const requestsWithClubId = requests.map((req) => {
+          return {
+            id: req.id,
+            clubId: 0, // Will be set when club is loaded
+            clubName: req.clubName,
+            status: req.status,
+            paymentId: req.paymentId,
+          };
+        });
+        setMembershipRequests(requestsWithClubId);
+      } catch (error) {
+        // Failed to fetch membership requests
+      }
+    };
+    fetchMembershipRequests();
+  }, []);
 
   // Fetch club details and check membership status
   useEffect(() => {
@@ -36,6 +67,14 @@ function StudentExploreDetailPage() {
         // Fetch club details
         const clubData = await clubService.getClubDetailsById(clubId);
         setClub(clubData);
+        
+        // Update membership requests with clubId
+        setMembershipRequests(prev => prev.map(req => {
+          if (req.clubName === clubData.name) {
+            return { ...req, clubId: parseInt(clubId) };
+          }
+          return req;
+        }));
         
         // Check if student is already a member
         try {
@@ -56,13 +95,91 @@ function StudentExploreDetailPage() {
     fetchClubDetails();
   }, [clubId]);
 
+  const hasPendingRequest = (request: {
+    status: string;
+    paymentId: number | null;
+  }): boolean => {
+    const status = request.status?.toLowerCase() || '';
+    return status === 'pending' && (request.paymentId === null || request.paymentId === undefined);
+  };
+
+  const hasApprovedRequest = (request: {
+    status: string;
+    paymentId: number | null;
+  }): boolean => {
+    const status = request.status?.toLowerCase() || '';
+    return (request.paymentId !== null && request.paymentId !== undefined) ||
+           status === 'awaiting payment' ||
+           status === 'created' ||
+           (status === 'pending' && request.paymentId !== null && request.paymentId !== undefined);
+  };
+
+  const isRejectedRequest = (request: {
+    status: string;
+  }): boolean => {
+    const status = request.status?.toLowerCase() || '';
+    return status === 'rejected' || status === 'reject';
+  };
+
+  const canRegister = (clubId: number, clubName: string): boolean => {
+    // Nếu đã là member hiện tại → không cho phép (đã check ở handleRegister)
+    // Nếu không còn là member → có thể đăng ký lại
+    
+    const existingRequest = membershipRequests.find(
+      req => req.clubId === clubId || req.clubName === clubName
+    );
+    
+    // Không có request → cho phép đăng ký
+    if (!existingRequest) {
+      return true;
+    }
+    
+    // Request bị reject → cho phép đăng ký lại
+    if (isRejectedRequest(existingRequest)) {
+      return true;
+    }
+    
+    // Nếu không còn là member (đã rời CLB) → cho phép đăng ký lại
+    // (bất kể request status là gì, vì đã rời CLB rồi)
+    if (!isMember) {
+      // Chỉ chặn nếu có pending request hoặc approved request chưa thanh toán
+      if (hasPendingRequest(existingRequest) || hasApprovedRequest(existingRequest)) {
+        return false;
+      }
+      // Các trường hợp khác (paid, cancelled, etc.) → cho phép đăng ký lại
+      return true;
+    }
+    
+    // Còn là member → không cho phép
+    return false;
+  };
+
   const handleRegister = () => {
     if (club) {
+      const currentClubId = typeof club.id === 'string' ? parseInt(club.id) : club.id;
+      
       // Check if already a member
       if (isMember) {
         setShowMemberAlert(true);
         return;
       }
+
+      // Check if can register (chỉ cho phép khi không có request hoặc đã bị reject)
+      if (!canRegister(currentClubId, club.name)) {
+        const existingRequest = membershipRequests.find(
+          req => req.clubId === currentClubId || req.clubName === club.name
+        );
+        
+        if (existingRequest) {
+          if (hasPendingRequest(existingRequest)) {
+            setShowPendingRequestAlert(true);
+          } else if (hasApprovedRequest(existingRequest)) {
+            setShowPendingPaymentAlert(true);
+          }
+        }
+        return;
+      }
+
       setSelectedClub(club);
     }
   };
@@ -79,7 +196,23 @@ function StudentExploreDetailPage() {
       navigate('/student/explore');
     } catch (err) {
       setIsRegistering(false);
-      handleApiError(err);
+      
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      
+      // Check if error is about pending request (đã gửi đơn, chờ duyệt)
+      if (errorMessage.includes("đã gửi yêu cầu và đang chờ duyệt") || 
+          errorMessage.includes("đang chờ duyệt")) {
+        setSelectedClub(null);
+        setShowPendingRequestAlert(true);
+      } 
+      // Check if error is about pending payment (đã được duyệt, chưa thanh toán)
+      else if (errorMessage.includes("đơn thanh toán chưa hoàn thành") || 
+          errorMessage.includes("thanh toán trước khi gửi yêu cầu mới")) {
+        setSelectedClub(null);
+        setShowPendingPaymentAlert(true);
+      } else {
+        handleApiError(err);
+      }
     }
   };
 
@@ -155,14 +288,38 @@ function StudentExploreDetailPage() {
                 >
                   Đã là thành viên
                 </button>
-              ) : isRecruiting ? (
-                <button
-                  onClick={handleRegister}
-                  className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-base font-semibold text-white transition hover:shadow-lg hover:shadow-violet-500/30"
-                >
-                  Đăng ký tham gia
-                </button>
-              ) : (
+              ) : isRecruiting ? (() => {
+                const currentClubId = typeof club.id === 'string' ? parseInt(club.id) : club.id;
+                const cannotRegister = !canRegister(currentClubId, club.name) || isMember;
+                
+                if (cannotRegister) {
+                  const existingRequest = membershipRequests.find(
+                    req => req.clubId === currentClubId || req.clubName === club.name
+                  );
+                  let buttonText = "Đã gửi đơn";
+                  if (existingRequest && hasApprovedRequest(existingRequest)) {
+                    buttonText = "Đã được duyệt";
+                  }
+                  
+                  return (
+                    <button
+                      disabled
+                      className="w-full cursor-not-allowed rounded-xl bg-slate-800 px-6 py-3 text-base font-semibold text-slate-400"
+                    >
+                      {buttonText}
+                    </button>
+                  );
+                }
+                
+                return (
+                  <button
+                    onClick={handleRegister}
+                    className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-6 py-3 text-base font-semibold text-white transition hover:shadow-lg hover:shadow-violet-500/30"
+                  >
+                    Đăng ký tham gia
+                  </button>
+                );
+              })() : (
                 <button
                   disabled
                   className="w-full cursor-not-allowed rounded-xl bg-slate-800 px-6 py-3 text-base font-semibold text-slate-400"
@@ -292,6 +449,128 @@ function StudentExploreDetailPage() {
           </div>
         </div>
       </Dialog>
+
+      {/* Pending Request Alert Dialog - Đã gửi đơn, chờ duyệt */}
+      {showPendingRequestAlert && (
+        <Dialog
+          open={showPendingRequestAlert}
+          onOpenChange={(open) => !open && setShowPendingRequestAlert(false)}
+        >
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowPendingRequestAlert(false)}
+            />
+            <div className="relative z-10 w-full max-w-md">
+              <div className="rounded-2xl border border-yellow-300 bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
+                    <svg
+                      className="h-6 w-6 text-yellow-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Đã gửi đơn
+                  </h3>
+                </div>
+                <p className="mb-6 text-slate-600">
+                  Bạn đã gửi yêu cầu tham gia{" "}
+                  <span className="font-semibold text-blue-700">
+                    {club?.name}
+                  </span>{" "}
+                  và đang chờ duyệt. Vui lòng chờ leader duyệt đơn trước khi gửi yêu cầu mới.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPendingRequestAlert(false)}
+                    className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Đóng
+                  </button>
+                  <Link
+                    to="/student/membership-requests"
+                    className="flex-1 rounded-xl bg-yellow-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-yellow-700"
+                  >
+                    Xem yêu cầu của tôi
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      )}
+
+      {/* Pending Payment Alert Dialog */}
+      {showPendingPaymentAlert && (
+        <Dialog
+          open={showPendingPaymentAlert}
+          onOpenChange={(open) => !open && setShowPendingPaymentAlert(false)}
+        >
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+            <div
+              className="fixed inset-0 bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowPendingPaymentAlert(false)}
+            />
+            <div className="relative z-10 w-full max-w-md">
+              <div className="rounded-2xl border border-orange-300 bg-white p-6 shadow-2xl">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100">
+                    <svg
+                      className="h-6 w-6 text-orange-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900">
+                    Chưa thanh toán
+                  </h3>
+                </div>
+                <p className="mb-6 text-slate-600">
+                  Bạn đã có yêu cầu tham gia{" "}
+                  <span className="font-semibold text-blue-700">
+                    {club?.name}
+                  </span>{" "}
+                  nhưng chưa thanh toán. Vui lòng thanh toán yêu cầu hiện tại trước khi gửi yêu cầu mới.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPendingPaymentAlert(false)}
+                    className="flex-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                  >
+                    Đóng
+                  </button>
+                  <Link
+                    to="/student/membership-requests"
+                    className="flex-1 rounded-xl bg-orange-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-orange-700"
+                  >
+                    Đi đến thanh toán
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Dialog>
+      )}
     </StudentLayout>
   );
 }
