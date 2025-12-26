@@ -281,119 +281,87 @@ function StudentClubsPage() {
             </div>
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {filteredClubs.map((item) => {
               const clubName = item.clubDetails?.name || item.club.name;
               const clubDescription = item.clubDetails?.description || item.club.description || '';
-              // Ưu tiên lấy memberCount từ clubDetails (nếu có), sau đó từ club, cuối cùng từ item.memberCount
               const memberCount = item.clubDetails?.memberCount ?? item.club.memberCount ?? item.memberCount;
               const membershipFee = item.clubDetails?.membershipFee ?? item.club.membershipFee;
               const imageUrl = item.clubDetails?.imageUrl || item.clubDetails?.imageClubsUrl || item.club.imageClubsUrl;
-              const establishedDate = item.clubDetails?.establishedDate ?? item.club.establishedDate;
-              const location = item.clubDetails?.location ?? item.club.location;
               const statusMeta = getMembershipStatusMeta(item.membership.status);
               const canLeave = statusMeta.normalized === 'active';
               const isLeaving = leavingClubId === item.club.id;
-              
+
               return (
                 <div
                   key={item.club.id}
-                  className="rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3 hover:border-blue-200 transition"
+                  className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:border-blue-300"
                 >
-                  {/* Hình ảnh CLB ở đầu card - luôn hiển thị khung */}
-                  <div className="w-full h-40 rounded-lg overflow-hidden bg-slate-200 relative">
-                    {imageUrl ? (
-                      <img
-                        src={imageUrl}
-                        alt={clubName}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-400"><svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-400">
-                        <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                    )}
-                    {/* Status Badge */}
-                    {statusMeta.label && (
-                      <div className="absolute right-2 top-2 z-10">
-                        <span className={cn(
-                          'inline-flex items-center rounded-full px-3 py-1 text-[11px] font-medium ring-1',
-                          statusMeta.badgeClass
-                        )}>
-                          {statusMeta.label}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  {/* Header với ảnh và status */}
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={clubName}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = '<div class="w-full h-full flex items-center justify-center text-slate-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg></div>';
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
 
-                  {/* Thông tin CLB */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-slate-900">{clubName}</p>
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">{clubDescription || 'Chưa có mô tả'}</p>
-                    </div>
-                  </div>
-
-                  {/* Thông tin chi tiết */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs text-slate-600">
-                    {establishedDate && (
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Ngày thành lập</p>
-                        <p className="mt-1 text-sm text-slate-900">
-                          {new Date(establishedDate).toLocaleDateString('vi-VN')}
-                        </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h3 className="text-lg font-semibold text-slate-900 line-clamp-1">{clubName}</h3>
+                        {statusMeta.label && (
+                          <span className={cn(
+                            'inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ring-1 flex-shrink-0',
+                            statusMeta.badgeClass
+                          )}>
+                            {statusMeta.label}
+                          </span>
+                        )}
                       </div>
-                    )}
-                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                      <p className="text-[10px] uppercase text-slate-500">Phí thành viên</p>
-                      <p className="mt-1 text-sm text-slate-900">
-                        {membershipFee === 0 || !membershipFee ? 'Miễn phí' : membershipFee.toLocaleString('vi-VN') + ' đ'}
-                      </p>
-                    </div>
-                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                      <p className="text-[10px] uppercase text-slate-500">Số thành viên</p>
-                      <p className="mt-1 text-sm text-slate-900">
-                        {memberCount !== undefined && memberCount !== null ? memberCount : '--'}
-                      </p>
-                    </div>
-                    {location && (
-                      <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                        <p className="text-[10px] uppercase text-slate-500">Địa điểm</p>
-                        <p className="mt-1 text-sm text-slate-900 line-clamp-1">{location}</p>
-                      </div>
-                    )}
-                    <div className="rounded-xl border border-slate-200 bg-white px-3 py-2">
-                      <p className="text-[10px] uppercase text-slate-500">Ngày tham gia</p>
-                      <p className="mt-1 text-sm text-slate-900">
-                        {(() => {
-                          if (!item.membership.joinDate) return '--';
-                          try {
-                            const date = new Date(item.membership.joinDate);
-                            if (isNaN(date.getTime())) return '--';
-                            return date.toLocaleDateString('vi-VN');
-                          } catch {
-                            return '--';
-                          }
-                        })()}
-                      </p>
+                      <p className="text-sm text-slate-600 line-clamp-2 mb-3">{clubDescription || 'Chưa có mô tả'}</p>
                     </div>
                   </div>
 
-                  {/* Nút xem chi tiết */}
-                  <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                  {/* Thông tin cơ bản */}
+                  <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      <span className="text-slate-700">{memberCount || 0} thành viên</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                      </svg>
+                      <span className="text-slate-700">
+                        {membershipFee === 0 || !membershipFee ? 'Miễn phí' : `${membershipFee.toLocaleString('vi-VN')}đ`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Nút hành động */}
+                  <div className="flex gap-3">
                     <button
                       onClick={() => handleViewDetails(item)}
-                      className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
+                      className="flex-1 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 hover:shadow-md"
                     >
                       Xem chi tiết
                     </button>
@@ -401,18 +369,27 @@ function StudentClubsPage() {
                       onClick={() => handleLeaveClubClick(item)}
                       disabled={!canLeave || isLeaving}
                       className={cn(
-                        'w-full rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition',
+                        'rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition flex-shrink-0',
                         canLeave
                           ? 'bg-rose-600 text-white hover:bg-rose-700 hover:shadow-md'
                           : 'bg-slate-200 text-slate-500 cursor-not-allowed',
                         isLeaving && 'opacity-80'
                       )}
                     >
-                      {isLeaving ? 'Đang rời...' : 'Rời CLB'}
+                      {isLeaving ? (
+                        <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                      )}
                     </button>
                   </div>
+
                   {!canLeave && (
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-xs text-slate-500 mt-2">
                       Chỉ rời CLB khi trạng thái thành viên đang hoạt động.
                     </p>
                   )}
@@ -471,34 +448,37 @@ function StudentClubsPage() {
 
         {/* Dialog chi tiết CLB */}
         <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             {selectedClub && (() => {
               const detailStatusMeta = getMembershipStatusMeta(selectedClub.membership.status);
               const canLeaveSelected = detailStatusMeta.normalized === 'active';
               const isLeavingSelected = leavingClubId === selectedClub.club.id;
+              const clubName = selectedClub.clubDetails?.name || selectedClub.club.name;
+              const clubDescription = selectedClub.clubDetails?.description || selectedClub.club.description || '';
+              const memberCount = selectedClub.memberCount ?? selectedClub.clubDetails?.memberCount ?? selectedClub.club.memberCount ?? 0;
+              const membershipFee = selectedClub.clubDetails?.membershipFee ?? selectedClub.club.membershipFee;
+              const imageUrl = selectedClub.clubDetails?.imageUrl || selectedClub.clubDetails?.imageClubsUrl || selectedClub.club.imageClubsUrl;
+              const establishedDate = selectedClub.clubDetails?.establishedDate ?? selectedClub.club.establishedDate;
+              const location = selectedClub.clubDetails?.location ?? selectedClub.club.location;
 
               return (
                 <>
                   <DialogHeader>
-                    <DialogTitle>
-                      {selectedClub.clubDetails?.name || selectedClub.club.name}
-                    </DialogTitle>
+                    <DialogTitle className="text-xl">{clubName}</DialogTitle>
                     <DialogDescription>
                       Thông tin chi tiết về câu lạc bộ
                     </DialogDescription>
                   </DialogHeader>
 
                   <div className="space-y-6">
-                    {/* Hình ảnh CLB */}
-                    <div className="w-full h-64 rounded-lg overflow-hidden bg-slate-200 relative">
-                      {(() => {
-                        const imageUrl = selectedClub.clubDetails?.imageUrl || 
-                                        selectedClub.clubDetails?.imageClubsUrl || 
-                                        selectedClub.club.imageClubsUrl;
-                        return imageUrl ? (
+                    {/* Header với ảnh và thông tin cơ bản */}
+                    <div className="flex flex-col sm:flex-row gap-6">
+                      {/* Hình ảnh */}
+                      <div className="w-full sm:w-80 h-48 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                        {imageUrl ? (
                           <img
                             src={imageUrl}
-                            alt={selectedClub.clubDetails?.name || selectedClub.club.name}
+                            alt={clubName}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
@@ -515,38 +495,65 @@ function StudentClubsPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                             </svg>
                           </div>
-                        );
-                      })()}
-                      {/* Status Badge */}
-                      {detailStatusMeta.label && (
-                        <div className="absolute right-3 top-3 z-10">
-                          <span className={cn(
-                            'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1',
-                            detailStatusMeta.badgeClass
-                          )}>
-                            {detailStatusMeta.label}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
 
-                    {/* Mô tả */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-2">Mô tả</h3>
-                      <p className="text-sm text-slate-600 leading-relaxed">
-                        {selectedClub.clubDetails?.description || selectedClub.club.description || 'Chưa có mô tả'}
-                      </p>
+                      {/* Thông tin cơ bản */}
+                      <div className="flex-1 space-y-4">
+                        {/* Status và mô tả */}
+                        <div>
+                          <div className="flex items-center gap-3 mb-3">
+                            <span className={cn(
+                              'inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ring-1',
+                              detailStatusMeta.badgeClass
+                            )}>
+                              {detailStatusMeta.label}
+                            </span>
+                          </div>
+                          <p className="text-slate-600 leading-relaxed">{clubDescription || 'Chưa có mô tả'}</p>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-500">Thành viên</p>
+                              <p className="text-lg font-semibold text-slate-900">{memberCount}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-sm text-slate-500">Phí thành viên</p>
+                              <p className="text-lg font-semibold text-slate-900">
+                                {membershipFee === 0 || !membershipFee ? 'Miễn phí' : `${membershipFee.toLocaleString('vi-VN')}đ`}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     {/* Thông tin chi tiết */}
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3">Thông tin chi tiết</h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        {(() => {
-                          const establishedDate = selectedClub.clubDetails?.establishedDate ?? selectedClub.club.establishedDate;
-                          return establishedDate && (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                              <p className="text-xs uppercase text-slate-500 mb-1">Ngày thành lập</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Cột 1 */}
+                      <div className="space-y-4">
+                        {establishedDate && (
+                          <div className="flex items-center gap-3">
+                            <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <div>
+                              <p className="text-sm text-slate-500">Ngày thành lập</p>
                               <p className="text-sm font-medium text-slate-900">
                                 {new Date(establishedDate).toLocaleDateString('vi-VN', {
                                   year: 'numeric',
@@ -555,47 +562,65 @@ function StudentClubsPage() {
                                 })}
                               </p>
                             </div>
-                          );
-                        })()}
-                        
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                          <p className="text-xs uppercase text-slate-500 mb-1">Phí thành viên</p>
-                          <p className="text-sm font-medium text-slate-900">
-                            {(() => {
-                              const membershipFee = selectedClub.clubDetails?.membershipFee ?? selectedClub.club.membershipFee;
-                              return membershipFee === 0 || !membershipFee ? 'Miễn phí' : membershipFee.toLocaleString('vi-VN') + ' đ';
-                            })()}
-                          </p>
-                        </div>
+                          </div>
+                        )}
 
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                          <p className="text-xs uppercase text-slate-500 mb-1">Số thành viên</p>
-                          <p className="text-sm font-medium text-slate-900">
-                            {selectedClub.memberCount ?? selectedClub.clubDetails?.memberCount ?? selectedClub.club.memberCount ?? '--'}
-                          </p>
-                        </div>
-
-                        {(() => {
-                          const location = selectedClub.clubDetails?.location ?? selectedClub.club.location;
-                          return location && (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                              <p className="text-xs uppercase text-slate-500 mb-1">Địa điểm</p>
+                        {location && (
+                          <div className="flex items-center gap-3">
+                            <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            <div>
+                              <p className="text-sm text-slate-500">Địa điểm</p>
                               <p className="text-sm font-medium text-slate-900">{location}</p>
                             </div>
-                          );
-                        })()}
+                          </div>
+                        )}
 
+                        <div className="flex items-center gap-3">
+                          <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <div>
+                            <p className="text-sm text-slate-500">Ngày tham gia</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {(() => {
+                                if (!selectedClub.membership.joinDate) return '--';
+                                try {
+                                  const date = new Date(selectedClub.membership.joinDate);
+                                  if (isNaN(date.getTime())) return '--';
+                                  return date.toLocaleDateString('vi-VN', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  });
+                                } catch {
+                                  return '--';
+                                }
+                              })()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cột 2 */}
+                      <div className="space-y-4">
                         {(() => {
                           const contactEmail = selectedClub.clubDetails?.contactEmail ?? selectedClub.club.contactEmail;
                           return contactEmail && (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                              <p className="text-xs uppercase text-slate-500 mb-1">Email liên hệ</p>
-                              <a 
-                                href={`mailto:${contactEmail}`}
-                                className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline break-all"
-                              >
-                                {contactEmail}
-                              </a>
+                            <div className="flex items-center gap-3">
+                              <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                              <div>
+                                <p className="text-sm text-slate-500">Email liên hệ</p>
+                                <a
+                                  href={`mailto:${contactEmail}`}
+                                  className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                                >
+                                  {contactEmail}
+                                </a>
+                              </div>
                             </div>
                           );
                         })()}
@@ -603,14 +628,19 @@ function StudentClubsPage() {
                         {(() => {
                           const contactPhone = selectedClub.clubDetails?.contactPhone ?? selectedClub.club.contactPhone;
                           return contactPhone && (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                              <p className="text-xs uppercase text-slate-500 mb-1">Điện thoại</p>
-                              <a 
-                                href={`tel:${contactPhone}`}
-                                className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                              >
-                                {contactPhone}
-                              </a>
+                            <div className="flex items-center gap-3">
+                              <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                              </svg>
+                              <div>
+                                <p className="text-sm text-slate-500">Điện thoại</p>
+                                <a
+                                  href={`tel:${contactPhone}`}
+                                  className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                                >
+                                  {contactPhone}
+                                </a>
+                              </div>
                             </div>
                           );
                         })()}
@@ -618,61 +648,48 @@ function StudentClubsPage() {
                         {(() => {
                           const activityFrequency = selectedClub.clubDetails?.activityFrequency ?? selectedClub.club.activityFrequency;
                           return activityFrequency && (
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                              <p className="text-xs uppercase text-slate-500 mb-1">Tần suất hoạt động</p>
-                              <p className="text-sm font-medium text-slate-900">{activityFrequency}</p>
+                            <div className="flex items-center gap-3">
+                              <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <div>
+                                <p className="text-sm text-slate-500">Tần suất hoạt động</p>
+                                <p className="text-sm font-medium text-slate-900">{activityFrequency}</p>
+                              </div>
                             </div>
                           );
                         })()}
-
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                          <p className="text-xs uppercase text-slate-500 mb-1">Ngày tham gia</p>
-                          <p className="text-sm font-medium text-slate-900">
-                            {(() => {
-                              if (!selectedClub.membership.joinDate) return '--';
-                              try {
-                                const date = new Date(selectedClub.membership.joinDate);
-                                if (isNaN(date.getTime())) return '--';
-                                return date.toLocaleDateString('vi-VN', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric'
-                                });
-                              } catch {
-                                return '--';
-                              }
-                            })()}
-                          </p>
-                        </div>
-
-                        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
-                          <p className="text-xs uppercase text-slate-500 mb-1">Trạng thái thành viên</p>
-                          <p className="text-sm font-medium text-slate-900">
-                            {detailStatusMeta.label}
-                          </p>
-                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Nút hành động */}
-                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+                  <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:justify-end">
                     {canLeaveSelected && (
                       <button
                         onClick={() => handleLeaveClubClick(selectedClub)}
                         disabled={isLeavingSelected}
                         className={cn(
-                          'w-full sm:w-auto rounded-xl px-6 py-2.5 text-sm font-semibold shadow-sm transition',
+                          'rounded-xl px-6 py-2.5 text-sm font-semibold shadow-sm transition',
                           isLeavingSelected
                             ? 'bg-rose-200 text-rose-700 cursor-not-allowed'
                             : 'bg-rose-600 text-white hover:bg-rose-700 hover:shadow-md'
                         )}
                       >
-                        {isLeavingSelected ? 'Đang rời...' : 'Rời CLB'}
+                        {isLeavingSelected ? (
+                          <div className="flex items-center gap-2">
+                            <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Đang rời...
+                          </div>
+                        ) : (
+                          'Rời CLB'
+                        )}
                       </button>
                     )}
                     <DialogClose asChild>
-                      <button className="w-full sm:w-auto rounded-xl bg-slate-200 px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">
+                      <button className="rounded-xl bg-slate-200 px-6 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-300">
                         Đóng
                       </button>
                     </DialogClose>
