@@ -17,6 +17,7 @@ type StudentLayoutProps = {
   title?: string;
   subtitle?: string;
   children: ReactNode;
+  hideHeader?: boolean;
 };
 
 type MenuItem = {
@@ -99,6 +100,7 @@ function StudentLayout({
   title = 'Không gian sinh viên',
   subtitle = 'Khám phá, tham gia và quản lý hoạt động CLB',
   children,
+  hideHeader = false,
 }: StudentLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -148,7 +150,8 @@ function StudentLayout({
   return (
     <div className="min-h-screen bg-slate-50 overflow-x-hidden">
       {/* Top Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
+      {!hideHeader && (
+        <nav className="fixed top-0 left-0 right-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/80">
         <div className="mx-auto max-w-[1536px] px-4 sm:px-6 lg:px-8 xl:px-12">
           <div className="flex h-20 items-center gap-6 overflow-hidden">
             {/* Logo */}
@@ -301,6 +304,7 @@ function StudentLayout({
           </div>
         )}
       </nav>
+      )}
 
       {/* Main Content */}
       <main className="overflow-x-hidden pt-20">

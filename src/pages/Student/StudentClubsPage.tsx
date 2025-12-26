@@ -177,6 +177,7 @@ function StudentClubsPage() {
     <StudentLayout
       title="CLB đang tham gia"
       subtitle="Quản lý các câu lạc bộ bạn đang tham gia"
+      hideHeader={isDetailDialogOpen}
     >
       <div className="space-y-8">
     
@@ -519,7 +520,7 @@ function StudentClubsPage() {
                       })()}
                       {/* Status Badge */}
                       {detailStatusMeta.label && (
-                        <div className="absolute right-3 top-3 z-10">
+                        <div className="absolute right-3 top-3 z-[60]">
                           <span className={cn(
                             'inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ring-1',
                             detailStatusMeta.badgeClass
