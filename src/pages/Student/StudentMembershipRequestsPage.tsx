@@ -4,6 +4,7 @@ import { membershipService } from '../../api/services/membership.service';
 import { paymentService } from '../../api/services/payment.service';
 import type { StudentMembershipRequestResponse } from '../../api/types/membership.types';
 import { cn } from '../../components/utils/cn';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '../../components/ui/Dialog';
 
 function StudentMembershipRequestsPage() {
   const [membershipRequests, setMembershipRequests] = useState<StudentMembershipRequestResponse[]>([]);
@@ -12,6 +13,7 @@ function StudentMembershipRequestsPage() {
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState<number | null>(null);
   const [selectedRequest, setSelectedRequest] = useState<StudentMembershipRequestResponse | null>(null);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
   useEffect(() => {
     const fetchMembershipRequests = async () => {
@@ -183,6 +185,7 @@ function StudentMembershipRequestsPage() {
       }
 
       setPaymentError(message);
+      setShowErrorDialog(true);
       setProcessingPayment(null);
     }
   };
@@ -217,6 +220,7 @@ function StudentMembershipRequestsPage() {
       }
 
       setPaymentError(message);
+      setShowErrorDialog(true);
       setProcessingPayment(null);
     }
   };
@@ -254,11 +258,6 @@ function StudentMembershipRequestsPage() {
       subtitle="Xem và theo dõi trạng thái các yêu cầu tham gia CLB của bạn"
     >
       <div className="space-y-8">
-        {paymentError && (
-          <div className="rounded-2xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
-            {paymentError}
-          </div>
-        )}
         
         {loading ? (
           <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
@@ -551,6 +550,30 @@ function StudentMembershipRequestsPage() {
           </div>
         </div>
       )}
+
+      {/* Error Dialog */}
+      <Dialog open={showErrorDialog} onOpenChange={setShowErrorDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              Lỗi thanh toán
+            </DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="text-sm text-gray-700">
+            {paymentError}
+          </DialogDescription>
+          <div className="flex justify-end mt-6">
+            <DialogClose asChild>
+              <button className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700">
+                Đóng
+              </button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
     </StudentLayout>
   );
 }
