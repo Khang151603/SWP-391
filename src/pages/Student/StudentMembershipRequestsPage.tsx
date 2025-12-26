@@ -151,8 +151,37 @@ function StudentMembershipRequestsPage() {
             : 'Không thể tạo link thanh toán'
         );
       }
-    } catch (err: any) {
-      const message = err?.message || 'Không thể tạo link thanh toán. Vui lòng thử lại sau.';
+    } catch (err: unknown) {
+      let message = 'Không thể tạo link thanh toán. Vui lòng thử lại sau.';
+
+      // Type guard để kiểm tra err có phải ApiError không
+      const isApiError = (error: unknown): error is { status?: number; message?: string; data?: unknown } => {
+        return typeof error === 'object' && error !== null;
+      };
+
+      if (isApiError(err)) {
+        message = err.message || message;
+
+        // Xử lý lỗi cụ thể từ PayOS API
+        if (err.status === 500 && err.message?.includes('PayOS API error')) {
+          // Kiểm tra message từ API backend để hiển thị lỗi rõ ràng hơn
+          const errorData = err.data;
+          if (errorData && typeof errorData === 'object' && 'message' in errorData) {
+            const apiMessage = (errorData as { message: string }).message;
+            // Nếu message chứa thông tin về đơn đang chờ thanh toán
+            if (apiMessage.toLowerCase().includes('pending') ||
+                apiMessage.toLowerCase().includes('chờ') ||
+                apiMessage.toLowerCase().includes('already') ||
+                apiMessage.toLowerCase().includes('exist')) {
+              message = 'Không thể tạo đơn thanh toán vì đã có 1 đơn đang chờ thanh toán. Vui lòng hoàn thành hoặc hủy đơn hiện tại trước khi tạo đơn mới.';
+            }
+          } else {
+            // Nếu không có message cụ thể từ API, hiển thị lỗi mặc định cho 500
+            message = 'Không thể tạo đơn thanh toán vì đã có 1 đơn đang chờ thanh toán. Vui lòng hoàn thành hoặc hủy đơn hiện tại trước khi tạo đơn mới.';
+          }
+        }
+      }
+
       setPaymentError(message);
       setProcessingPayment(null);
     }
@@ -175,8 +204,18 @@ function StudentMembershipRequestsPage() {
       const requests = await membershipService.getStudentRequests();
       setMembershipRequests(requests);
       setProcessingPayment(null);
-    } catch (err: any) {
-      const message = err?.message || 'Không thể hủy thanh toán. Vui lòng thử lại sau.';
+    } catch (err: unknown) {
+      let message = 'Không thể hủy thanh toán. Vui lòng thử lại sau.';
+
+      // Type guard để kiểm tra err có message không
+      const isErrorWithMessage = (error: unknown): error is { message?: string } => {
+        return typeof error === 'object' && error !== null;
+      };
+
+      if (isErrorWithMessage(err)) {
+        message = err.message || message;
+      }
+
       setPaymentError(message);
       setProcessingPayment(null);
     }
