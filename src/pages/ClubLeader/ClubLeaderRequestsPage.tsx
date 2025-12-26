@@ -390,7 +390,6 @@ function ClubLeaderRequestsPage() {
                       <th className="px-4 py-3">CLB</th>
                       <th className="px-4 py-3">Ngày gửi</th>
                       <th className="px-4 py-3">Trạng thái</th>
-                      <th className="px-4 py-3">Ghi chú</th>
                       <th className="px-4 py-3 text-right">Hành động</th>
                     </tr>
                   </thead>
@@ -422,9 +421,6 @@ function ClubLeaderRequestsPage() {
                               <span className="h-2 w-2 rounded-full bg-current opacity-70" />
                               {formatStatus(request.status)}
                             </span>
-                          </td>
-                          <td className="px-4 py-3 text-slate-600 text-xs">
-                            <p className="line-clamp-2 whitespace-pre-line">{request.note || '--'}</p>
                           </td>
                           <td className="px-4 py-3 text-right">
                             <button

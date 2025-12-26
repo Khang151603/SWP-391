@@ -118,6 +118,9 @@ function ClubLeaderMembersPage() {
     if (normalized === 'pending') {
       return 'bg-amber-50 text-amber-700 border border-amber-200';
     }
+    if (normalized === 'pending_payment') {
+      return 'bg-yellow-50 text-yellow-700 border border-yellow-200';
+    }
     if (normalized === 'locked' || normalized === 'inactive' || normalized === 'removed') {
       return 'bg-red-50 text-red-700 border border-red-200';
     }
@@ -128,6 +131,7 @@ function ClubLeaderMembersPage() {
     const normalized = status?.toLowerCase();
     if (normalized === 'active' || normalized === 'approved') return 'Đang hoạt động';
     if (normalized === 'pending') return 'Đang chờ duyệt';
+    if (normalized === 'pending_payment') return 'Chưa thanh toán';
     if (normalized === 'locked' || normalized === 'inactive') return 'Đã khóa';
     if (normalized === 'removed') return 'Đã xóa';
     return 'Không rõ';

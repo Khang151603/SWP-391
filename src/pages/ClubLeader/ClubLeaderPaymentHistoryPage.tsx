@@ -89,6 +89,24 @@ function ClubLeaderPaymentHistoryPage() {
     }
   };
 
+  const getStatusLabel = (status: string): string => {
+    const statusLower = status.toLowerCase();
+    switch (statusLower) {
+      case 'paid':
+        return 'Đã thanh toán';
+      case 'pending':
+        return 'Đang chờ';
+      case 'created':
+        return 'Đã tạo';
+      case 'cancelled':
+        return 'Đã hủy';
+      case 'failed':
+        return 'Thất bại';
+      default:
+        return status;
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const statusLower = status.toLowerCase();
     if (statusLower === 'paid') {
@@ -105,17 +123,24 @@ function ClubLeaderPaymentHistoryPage() {
           Đang chờ
         </span>
       );
+    } else if (statusLower === 'created') {
+      return (
+        <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+          <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-blue-500"></span>
+          Đã tạo
+        </span>
+      );
     } else if (statusLower === 'cancelled' || statusLower === 'failed') {
       return (
         <span className="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
           <span className="mr-1.5 h-1.5 w-1.5 rounded-full bg-red-500"></span>
-          Đã hủy
+          {statusLower === 'failed' ? 'Thất bại' : 'Đã hủy'}
         </span>
       );
     }
     return (
       <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">
-        {status}
+        {getStatusLabel(status)}
       </span>
     );
   };
@@ -300,7 +325,7 @@ function ClubLeaderPaymentHistoryPage() {
                 <p className="mt-2 text-sm text-slate-600">
                   {filterStatus === 'all' 
                     ? 'CLB này chưa có giao dịch thanh toán nào.' 
-                    : `Không có giao dịch với trạng thái "${filterStatus}".`}
+                    : `Không có giao dịch với trạng thái "${getStatusLabel(filterStatus)}".`}
                 </p>
               </div>
             ) : (
